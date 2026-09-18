@@ -1,0 +1,283 @@
+{
+  "combined_face_detection": {
+    "failure": 2,
+    "success": 158,
+    "success_rate": 0.9875
+  },
+  "config_path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\configs\\detector_landmark_audit.yaml",
+  "dataset_scope": {
+    "candidate_frames_processed": 160,
+    "face_selection_policy": "largest_valid_bbox",
+    "initial_candidate_frames": 80,
+    "label_counts": {
+      "drowsy": 80,
+      "not_drowsy": 80
+    },
+    "label_usage": "sampling_and_reporting_only",
+    "max_candidate_frames": 160,
+    "split_counts": {
+      "train": 80,
+      "val": 80
+    },
+    "test_split_used": false,
+    "unique_videos": 32,
+    "used_splits": [
+      "train",
+      "val"
+    ]
+  },
+  "decision": "WAITING_FOR_MANUAL_VISUAL_REVIEW",
+  "dlib68": {
+    "HOG": {
+      "attempted": 152,
+      "failure": 0,
+      "latency_ms": {
+        "count": 152,
+        "max": 5.9797999856527895,
+        "mean": 3.3022625026014314,
+        "median": 3.2138499955181032,
+        "min": 3.049299994017929
+      },
+      "success": 152,
+      "success_rate": 1.0
+    },
+    "YUNET_FALLBACK": {
+      "attempted": 6,
+      "failure": 0,
+      "latency_ms": {
+        "count": 6,
+        "max": 3.17360000917688,
+        "mean": 3.131783339388979,
+        "median": 3.1263999990187585,
+        "min": 3.1039000023156404
+      },
+      "success": 6,
+      "success_rate": 1.0
+    }
+  },
+  "ear": {
+    "hog_distribution": {
+      "count": 152,
+      "max": 0.5534822253938176,
+      "mean": 0.3218578037009661,
+      "median": 0.3307369873366398,
+      "min": 0.11750850973601215
+    },
+    "suspicious_extreme_count": 0,
+    "valid_rate": 0.9875,
+    "yunet_distribution": {
+      "count": 6,
+      "max": 0.4970844939120532,
+      "mean": 0.4286463643204602,
+      "median": 0.4400409412752754,
+      "min": 0.3206590285308176
+    }
+  },
+  "environment": {
+    "opencv": "5.0.0",
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.14"
+  },
+  "head_pose": {
+    "attempted": 158,
+    "pitch": {
+      "count": 158,
+      "max": 179.81772984853535,
+      "mean": 9.879967174212034,
+      "median": 159.39848878405218,
+      "min": -179.93359403864108
+    },
+    "roll": {
+      "count": 158,
+      "max": 24.769526393920493,
+      "mean": -1.0562218458225272,
+      "median": -0.5530913471612249,
+      "min": -147.13943333352177
+    },
+    "success": 158,
+    "success_rate": 1.0,
+    "suspicious_large_pose_count": 158,
+    "yaw": {
+      "count": 158,
+      "max": 51.744150815402705,
+      "mean": -13.898712234490265,
+      "median": -26.356829395001746,
+      "min": -48.973005355068906
+    }
+  },
+  "hog": {
+    "attempted": 160,
+    "failure": 8,
+    "latency_ms": {
+      "count": 160,
+      "max": 481.2153000093531,
+      "mean": 371.82330812556756,
+      "median": 362.20410000532866,
+      "min": 353.74550000415184
+    },
+    "multiple_detection_count": 1,
+    "success": 152,
+    "success_rate": 0.95
+  },
+  "limitations": [
+    "video-level split이며 subject-wise independence를 보장하지 않음",
+    "자동 geometry validation은 landmark의 의미적 정확성을 보장하지 않음",
+    "solvePnP angle은 근사 camera model에 기반하며 ground-truth가 아님",
+    "수동 visual review 전에는 detector 정책을 승인하지 않음"
+  ],
+  "mar": {
+    "hog_distribution": {
+      "count": 152,
+      "max": 0.6784973061162981,
+      "mean": 0.08370238608931724,
+      "median": 0.0598833783046472,
+      "min": 0.0
+    },
+    "suspicious_extreme_count": 8,
+    "valid_rate": 0.9875,
+    "yunet_distribution": {
+      "count": 6,
+      "max": 0.4755400373663937,
+      "mean": 0.3381304913654722,
+      "median": 0.36554358744013915,
+      "min": 0.06866141933156814
+    }
+  },
+  "paired_detector_check": {
+    "bbox_iou": {
+      "count": 12,
+      "max": 0.710387323943662,
+      "mean": 0.6696804920519133,
+      "median": 0.6905230101339964,
+      "min": 0.6044881792809063
+    },
+    "ear_abs_diff": {
+      "count": 12,
+      "max": 0.19157214617810286,
+      "mean": 0.08008179418604341,
+      "median": 0.06690514071240977,
+      "min": 0.009242808174605821
+    },
+    "landmark_mean_difference": {
+      "count": 12,
+      "max": 9.737682897901822,
+      "mean": 7.042382782821701,
+      "median": 7.308523714918811,
+      "min": 4.2003380926358105
+    },
+    "mar_abs_diff": {
+      "count": 12,
+      "max": 0.1309280293091463,
+      "mean": 0.04110906635458935,
+      "median": 0.027656130734493516,
+      "min": 0.0034222424893643397
+    },
+    "normalized_landmark_difference": {
+      "count": 12,
+      "max": 0.03633463767873814,
+      "mean": 0.024013412285222233,
+      "median": 0.0240663090948863,
+      "min": 0.015643744415557322
+    },
+    "pair_count": 12,
+    "pitch_abs_diff": {
+      "count": 12,
+      "max": 357.4398409185934,
+      "mean": 61.1927599032558,
+      "median": 1.8034665788526922,
+      "min": 0.016364441989594525
+    },
+    "roll_abs_diff": {
+      "count": 12,
+      "max": 5.809012702581748,
+      "mean": 2.030225234328287,
+      "median": 1.2675822385623023,
+      "min": 0.11196014989394953
+    },
+    "yaw_abs_diff": {
+      "count": 12,
+      "max": 11.014472736197014,
+      "mean": 1.9587859876097669,
+      "median": 0.930649008762586,
+      "min": 0.3771951006810923
+    }
+  },
+  "timing_ms": {
+    "ear_mar_ms": {
+      "count": 158,
+      "max": 0.17749998369254172,
+      "mean": 0.11645000014613277,
+      "median": 0.1117999927373603,
+      "min": 0.10420000762678683
+    },
+    "head_pose_ms": {
+      "count": 158,
+      "max": 1.3537999766413122,
+      "mean": 0.6446392401386807,
+      "median": 0.6271000020205975,
+      "min": 0.4755000118166208
+    },
+    "hog_ms": {
+      "count": 160,
+      "max": 481.2153000093531,
+      "mean": 371.82330812556756,
+      "median": 362.20410000532866,
+      "min": 353.74550000415184
+    },
+    "landmark_ms": {
+      "count": 158,
+      "max": 5.9797999856527895,
+      "mean": 3.295788610327541,
+      "median": 3.2111499895108864,
+      "min": 3.049299994017929
+    },
+    "total_ms": {
+      "count": 160,
+      "max": 804.5693000021856,
+      "mean": 507.6612068742179,
+      "median": 493.9536999881966,
+      "min": 404.2448000109289
+    },
+    "yunet_ms": {
+      "count": 160,
+      "max": 45.6930999935139,
+      "mean": 1.9742406249861233,
+      "median": 0.0,
+      "min": 0.0
+    }
+  },
+  "visual_audit": {
+    "category_counts": {
+      "detector_failed": 2,
+      "hog_success": 20,
+      "large_pose": 20,
+      "paired_detector_difference": 12,
+      "suspicious_geometry": 30,
+      "yunet_fallback": 6
+    },
+    "contact_sheet_dir": "contact_sheets",
+    "manual_review_csv": "manual_review.csv"
+  },
+  "yunet_fallback": {
+    "attempted": 8,
+    "confidence": {
+      "count": 6,
+      "max": 0.941697359085083,
+      "mean": 0.9277361830075582,
+      "median": 0.9277898371219635,
+      "min": 0.9097912311553955
+    },
+    "failure": 2,
+    "hog_failures": 8,
+    "latency_ms": {
+      "count": 8,
+      "max": 45.6930999935139,
+      "mean": 39.484812499722466,
+      "median": 38.85755001101643,
+      "min": 36.002799984999
+    },
+    "recovered": 6,
+    "recovery_rate": 0.75,
+    "success": 6
+  }
+}

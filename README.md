@@ -92,3 +92,56 @@ STEP 2에서는 소규모 샘플을 대상으로 다음 preprocessing audit을 �
 `HOG primary → HOG failure → YuNet fallback → Dlib68 landmarks → EAR/MAR/HeadPose → automatic geometry validation → visual audit → detector policy 결정`
 
 STEP 2 코드는 아직 구현하지 않았습니다.
+
+### STEP 2 — Detector / Landmark Compatibility Audit
+
+Status: **IMPLEMENTED — WAITING FOR MANUAL RUN**
+
+#### 목적과 데이터 범위
+
+전체 2,074개 영상을 전처리하기 전에 소규모 표본에서 HOG, YuNet, Dlib68 조합의 호환성과 geometry 품질을 검증합니다. 기존 frozen split은 변경하지 않으며 정책 선택에 영향을 주는 이 단계에서는 `train.csv`와 `val.csv`만 사용합니다. **test split은 읽거나 audit하지 않습니다.**
+
+라벨은 train/validation 및 drowsy/not_drowsy 표본 균형과 보고서 표시에만 사용합니다. detector 실행, fallback, bbox 선택, landmark, EAR/MAR, Head Pose, geometry validity에는 라벨을 전달하지 않아 같은 frame이 라벨과 무관하게 동일하게 처리되도록 구성했습니다.
+
+#### Candidate Pipeline
+
+`Raw frame → HOG primary → HOG 실패 시 YuNet fallback → 선택된 모든 얼굴에 Dlib68 → EAR/MAR/Head Pose → geometry validation → visual audit`
+
+- HOG와 YuNet은 face detector만 다르며 landmark는 모두 Dlib68로 통일합니다.
+- production candidate에서는 HOG 성공 시 YuNet을 실행하지 않습니다.
+- 소수 HOG 성공 frame의 paired audit에서만 비교 목적으로 YuNet을 추가 실행합니다.
+- multiple face는 detector 종류와 관계없이 유효 bbox 중 면적이 가장 큰 얼굴을 선택하며 검출 개수도 기록합니다.
+- 3DDFA와 1차 실험의 Dlib↔3DDFA calibration은 사용하지 않습니다.
+- EAR 졸음 threshold, MAR yawn threshold, Head Pose 행동 threshold는 결정하지 않습니다.
+- 자동 audit 직후에도 detector 정책을 승인하지 않으며 Decision은 `WAITING_FOR_MANUAL_VISUAL_REVIEW`입니다.
+
+#### 실행
+
+설정과 sampling 범위만 확인:
+
+```bash
+python scripts/run_detector_landmark_audit.py --dry-run
+```
+
+소규모 audit 실행:
+
+```bash
+python scripts/run_detector_landmark_audit.py --config configs/detector_landmark_audit.yaml
+```
+
+결과는 `outputs/preprocessing_v2/detector_landmark_audit/`에 생성됩니다.
+
+- `sample_results.csv`
+- `paired_detector_results.csv`
+- `audit_report.txt`
+- `audit_summary.json`
+- `manual_review.csv`
+- `MANUAL_REVIEW_GUIDE.md`
+- `visual_samples/`
+- `contact_sheets/`
+
+실행 후 contact sheet와 개별 annotation 이미지를 확인하고 `manual_review.csv`의 `bbox_ok`, `landmarks_overall_ok`, `eyes_ok`, `mouth_ok`, `nose_chin_ok`, `pose_axis_ok`, `manual_decision`, `review_note`를 직접 작성해야 합니다.
+
+#### 현재 Decision과 다음 단계
+
+현재는 구현만 완료되어 실제 audit 수치가 없습니다. 사용자가 소규모 audit을 실행한 뒤 manual visual review를 완료해야 하며, 그 결과를 바탕으로 다음 단계에서 HOG primary + YuNet fallback 정책의 최종 채택 여부를 결정합니다.

@@ -1,0 +1,48 @@
+# STEP 2는 train/validation만 사용하며 test split은 읽지 않는다.
+random_seed: 42
+
+raw_dir: "data/raw/SUST Driver Drowsiness Dataset"
+train_metadata: "data/metadata/train.csv"
+val_metadata: "data/metadata/val.csv"
+dlib_predictor: "assets/dlib/shape_predictor_68_face_landmarks.dat"
+yunet_model: "assets/yunet/face_detection_yunet_2023mar.onnx"
+output_dir: "outputs/preprocessing_v2/detector_landmark_audit"
+
+hog_upsample: 1
+face_selection:
+  # HOG와 YuNet 모두 유효 bbox 중 면적이 가장 큰 얼굴을 운전자로 선택한다.
+  policy: "largest_valid_bbox"
+yunet:
+  score_threshold: 0.9
+  nms_threshold: 0.3
+  top_k: 5000
+
+sampling:
+  # 각 영상의 실제 FPS를 이용해 timestamp를 가장 가까운 frame index로 변환한다.
+  timestamps_sec: [1.0, 3.0, 5.0, 7.0, 9.0]
+  initial_candidate_frames: 80
+  target_yunet_fallback_samples: 12
+  max_candidate_frames: 160
+
+paired_detector_audit:
+  enabled: true
+  max_samples: 12
+
+geometry_validation:
+  denominator_epsilon: 1.0e-6
+  landmark_outside_tolerance_ratio: 0.15
+  suspicious_min_bbox_side: 40
+  # 아래 범위는 졸음 판정 기준이 아니라 visual audit 우선순위용 이상치 flag다.
+  suspicious_ear_range: [0.05, 0.8]
+  suspicious_mar_range: [0.02, 1.5]
+  suspicious_abs_pose_degrees: 75.0
+
+visual_audit:
+  max_hog_samples: 20
+  max_yunet_samples: 20
+  max_suspicious_samples: 30
+  max_large_pose_samples: 20
+  max_failed_samples: 20
+  max_paired_samples: 20
+  contact_sheet_columns: 3
+  thumbnail_size: [480, 360]
