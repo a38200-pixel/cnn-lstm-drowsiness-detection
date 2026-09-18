@@ -1,0 +1,243 @@
+GENERALIZATION_GAP_EVALUATION_COMPLETE
+1. 목적: 고정된 best checkpoint의 Train vs Validation 일반화 격차 측정.
+2. 평가 checkpoint (기존 minimum val_loss 선택 유지):
+outputs/training/model_a/seed_42/best_checkpoint.pt (epoch=7)
+outputs/training/model_a/seed_43/best_checkpoint.pt (epoch=14)
+outputs/training/model_a/seed_44/best_checkpoint.pt (epoch=10)
+outputs/training/model_b/seed_42/best_checkpoint.pt (epoch=15)
+outputs/training/model_b/seed_43/best_checkpoint.pt (epoch=13)
+outputs/training/model_b/seed_44/best_checkpoint.pt (epoch=7)
+3. 평가 조건: model.eval(), torch.inference_mode(), Train/Val shuffle=False, batch32, FP32, Dropout off, BN frozen.
+각 run Train 10088 / Validation 2150 전수 평가. 기존 Dataset 및 train-only EAR/MAR normalization 사용. Test Dataset 미생성.
+CrossEntropyLoss(weight=None, label_smoothing=0), sample-weighted mean; positive=drowsy(1), argmax, zero_division=0.
+4. Run별 Train/Val 결과표
+Run | Train Acc | Val Acc | Acc Gap(pp) | Train F1 | Val F1 | F1 Gap(pp)
+model_a/42 | 0.773791 | 0.735349 | 3.844 | 0.766857 | 0.741950 | 2.491
+model_a/43 | 0.830095 | 0.760930 | 6.916 | 0.823880 | 0.762477 | 6.140
+model_a/44 | 0.762986 | 0.700930 | 6.206 | 0.783247 | 0.733306 | 4.994
+model_b/42 | 0.823553 | 0.775349 | 4.820 | 0.822568 | 0.784855 | 3.771
+model_b/43 | 0.808882 | 0.745116 | 6.377 | 0.783565 | 0.716062 | 6.750
+model_b/44 | 0.780630 | 0.713953 | 6.668 | 0.774804 | 0.709769 | 6.504
+5. Accuracy gap (Train - Val)
+model_a/42: 0.038442 = 3.844pp
+model_a/43: 0.069165 = 6.916pp
+model_a/44: 0.062055 = 6.206pp
+model_b/42: 0.048204 = 4.820pp
+model_b/43: 0.063766 = 6.377pp
+model_b/44: 0.066677 = 6.668pp
+6. F1 gap (Train - Val)
+model_a/42: 0.024907 = 2.491pp
+model_a/43: 0.061403 = 6.140pp
+model_a/44: 0.049942 = 4.994pp
+model_b/42: 0.037713 = 3.771pp
+model_b/43: 0.067503 = 6.750pp
+model_b/44: 0.065035 = 6.504pp
+7. Loss / Precision / Recall 상세
+Run | Train Loss | Val Loss | Loss Gap | Train Precision | Val Precision | Precision Gap | Train Recall | Val Recall | Recall Gap
+model_a/42 | 0.477810 | 0.529296 | 0.051485 | 0.782527 | 0.734951 | 0.047577 | 0.751803 | 0.749084 | 0.002719
+model_a/43 | 0.382297 | 0.510451 | 0.128154 | 0.845781 | 0.769590 | 0.076191 | 0.803085 | 0.755495 | 0.047590
+model_a/44 | 0.482841 | 0.562566 | 0.079725 | 0.715350 | 0.670205 | 0.045146 | 0.865385 | 0.809524 | 0.055861
+model_b/42 | 0.398591 | 0.486482 | 0.087891 | 0.818651 | 0.764094 | 0.054557 | 0.826522 | 0.806777 | 0.019746
+model_b/43 | 0.412957 | 0.536121 | 0.123164 | 0.891216 | 0.824582 | 0.066633 | 0.699119 | 0.632784 | 0.066335
+model_b/44 | 0.470592 | 0.543036 | 0.072444 | 0.787384 | 0.732230 | 0.055154 | 0.762620 | 0.688645 | 0.073976
+8. model_a 3-seed mean ± sample std (ddof=1)
+train_loss: 0.447649 ± 0.056653
+train_accuracy: 0.788957 ± 0.036034
+train_precision: 0.781219 ± 0.065225
+train_recall: 0.806757 ± 0.056880
+train_f1: 0.791328 ± 0.029358
+val_loss: 0.534104 ± 0.026388
+val_accuracy: 0.732403 ± 0.030108
+val_precision: 0.724915 ± 0.050447
+val_recall: 0.771368 ± 0.033199
+val_f1: 0.745911 ± 0.014984
+loss_gap: 0.086455 ± 0.038775
+accuracy_gap: 0.056554 ± 0.016083
+precision_gap: 0.056304 ± 0.017265
+recall_gap: 0.035390 ± 0.028595
+f1_gap: 0.045417 ± 0.018664
+accuracy_gap_percentage_point: 5.655408 ± 1.608343
+precision_gap_percentage_point: 5.630436 ± 1.726521
+recall_gap_percentage_point: 3.538996 ± 2.859478
+f1_gap_percentage_point: 4.541729 ± 1.866381
+9. model_b 3-seed mean ± sample std (ddof=1)
+train_loss: 0.427380 ± 0.038106
+train_accuracy: 0.804355 ± 0.021816
+train_precision: 0.832417 ± 0.053267
+train_recall: 0.762754 ± 0.063702
+train_f1: 0.793646 ± 0.025427
+val_loss: 0.521880 ± 0.030850
+val_accuracy: 0.744806 ± 0.030699
+val_precision: 0.773635 ± 0.046910
+val_recall: 0.709402 ± 0.088834
+val_f1: 0.736895 ± 0.041653
+loss_gap: 0.094500 ± 0.025998
+accuracy_gap: 0.059549 ± 0.009932
+precision_gap: 0.058781 ± 0.006806
+recall_gap: 0.053352 ± 0.029353
+f1_gap: 0.056750 ± 0.016533
+accuracy_gap_percentage_point: 5.954881 ± 0.993223
+precision_gap_percentage_point: 5.878139 ± 0.680640
+recall_gap_percentage_point: 5.335203 ± 2.935346
+f1_gap_percentage_point: 5.675035 ± 1.653333
+10. Paired B-A gap 차이 (양수 = B의 gap이 더 큼)
+[
+  {
+    "seed": 42,
+    "loss_gap_difference": 0.0364054109621228,
+    "accuracy_gap_difference": 0.009762093576526465,
+    "precision_gap_difference": 0.006980603046007117,
+    "recall_gap_difference": 0.017027243589743613,
+    "f1_gap_difference": 0.012805286240537006
+  },
+  {
+    "seed": 43,
+    "loss_gap_difference": -0.004990043069760142,
+    "accuracy_gap_difference": -0.005399369271342436,
+    "precision_gap_difference": -0.009557851333654832,
+    "recall_gap_difference": 0.018744276556776573,
+    "f1_gap_difference": 0.006100069445120759
+  },
+  {
+    "seed": 44,
+    "loss_gap_difference": -0.0072816511071865375,
+    "accuracy_gap_difference": 0.004621470593659582,
+    "precision_gap_difference": 0.010008342269443804,
+    "recall_gap_difference": 0.018114697802197766,
+    "f1_gap_difference": 0.015093822161996617
+  }
+]
+{
+  "loss_gap_difference": {
+    "mean": 0.008044572261725372,
+    "std": 0.024587918693776616
+  },
+  "accuracy_gap_difference": {
+    "mean": 0.0029947316329478704,
+    "std": 0.007710525186817712
+  },
+  "precision_gap_difference": {
+    "mean": 0.002477031327265363,
+    "std": 0.01053188500211963
+  },
+  "recall_gap_difference": {
+    "mean": 0.01796207264957265,
+    "std": 0.0008686319015439642
+  },
+  "f1_gap_difference": {
+    "mean": 0.011333059282551461,
+    "std": 0.004674129453164782
+  }
+}
+11. 기존 Validation 재현: 6/6 PASS, 모든 loss/classification metrics를 checkpoint/history/summary와 atol=1e-6 비교.
+12. 과적합/generalization gap 해석
+model_a: 평균 accuracy gap 5.655pp, F1 gap 4.542pp, loss gap 0.086455; precision gap 5.630pp, recall gap 3.539pp.
+model_b: 평균 accuracy gap 5.955pp, F1 gap 5.675pp, loss gap 0.094500; precision gap 5.878pp, recall gap 5.335pp.
+accuracy: B gap이 A보다 큰 seed 2/3; 평균 B-A gap 0.002995.
+f1: B gap이 A보다 큰 seed 3/3; 평균 B-A gap 0.011333.
+precision: B gap이 A보다 큰 seed 2/3; 평균 B-A gap 0.002477.
+recall: B gap이 A보다 큰 seed 3/3; 평균 B-A gap 0.017962.
+loss: B gap이 A보다 큰 seed 1/3; 평균 B-A gap 0.008045.
+격차는 임의의 small/moderate/large threshold로 분류하지 않고 위 절대값과 seed 변동으로 판단한다. 양수 loss gap 및 classification gap은 Train보다 Validation 성능이 저하되는 증거다.
+Train accuracy 또는 F1 >0.95 run: 없음.
+Train 성능이 완벽한 암기 수준인지 위 수치로 함께 판단해야 하며, gap만으로 모델 용량 과잉이나 memorization을 단정하지 않는다.
+Train accuracy 범위는 0.7630~0.8301.
+Train f1 범위는 0.7669~0.8239.
+Train 성능 자체도 완벽하지 않으므로 현재 문제를 단순한 memorization/모델 용량 과잉만으로 설명하기 어렵다.
+6/6 run에서 loss 악화와 Accuracy/F1 저하가 같은 방향이다. Best checkpoint에서도 일반화 격차가 남는다.
+B-A accuracy gap 차이는 0.299 ± 0.771pp이며, B가 더 큰 seed는 2/3이다. 따라서 모든 지표에서 B의 gap이 일관되게 더 크다고 일반화하지 않는다.
+B-A f1 gap 차이는 1.133 ± 0.467pp이며, B가 더 큰 seed는 3/3이다. 따라서 모든 지표에서 B의 gap이 일관되게 더 크다고 일반화하지 않는다.
+B-A recall gap 차이는 1.796 ± 0.087pp이며, B가 더 큰 seed는 3/3이다. 따라서 모든 지표에서 B의 gap이 일관되게 더 크다고 일반화하지 않는다.
+train: 평균 B-A Precision 5.120pp, Recall -4.400pp. Train에서도 나타나는 차이와 추가 Validation 저하를 구분해야 한다.
+val: 평균 B-A Precision 4.872pp, Recall -6.197pp. Train에서도 나타나는 차이와 추가 Validation 저하를 구분해야 한다.
+Best 이후 epoch history:
+[
+  {
+    "model": "model_a",
+    "seed": 42,
+    "best_epoch": 7,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.5700877306073211,
+    "post_best_val_loss_max": 0.7952573635134587,
+    "final_minus_best_val_loss": 0.26596154742462697,
+    "final_minus_best_online_train_loss": -0.08696080022251484
+  },
+  {
+    "model": "model_a",
+    "seed": 43,
+    "best_epoch": 14,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.5278346814111222,
+    "post_best_val_loss_max": 0.9280246190414873,
+    "final_minus_best_val_loss": 0.2479943665446237,
+    "final_minus_best_online_train_loss": -0.04618220749731389
+  },
+  {
+    "model": "model_a",
+    "seed": 44,
+    "best_epoch": 10,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.5768252502208532,
+    "post_best_val_loss_max": 1.3282770157206891,
+    "final_minus_best_val_loss": 0.06710181062997767,
+    "final_minus_best_online_train_loss": -0.06255649115290551
+  },
+  {
+    "model": "model_b",
+    "seed": 42,
+    "best_epoch": 15,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.4875695300102234,
+    "post_best_val_loss_max": 0.9254427871350632,
+    "final_minus_best_val_loss": 0.0715481205163307,
+    "final_minus_best_online_train_loss": -0.04393062456366942
+  },
+  {
+    "model": "model_b",
+    "seed": 43,
+    "best_epoch": 13,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.5460538551003434,
+    "post_best_val_loss_max": 0.8750630556566771,
+    "final_minus_best_val_loss": 0.009932547059170127,
+    "final_minus_best_online_train_loss": -0.056502891664557964
+  },
+  {
+    "model": "model_b",
+    "seed": 44,
+    "best_epoch": 7,
+    "epochs_after_best": 8,
+    "post_best_val_loss_min": 0.5530753145384234,
+    "post_best_val_loss_max": 0.9433083890205206,
+    "final_minus_best_val_loss": 0.010039682610090361,
+    "final_minus_best_online_train_loss": -0.06118533951152799
+  }
+]
+Best 이후 val-loss 상승과 online train-loss 감소가 동반되는 run은 이후 학습에서 과적합 경향을 뒷받침한다. Online train loss는 dropout/BN 및 매 batch 다른 가중치가 적용되어 이번 eval-mode train loss와 직접 동일시하지 않는다.
+실제로 6/6 run에서 final epoch의 val-loss는 best보다 높고 online train-loss는 낮다. 다만 best는 관측된 최저 val-loss로 선택됐으므로 그 이후 상승만을 독립적인 과적합 검정으로 취급하지 않는다.
+13. 한계: 3 seeds뿐이며 강한 통계적 유의성 주장은 하지 않는다. Validation은 best 선택에 사용되어 독립적인 최종 일반화 평가가 아니다. 겹치는 sequence의 상관성과 split 분포 차이가 gap에 영향을 줄 수 있으며, 이 분석만으로 원인을 분리할 수 없다.
+Batch size는 원래 Validation과 같은 32로 고정했다. 다른 batch size 전체 재평가는 하지 않았으며 FP32 계산 순서에 따른 미세 차이는 가능하다.
+Integrity:
+{
+  "validation_reproducibility": "PASS",
+  "model_state_unchanged": "PASS",
+  "bn_state_unchanged": "PASS",
+  "gradient_created_count": 0,
+  "test_dataset_load_count": 0,
+  "test_inference_count": 0,
+  "test_metric_count": 0,
+  "test_prediction_count": 0,
+  "strict_checkpoint_load": "PASS",
+  "full_train_val_coverage": "PASS",
+  "existing_files_unchanged": "PASS",
+  "protected_files": 7167
+}
+Environment:
+{
+  "python": "C:\\Users\\AISW_203_113\\anaconda3\\envs\\vision_ai\\python.exe",
+  "torch": "2.11.0+cu128",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 3080"
+}
+Warnings:
+[]

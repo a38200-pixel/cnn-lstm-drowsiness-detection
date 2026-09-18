@@ -1,0 +1,293 @@
+FULL_CONTROLLED_TRAINING_COMPLETE
+Validation only; test inference=0, test metric=0.
+Epoch numbers are zero based. Sample standard deviation ddof=1; three paired seeds, no significance claim.
+Dataset: train=10088, validation=2150. Original V1 T20-S10 strict sequences; frozen train-only normalization.
+A: CNN 1/16/32/64, LSTM input64 hidden64 single layer, classifier 64/32/2, dropout0.3; 58946 parameters.
+B: same architecture except EAR_norm/MAR_norm appended to LSTM input66; 59458 parameters.
+Best checkpoint: actual minimum val_loss; earliest ties. Early stopping uses unchanged protocol implementation.
+Configuration:
+{
+  "protocol_version": "controlled_ab_v1",
+  "seed": 42,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "batch_size": 32,
+  "num_workers": 0,
+  "cache_size": 4,
+  "drop_last": false,
+  "optimizer": "AdamW",
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "eps": 1e-08,
+  "loss": "CrossEntropyLoss",
+  "class_weight": null,
+  "label_smoothing": 0.0,
+  "scheduler": null,
+  "max_epochs": 50,
+  "early_stopping": {
+    "enabled": true,
+    "patience": 8,
+    "min_delta": 0.0001,
+    "monitor": "val_loss",
+    "mode": "min"
+  },
+  "checkpoint_monitor": "val_loss",
+  "checkpoint_mode": "min",
+  "checkpoint_tie_policy": "keep_earliest",
+  "positive_class": 1,
+  "prediction": "argmax",
+  "secondary_metrics": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1"
+  ],
+  "zero_division": 0,
+  "amp": false,
+  "gradient_clip": null,
+  "deterministic_algorithms": true,
+  "deterministic_warn_only": true,
+  "cudnn_deterministic": true,
+  "cudnn_benchmark": false,
+  "tf32": false,
+  "geometry_seed_offset": 10000,
+  "epoch_seed_multiplier": 1000003,
+  "epoch_numbering": "zero_based",
+  "dataset_directory": "data/processed/sequences_t20_s10",
+  "normalization_reference": "data/processed/sequences_t20_s10/normalization_stats.json",
+  "output_directory": "outputs/training",
+  "test_during_training": false,
+  "planned_training_environment": "C:/Users/AISW_203_113/anaconda3/envs/vision_ai/python.exe",
+  "planned_training_device": "cuda",
+  "validation_environment_fallback": ".venv-dataset/Scripts/python.exe"
+}
+Environment:
+{
+  "python": "C:\\Users\\AISW_203_113\\anaconda3\\envs\\vision_ai\\python.exe",
+  "torch": "2.11.0+cu128",
+  "cuda": "12.8",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce RTX 3080"
+}
+Runs:
+[
+  {
+    "model": "model_a",
+    "seed": 42,
+    "epochs_completed": 16,
+    "best_epoch": 7,
+    "accuracy": 0.7353488372093023,
+    "precision": 0.7349505840071878,
+    "recall": 0.7490842490842491,
+    "f1": 0.7419501133786847,
+    "training_time_sec": 1539.1461722999811,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_a\\seed_42\\best_checkpoint.pt",
+    "val_loss": 0.5292958160888317
+  },
+  {
+    "model": "model_b",
+    "seed": 42,
+    "epochs_completed": 24,
+    "best_epoch": 15,
+    "accuracy": 0.7753488372093024,
+    "precision": 0.764093668690373,
+    "recall": 0.8067765567765568,
+    "f1": 0.7848552338530067,
+    "training_time_sec": 2278.6536319999723,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_b\\seed_42\\best_checkpoint.pt",
+    "val_loss": 0.48648162352137786
+  },
+  {
+    "model": "model_a",
+    "seed": 43,
+    "epochs_completed": 23,
+    "best_epoch": 14,
+    "accuracy": 0.7609302325581395,
+    "precision": 0.769589552238806,
+    "recall": 0.7554945054945055,
+    "f1": 0.7624768946395564,
+    "training_time_sec": 2045.6986350999214,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_a\\seed_43\\best_checkpoint.pt",
+    "val_loss": 0.5104512988134872
+  },
+  {
+    "model": "model_b",
+    "seed": 43,
+    "epochs_completed": 22,
+    "best_epoch": 13,
+    "accuracy": 0.7451162790697674,
+    "precision": 0.8245823389021479,
+    "recall": 0.6327838827838828,
+    "f1": 0.7160621761658029,
+    "training_time_sec": 1965.6656977999955,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_b\\seed_43\\best_checkpoint.pt",
+    "val_loss": 0.5361213080411733
+  },
+  {
+    "model": "model_a",
+    "seed": 44,
+    "epochs_completed": 19,
+    "best_epoch": 10,
+    "accuracy": 0.7009302325581396,
+    "precision": 0.6702047005307051,
+    "recall": 0.8095238095238095,
+    "f1": 0.7333056822895063,
+    "training_time_sec": 1774.6370662000263,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_a\\seed_44\\best_checkpoint.pt",
+    "val_loss": 0.5625658733345742
+  },
+  {
+    "model": "model_b",
+    "seed": 44,
+    "epochs_completed": 16,
+    "best_epoch": 7,
+    "accuracy": 0.713953488372093,
+    "precision": 0.7322297955209348,
+    "recall": 0.6886446886446886,
+    "f1": 0.7097687588485134,
+    "training_time_sec": 1473.4688295000233,
+    "early_stopped": true,
+    "checkpoint_path": "outputs\\training\\model_b\\seed_44\\best_checkpoint.pt",
+    "val_loss": 0.543035631928333
+  }
+]
+Aggregate:
+{
+  "status": "FULL_CONTROLLED_TRAINING_COMPLETE",
+  "std_ddof": 1,
+  "models": {
+    "model_a": {
+      "val_loss": {
+        "mean": 0.5341043294122977,
+        "std": 0.026387943642219372
+      },
+      "accuracy": {
+        "mean": 0.7324031007751938,
+        "std": 0.03010827166003429
+      },
+      "precision": {
+        "mean": 0.724914945592233,
+        "std": 0.05044673147050349
+      },
+      "recall": {
+        "mean": 0.7713675213675213,
+        "std": 0.033199391428316585
+      },
+      "f1": {
+        "mean": 0.745910896769249,
+        "std": 0.014983516319380993
+      },
+      "best_epoch": {
+        "mean": 10.333333333333334,
+        "std": 3.511884584284246
+      },
+      "training_time_sec": {
+        "mean": 1786.4939578666429,
+        "std": 253.4842969538086
+      }
+    },
+    "model_b": {
+      "val_loss": {
+        "mean": 0.521879521163628,
+        "std": 0.030849802865213806
+      },
+      "accuracy": {
+        "mean": 0.7448062015503876,
+        "std": 0.030698848932194076
+      },
+      "precision": {
+        "mean": 0.7736352677044852,
+        "std": 0.046909803357659624
+      },
+      "recall": {
+        "mean": 0.7094017094017094,
+        "std": 0.08883413242560981
+      },
+      "f1": {
+        "mean": 0.736895389622441,
+        "std": 0.041653472476463275
+      },
+      "best_epoch": {
+        "mean": 11.666666666666666,
+        "std": 4.163331998932265
+      },
+      "training_time_sec": {
+        "mean": 1905.9293864333304,
+        "std": 405.9026505407323
+      }
+    }
+  },
+  "paired_b_minus_a": [
+    {
+      "seed": 42,
+      "val_loss": -0.042814192567453835,
+      "accuracy": 0.040000000000000036,
+      "precision": 0.02914308468318516,
+      "recall": 0.05769230769230771,
+      "f1": 0.042905120474322045
+    },
+    {
+      "seed": 43,
+      "val_loss": 0.02567000922768614,
+      "accuracy": -0.015813953488372112,
+      "precision": 0.05499278666334195,
+      "recall": -0.12271062271062272,
+      "f1": -0.04641471847375345
+    },
+    {
+      "seed": 44,
+      "val_loss": -0.019530241406241156,
+      "accuracy": 0.013023255813953472,
+      "precision": 0.06202509499022968,
+      "recall": -0.1208791208791209,
+      "f1": -0.023536923440992896
+    }
+  ],
+  "paired_summary": {
+    "val_loss": {
+      "mean": -0.012224808248669616,
+      "std": 0.03482166694881468
+    },
+    "accuracy": {
+      "mean": 0.012403100775193798,
+      "std": 0.02791214422441631
+    },
+    "precision": {
+      "mean": 0.048720322112252266,
+      "std": 0.01731515258716056
+    },
+    "recall": {
+      "mean": -0.06196581196581197,
+      "std": 0.1036310175566532
+    },
+    "f1": {
+      "mean": -0.0090155071468081,
+      "std": 0.04639678928351937
+    }
+  },
+  "integrity": {
+    "six_runs": "PASS",
+    "paired_seeds": "PASS",
+    "identical_config": "PASS",
+    "protected_files_unchanged": "PASS",
+    "architecture_unchanged": "PASS",
+    "dataset_unchanged": "PASS",
+    "normalization_unchanged": "PASS",
+    "protocol_unchanged": "PASS",
+    "test_metric_count": 0,
+    "test_inference_count": 0
+  }
+}
+Warnings, if any, are retained in each training.log. Full epoch histories are retained in metrics_history.csv.

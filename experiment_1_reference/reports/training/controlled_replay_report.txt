@@ -1,0 +1,23 @@
+1. Purpose: isolate verified Train order while holding each captured PRE state and training configuration fixed.
+2. Targeted reproduction fidelity: HIGH_FIDELITY; CONTROLLED_REPLAY_ELIGIBLE=YES.
+3. PRE states: targeted reproduction pre_epoch_10.pt and pre_epoch_12.pt.
+4. Intervention: PRE10+order10 vs PRE10+order11; PRE12+order12 vs PRE12+order13.
+5. Same sample set: 10,088 unique Train sequences in every verified order.
+6. Event10 original fidelity: {'train_order_hash_exact': True, 'train_validation_metrics_exact': True, 'confusion_matrix_exact': True, 'post_model_hash_exact': True, 'post_optimizer_hash_exact': True, 'post_batchnorm_state_exact': True, 'post_python_rng_exact': True, 'post_numpy_rng_exact': True, 'post_torch_cpu_rng_exact': True, 'post_torch_cuda_rng_exact': True, 'post_dataloader_generator_exact': True}
+7. Event10 original vs alternative: {'event_epoch': 10, 'original_order_epoch': 10, 'alternative_order_epoch': 11, 'original_val_loss': 0.6820830576918846, 'alternative_val_loss': 0.5398288363634154, 'original_val_recall': 0.3717948717948718, 'alternative_val_recall': 0.7683150183150184, 'original_val_f1': 0.5052893590541382, 'alternative_val_f1': 0.7428065515714918, 'f1_improvement': 0.2375171925173536, 'recall_improvement': 0.39652014652014655, 'loss_improvement': 0.1422542213284692, 'reference_recovery_f1': 0.7077555213148434, 'reference_recovery_recall': 0.6309523809523809, 'reference_recovery_loss': 0.5134255805680918, 'f1_recovery_gap': 0.20246616226070524, 'recall_recovery_gap': 0.2591575091575091, 'loss_recovery_gap': 0.16865747712379275, 'f1_gap_closure_ratio': 1.1731204358559182, 'recall_gap_closure_ratio': 1.5300353356890464, 'loss_gap_closure_ratio': 0.8434504283735738, 'all_three_metrics_improved': True, 'all_three_metrics_not_improved': False}
+8. Event12 original fidelity: {'train_order_hash_exact': True, 'train_validation_metrics_exact': True, 'confusion_matrix_exact': True, 'post_model_hash_exact': True, 'post_optimizer_hash_exact': True, 'post_batchnorm_state_exact': True, 'post_python_rng_exact': True, 'post_numpy_rng_exact': True, 'post_torch_cpu_rng_exact': True, 'post_torch_cuda_rng_exact': True, 'post_dataloader_generator_exact': True}
+9. Event12 original vs alternative: {'event_epoch': 12, 'original_order_epoch': 12, 'alternative_order_epoch': 13, 'original_val_loss': 0.7753311714322068, 'alternative_val_loss': 0.7702450809922329, 'original_val_recall': 0.2866300366300366, 'alternative_val_recall': 0.8589743589743589, 'original_val_f1': 0.43083275980729524, 'alternative_val_f1': 0.7079245283018867, 'f1_improvement': 0.27709176849459144, 'recall_improvement': 0.5723443223443223, 'loss_improvement': 0.005086090439973878, 'reference_recovery_f1': 0.7274409995372513, 'reference_recovery_recall': 0.7197802197802198, 'reference_recovery_loss': 0.5207431155859038, 'f1_recovery_gap': 0.29660823972995604, 'recall_recovery_gap': 0.43315018315018317, 'loss_recovery_gap': 0.25458805584630295, 'f1_gap_closure_ratio': 0.9342011831730191, 'recall_gap_closure_ratio': 1.321353065539112, 'loss_gap_closure_ratio': 0.019977726068360395, 'all_three_metrics_improved': True, 'all_three_metrics_not_improved': False}
+10. Validation metric comparison: see controlled_replay_event_comparison.csv.
+11. Confusion matrices: see controlled_replay_results.csv and branch_result.json files.
+12. Prediction shift: see controlled_replay_prediction_summary.csv and sample-level comparison.
+13. Parameter update magnitude: see controlled_replay_update_direction.csv.
+14. Parameter direction cosine: reported globally and by group.
+15. CNN/LSTM/classifier comparison: see controlled_replay_update_direction.csv.
+16. BatchNorm branch differences: see controlled_replay_bn_comparison.csv.
+17. Optimizer-state branch differences: see controlled_replay_optimizer_comparison.csv.
+18. Recovery-gap closure: F1, Recall, and direction-adjusted val-loss ratios are descriptive.
+19. Order-effect evidence: CONTROLLED_ORDER_EFFECT_SUPPORTED.
+20. Alternatives: state sensitivity and broader optimization trajectory remain possible.
+21. Causality limit: conclusions apply only to the two inspected PRE states.
+22. Final category: CONTROLLED_ORDER_EFFECT_SUPPORTED
+23. Test isolation: load=0, inference=0, metric=0. Analyzer training=0.

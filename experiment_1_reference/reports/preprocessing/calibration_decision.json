@@ -1,0 +1,105 @@
+{
+  "samples": {
+    "train": 4000,
+    "val": 1000,
+    "test": 0,
+    "failed_pairs": 0
+  },
+  "validation": [
+    {
+      "feature": "ear",
+      "selected": "huber",
+      "raw": {
+        "n": 1000,
+        "pearson": 0.20262023434876972,
+        "spearman": 0.22121387321387323,
+        "mae": 0.06189890848840747,
+        "median_absolute_error": 0.05177107772946554,
+        "rmse": 0.08243838458280889,
+        "bias": 0.0067992663841609105,
+        "p95_absolute_error": 0.1413027992902714,
+        "p99_absolute_error": 0.212836020912067
+      },
+      "calibrated": {
+        "n": 1000,
+        "pearson": 0.2026202343487698,
+        "spearman": 0.22121387321387323,
+        "mae": 0.057731719552911,
+        "median_absolute_error": 0.05079183641999907,
+        "rmse": 0.0711635429511743,
+        "bias": 0.008553965150223254,
+        "p95_absolute_error": 0.14093459525411217,
+        "p99_absolute_error": 0.17727458831982093
+      },
+      "constant_reference": {
+        "n": 1000,
+        "pearson": null,
+        "spearman": null,
+        "mae": 0.05900430915504694,
+        "median_absolute_error": 0.05159980058670044,
+        "rmse": 0.07337809089422538,
+        "bias": 0.013994025357067586,
+        "p95_absolute_error": 0.14767280593514442,
+        "p99_absolute_error": 0.1842101965844631
+      },
+      "mae_reduction_fraction": 0.06732249464910844,
+      "mae_reduction_vs_constant_fraction": 0.021567740057627405,
+      "catastrophic_residual_rate": 0.0,
+      "passes": false
+    },
+    {
+      "feature": "mar",
+      "selected": "huber",
+      "raw": {
+        "n": 1000,
+        "pearson": 0.6367388146582525,
+        "spearman": 0.5397059461824175,
+        "mae": 0.07632281016718034,
+        "median_absolute_error": 0.0632491435700816,
+        "rmse": 0.10103490207016616,
+        "bias": 0.06337477530618733,
+        "p95_absolute_error": 0.18477184428898205,
+        "p99_absolute_error": 0.28598066283312007
+      },
+      "calibrated": {
+        "n": 1000,
+        "pearson": 0.6367388146582522,
+        "spearman": 0.5397059461824175,
+        "mae": 0.048014259829568015,
+        "median_absolute_error": 0.03293872283148874,
+        "rmse": 0.06787224491767985,
+        "bias": -0.0013047503328232621,
+        "p95_absolute_error": 0.14758638060936202,
+        "p99_absolute_error": 0.22044488719175
+      },
+      "constant_reference": {
+        "n": 1000,
+        "pearson": null,
+        "spearman": null,
+        "mae": 0.0604641238078475,
+        "median_absolute_error": 0.040599822998046875,
+        "rmse": 0.08883945655130356,
+        "bias": -0.012231118477880954,
+        "p95_absolute_error": 0.1761330053210258,
+        "p99_absolute_error": 0.33199923217296595
+      },
+      "mae_reduction_fraction": 0.37090550355266294,
+      "mae_reduction_vs_constant_fraction": 0.20590497627724902,
+      "catastrophic_residual_rate": 0.004,
+      "passes": false
+    }
+  ],
+  "outliers": {
+    "train": {
+      "ear": 8,
+      "mar": 19
+    },
+    "val": {
+      "ear": 1,
+      "mar": 4
+    }
+  },
+  "selected_pose_gate": null,
+  "pose_gate_validation": [],
+  "recommendation": "CALIBRATION_NOT_RELIABLE"
+}

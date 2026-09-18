@@ -1,0 +1,9 @@
+row_type,seed,optimizer,best_epoch,final_epoch,epochs_completed,epochs_after_best,terminated_by_early_stopping,terminated_by_max_epochs,convergence_right_censored,right_censored_count,best_epoch_mean,best_epoch_std,final_epoch_mean,final_epoch_std,epochs_completed_mean,epochs_completed_std,epochs_after_best_mean,epochs_after_best_std
+seed,42,AdamW,56.0,64.0,65.0,8.0,True,False,False,,,,,,,,,
+seed,42,SGD+Momentum,45.0,53.0,54.0,8.0,True,False,False,,,,,,,,,
+seed,43,AdamW,25.0,33.0,34.0,8.0,True,False,False,,,,,,,,,
+seed,43,SGD+Momentum,38.0,46.0,47.0,8.0,True,False,False,,,,,,,,,
+seed,44,AdamW,34.0,42.0,43.0,8.0,True,False,False,,,,,,,,,
+seed,44,SGD+Momentum,57.0,65.0,66.0,8.0,True,False,False,,,,,,,,,
+aggregate,mean_std,AdamW,,,,,,,,0.0,38.333333333333336,15.947831618540913,46.333333333333336,15.947831618540913,47.333333333333336,15.947831618540913,8.0,0.0
+aggregate,mean_std,SGD+Momentum,,,,,,,,0.0,46.666666666666664,9.60902353693305,54.666666666666664,9.60902353693305,55.666666666666664,9.60902353693305,8.0,0.0

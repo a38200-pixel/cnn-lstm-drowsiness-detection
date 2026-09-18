@@ -1,0 +1,137 @@
+[SEQUENCE FEASIBILITY ANALYSIS]
+
+Best Candidate: T20-S10 | STRICT_VALID_SEQUENCE | V1 HOG_DLIB only
+sequence_length: 20; stride: 10; nominal temporal duration: 2.0 seconds at 10 Hz; theoretical overlap: 50%.
+This is a feasibility recommendation after inspecting ALL six train/val candidates, not a model-accuracy claim.
+
+Candidate Summary (each paired cell is train / val):
+Candidate | Strict sequences | Retention % | Video coverage % | Drowsy:not_drowsy count ratio
+T15-S5 | 20751 / 4423 | 79.396 / 79.010 | 95.386 / 94.534 | 0.9727 / 1.0317
+T15-S10 | 10365 / 2217 | 79.316 / 79.207 | 94.835 / 93.891 | 0.9735 / 1.0247
+T20-S5 | 19037 / 4059 | 77.123 / 76.773 | 93.526 / 92.926 | 0.9758 / 1.0387
+T20-S10 | 10088 / 2150 | 77.196 / 76.813 | 92.975 / 92.926 | 0.9796 / 1.0321
+T30-S5 | 15979 / 3410 | 73.365 / 73.098 | 88.843 / 90.032 | 0.9823 / 1.0505
+T30-S10 | 8523 / 1821 | 73.373 / 73.191 | 88.292 / 89.711 | 0.9844 / 1.0484
+
+Reason and trade-offs:
+train: 10088/13068 strict windows; 1350/1452 videos covered; 102 excluded videos.
+  vs T15-S10: +0.5 sec context costs 277 strict windows, 27 covered videos, 2.120 retention pp.
+  Despite fewer windows, T20-S10 uses 4655 more unique original frames than T15-S10 because its windows are longer and cover the regular terminal grid more fully.
+  vs T30-S10: 1 sec less context preserves 1565 strict windows and 68 videos; T30 has greater overlap and attrition.
+  vs T20-S5: loses only 8 covered videos; keeps 97.846% of unique strict-used frames.
+  Frame reuse among used frames: 3.197 -> 1.731; redundant assignments: 68.720% -> 42.243%.
+val: 2150/2799 strict windows; 289/311 videos covered; 22 excluded videos.
+  vs T15-S10: +0.5 sec context costs 67 strict windows, 3 covered videos, 2.394 retention pp.
+  Despite fewer windows, T20-S10 uses 860 more unique original frames than T15-S10 because its windows are longer and cover the regular terminal grid more fully.
+  vs T30-S10: 1 sec less context preserves 329 strict windows and 10 videos; T30 has greater overlap and attrition.
+  vs T20-S5: loses only 0 covered videos; keeps 97.965% of unique strict-used frames.
+  Frame reuse among used frames: 3.208 -> 1.735; redundant assignments: 68.829% -> 42.349%.
+
+Selected candidate class coverage (no balancing applied):
+train drowsy: 658/683 covered (96.340%); excluded=25
+train not_drowsy: 692/769 covered (89.987%); excluded=77
+val drowsy: 142/146 covered (97.260%); excluded=4
+val not_drowsy: 147/165 covered (89.091%); excluded=18
+Class coverage gaps: train=6.353 pp, val=8.169 pp. Near-balanced sequence counts do not eliminate class-dependent video exclusion.
+T15-S10 has smaller class coverage gaps (4.500 / 6.351 pp). T20 accepts this loss for another 0.5 sec of context; no accuracy benefit has been measured.
+
+Sequences per video (includes zero-sequence videos):
+train: min=0, median=9.0, mean=6.948, max=9, p5=0.0, p95=9.0; largest-video share=0.0892%; top1% share=1.338%.
+val: min=0, median=9.0, mean=6.913, max=9, p5=0.0, p95=9.0; largest-video share=0.4186%; top1% share=1.674%.
+No single video dominates by sequence count; overlapping windows are still correlated samples, not independent observations.
+
+Relaxed conditions -- analysis only:
+Candidate | Split | Strict | >=95% | >=90%
+T15-S5 | train | 20751 | 20751 | 21547
+T15-S5 | val | 4423 | 4423 | 4622
+T15-S10 | train | 10365 | 10365 | 10774
+T15-S10 | val | 2217 | 2217 | 2302
+T20-S5 | train | 19037 | 19801 | 20394
+T20-S5 | val | 4059 | 4254 | 4356
+T20-S10 | train | 10088 | 10481 | 10795
+T20-S10 | val | 2150 | 2249 | 2302
+T30-S5 | train | 15979 | 16674 | 17634
+T30-S5 | val | 3410 | 3585 | 3772
+T30-S10 | train | 8523 | 8896 | 9391
+T30-S10 | val | 1821 | 1910 | 2007
+Minimum valid counts at 95% / 90%: T15=15/14, T20=19/18, T30=29/27. T15 at 95% is identical to strict.
+
+Selected drop reasons (mutually exclusive):
+train: isolated_1_frame_NO_FACE: 481 windows (16.141% of dropped); 241 affected videos.
+train: short_failure_run_2to10: 1433 windows (48.087% of dropped); 441 affected videos.
+train: long_failure_run_gt10: 895 windows (30.034% of dropped); 203 affected videos.
+train: almost_entire_video_invalid: 171 windows (5.738% of dropped); 19 affected videos.
+val: isolated_1_frame_NO_FACE: 110 windows (16.949% of dropped); 59 affected videos.
+val: short_failure_run_2to10: 298 windows (45.917% of dropped); 91 affected videos.
+val: long_failure_run_gt10: 187 windows (28.814% of dropped); 44 affected videos.
+val: almost_entire_video_invalid: 54 windows (8.320% of dropped); 6 affected videos.
+All candidate dominant drop causes:
+T15-S5 train: short_failure_run_2to10, 2542 (47.21%).
+T15-S5 val: short_failure_run_2to10, 532 (45.28%).
+T15-S10 train: short_failure_run_2to10, 1278 (47.28%).
+T15-S10 val: short_failure_run_2to10, 267 (45.88%).
+T20-S5 train: short_failure_run_2to10, 2696 (47.74%).
+T20-S5 val: short_failure_run_2to10, 565 (46.01%).
+T20-S10 train: short_failure_run_2to10, 1433 (48.09%).
+T20-S10 val: short_failure_run_2to10, 298 (45.92%).
+T30-S5 train: short_failure_run_2to10, 2811 (48.46%).
+T30-S5 val: short_failure_run_2to10, 596 (47.49%).
+T30-S10 train: short_failure_run_2to10, 1503 (48.59%).
+T30-S10 val: short_failure_run_2to10, 315 (47.23%).
+
+Actual strict sequence overlap:
+Candidate | Split | Theoretical overlap % | Actual adjacent overlap % | Mean frame reuse | Redundant assignment %
+T15-S5 | train | 66.667 | 65.534 | 2.575 | 61.160
+T15-S5 | val | 66.667 | 65.536 | 2.576 | 61.180
+T15-S10 | train | 33.333 | 32.339 | 1.390 | 28.043
+T15-S10 | val | 33.333 | 32.294 | 1.390 | 28.041
+T20-S5 | train | 75.000 | 73.999 | 3.197 | 68.720
+T20-S5 | val | 75.000 | 74.105 | 3.208 | 68.829
+T20-S10 | train | 50.000 | 48.770 | 1.731 | 42.243
+T20-S10 | val | 50.000 | 48.925 | 1.735 | 42.349
+T30-S5 | train | 83.333 | 82.800 | 4.187 | 76.116
+T30-S5 | val | 83.333 | 82.881 | 4.180 | 76.075
+T30-S10 | train | 66.667 | 65.884 | 2.271 | 55.974
+T30-S10 | val | 66.667 | 65.975 | 2.266 | 55.867
+
+Definitions and integrity:
+Starts: 0,stride,2*stride on the ORIGINAL per-video sample axis. start_index inclusive; end_index exclusive; last_index=end_index-1. No cross-video windows, compaction, padding or partial terminal windows.
+Nominal duration T/10; first-to-last timestamp span (T-1)/10. Original source_frame_index is retained; MP4 frame increments differ from sample-axis increments.
+Drop precedence: >=90% of whole video invalid; otherwise longest FULL failure run intersecting the window (>10,2..10,1). Affected-video counts may overlap across reasons; window counts do not.
+Adjacent overlap averages successive retained windows within the same video, including nonoverlapping gaps. Reuse mean is assignments/unique-used-frames; redundancy is (assignments-unique)/assignments.
+Both A and B must consume the SAME recommended strict metadata rows. A reads original Dlib ROI; B reads the identical ROI plus raw Dlib EAR/MAR. Metadata/source flags are not learning features.
+{
+  "frozen_split_counts": {
+    "train": 1452,
+    "val": 311,
+    "test": 311
+  },
+  "video_ids_disjoint": true,
+  "test_candidate_analysis": false,
+  "test_sequence_hash_check": "NOT_PERFORMED: test windows not generated; test video IDs checked only",
+  "train_val_sampled_frames": {
+    "train": 145324,
+    "val": 31132
+  },
+  "sequence_metadata_rows": 133988,
+  "strict_rows": 102823,
+  "per_candidate_identity_duplicates": 0,
+  "per_candidate_content_duplicates": 0,
+  "per_candidate_roi_duplicates": 0,
+  "cross_split_duplicates": 0,
+  "expected_identical_windows_shared_between_candidate_policies": 35164,
+  "protected_files_unchanged": 7058,
+  "sequence_npz_written": 0,
+  "frame_compression": false,
+  "normalization": false,
+  "class_balancing": false,
+  "model_created": false
+}
+
+Hash scope: strict train/val windows, checked within each candidate. Identity hash omits split and label; content hashes omit video identity. Same windows across stride policies are expected and are counted separately. Exact hashes do not detect near-duplicate recordings or establish subject-disjoint splits.
+
+All original V1/V2 caches and earlier outputs remain unchanged. Test candidates/content hashes were not evaluated. Relaxed sequences remain descriptive only.
+No sequence tensors, Dataset, normalization, balancing, interpolation, CNN, LSTM or training created.
+
+Final Status:
+SEQUENCE_POLICY_RECOMMENDED

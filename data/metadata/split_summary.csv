@@ -1,0 +1,5 @@
+split,total_videos,drowsy_count,not_drowsy_count,drowsy_ratio,not_drowsy_ratio
+train,1452,683,769,0.470386,0.529614
+val,311,146,165,0.469453,0.530547
+test,311,146,165,0.469453,0.530547
+total,2074,975,1099,0.470106,0.529894

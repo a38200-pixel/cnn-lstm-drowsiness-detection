@@ -1,0 +1,4 @@
+seed,adamw_epochs,sgd_epochs,shared_epoch_count,mismatch_count,order_fidelity,coverage,comparison_scope
+42,65,54,54,0,PASS,PARTIAL,AdamW vs SGD within the same seed
+43,34,47,34,0,PASS,PARTIAL,AdamW vs SGD within the same seed
+44,43,66,43,0,PASS,PARTIAL,AdamW vs SGD within the same seed

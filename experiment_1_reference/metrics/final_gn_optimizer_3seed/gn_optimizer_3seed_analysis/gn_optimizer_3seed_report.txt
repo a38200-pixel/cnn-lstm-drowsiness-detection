@@ -1,0 +1,10 @@
+GN_OPTIMIZER_3SEED_MIXED
+
+Selected optimizer: None
+
+- performance, seed consistency, stability, and gap evidence do not all favor one optimizer
+
+Official rule: minimum validation loss
+Statistics: three-seed mean/std and within-seed SGD-AdamW differences
+Severe-collapse thresholds are diagnostic only and do not drive the automatic category.
+Test load/inference/metric counts: 0/0/0

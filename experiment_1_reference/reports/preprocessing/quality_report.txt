@@ -1,0 +1,73 @@
+QUALITY_REVIEW_READY
+
+YuNet은 HOG 실패 sample의 99.3%에서 Dlib landmark와 ROI/EAR/MAR feature 생성까지 성공했다.
+이 수치는 landmark spatial accuracy를 뜻하지 않는다. 사람이 판정하기 위한 자료 준비 단계이며 수동 판정은 아직 없다.
+
+대상: 기존 YuNet RESCUED_VALID 993 frame, train/val만 사용. 검출기 실행 0회.
+저장된 YuNet bbox와 source_frame_index로 기존 process_bbox()만 재실행했다.
+993개 프레임 모두 기존 EAR/MAR 재현 확인: collection_validation.json.
+HOG-valid 비교 통계는 기존 train/val audit 159,670행에서 읽었으며 새 HOG 검출이나 test 추론을 수행하지 않았다.
+
+Automatic geometry warning: 6/993 (0.6042%)
+Structural warning: 0; empirical geometry outer-fence warning: 5. 중복 가능.
+Geometry warning은 검토 우선순위 표시이다. 자동 invalid 또는 production quality gate가 아니다.
+관측한 분포의 Q1-3*IQR / Q3+3*IQR 바깥값을 보수적 geometry 검토 대상으로 표시했다.
+검사: 좌/우 눈 상대 위치, 입이 양쪽 눈보다 위인 경우, ROI 한 변 1 pixel 이하, feature point/center의 face/image boundary 이탈, landmark extent/center/ROI 분포 극단값.
+Dlib left/right는 해부학적 좌우이다. 정면 영상에서 right-eye 그룹의 x가 left-eye 그룹보다 작다.
+한 점이 face bbox 밖인 경우도 별도 soft review flag이며, detector bbox 자체는 정답 경계가 아니다.
+EAR/MAR, confidence, 데이터셋 label은 geometry warning 계산에 사용하지 않았다. EAR/MAR로 drowsy 여부를 판단하지 않았다.
+Geometry warning이 없어도 측면/가림에서 landmark가 실제 눈/입과 어긋날 수 있다.
+이미지 점검 예: fallback_0000은 한 눈 ROI가 관자놀이/머리카락에 놓였지만 geometry_warning=False였다(confidence=0.932247, EAR extreme=True).
+fallback_0188은 손으로 가려진 눈 영역에서 ROI가 생성됐으며 geometry_warning=False, extreme_ear_or_mar=False였다. 규칙 통과는 공간적 품질을 보장하지 않는다.
+이 관찰은 검토 자료의 한계를 설명하기 위한 것이며 manual_* 점수는 입력하지 않았다.
+
+EAR/MAR distribution (std: population standard deviation, ddof=0):
+EAR: min=0.110338, max=0.754673, mean=0.374031, median=0.365414, std=0.101859, p1=0.156528, p5=0.219104, p95=0.541536, p99=0.652750
+제공된 HOG-valid 기준: mean=0.3166, p1=0.1361, p99=0.4585
+제공 기준 p1~p99 밖: 210/993 (검토 표시만 적용).
+MAR: min=0.015471, max=0.892652, mean=0.333390, median=0.311878, std=0.154744, p1=0.059928, p5=0.109193, p95=0.644959, p99=0.781006
+제공된 HOG-valid 기준: mean=0.3340, p1=0.1354, p99=0.6281
+제공 기준 p1~p99 밖: 142/993 (검토 표시만 적용).
+EAR 평균/상위 꼬리는 HOG 기준보다 높다. MAR 평균은 비슷하지만 하위·상위 꼬리가 더 넓다.
+분포 차이는 자세/가림/표본 구성과 landmark 오류가 함께 영향을 줄 수 있다. 이 통계만으로 원인이나 오류율을 확정하지 않는다.
+
+Confidence별 geometry warning / extreme EAR 또는 MAR:
+[0.5,0.6): n=5, geometry=0 (0.00%), extreme=3 (60.00%)
+[0.6,0.7): n=3, geometry=0 (0.00%), extreme=0 (0.00%)
+[0.7,0.8): n=4, geometry=0 (0.00%), extreme=3 (75.00%)
+[0.8,0.9): n=92, geometry=2 (2.17%), extreme=46 (50.00%)
+[0.9,1.0]: n=889, geometry=4 (0.45%), extreme=278 (31.27%)
+confidence>=0.9에서도 geometry warning 4개, extreme EAR/MAR 278개가 있다. Confidence만으로 landmark 정확도를 보장할 수 없다.
+표본 수가 적은 confidence bucket의 비율은 불안정하다. threshold tuning은 수행하지 않았다.
+
+BBox 특성별 geometry warning:
+bbox_image_area_ratio/small_bottom_10pct: n=100, warnings=0, rate=0.00%
+bbox_image_area_ratio/p10_to_p25: n=149, warnings=0, rate=0.00%
+bbox_image_area_ratio/p25_to_p75: n=496, warnings=5, rate=1.01%
+bbox_image_area_ratio/p75_to_p90: n=148, warnings=1, rate=0.68%
+bbox_image_area_ratio/large_top_10pct: n=100, warnings=0, rate=0.00%
+bbox_aspect_ratio/tall_bottom_10pct: n=100, warnings=0, rate=0.00%
+bbox_aspect_ratio/middle_80pct: n=793, warnings=6, rate=0.76%
+bbox_aspect_ratio/wide_top_10pct: n=100, warnings=0, rate=0.00%
+boundary/clipped: n=7, warnings=0, rate=0.00%
+boundary/near_boundary_bottom_10pct_unclipped: n=99, warnings=1, rate=1.01%
+boundary/interior: n=887, warnings=5, rate=0.56%
+Small/tall/wide는 이 표본의 분위수 그룹이며 품질 컷오프가 아니다.
+near-boundary는 unclipped margin 하위 10%라는 상대적 그룹이다. 실제 clipping과 구분한다. 수치 경계: bbox_descriptive_cutpoints.json.
+그룹 간 비율은 서술 통계이다. geometry 경고가 드물면 bbox와 품질의 연관성을 안정적으로 추론할 수 없다.
+
+Manual review: 220 unique frames / images. 모든 manual_* 및 notes는 빈칸.
+분류가 겹쳐도 이미지와 manual_review 행은 하나만 생성했다. 폴더는 primary category이며 복수 선정 근거는 review_selection_manifest.csv에 기록했다.
+무작위 core 40개(seed=42) + extreme EAR/MAR 각 상하 15개 + low confidence + small/boundary bbox + 기존 side/occlusion/glasses + zero-HOG rescue + geometry warning. 나머지는 무작위 보충.
+폴더별 실제 이미지 수: {"random": 74, "low_confidence": 12, "extreme_ear": 28, "extreme_mar": 27, "geometry_warning": 6, "side_or_occlusion": 21, "zero_hog_video": 23, "small_bbox": 9, "boundary_bbox": 12, "glasses": 8}
+중복 허용 category coverage: {"random": 74, "low_confidence": 20, "extreme_ear": 30, "extreme_mar": 30, "geometry_warning": 6, "side_or_occlusion": 25, "zero_hog_video": 24, "small_bbox": 15, "boundary_bbox": 15, "glasses": 10}
+안경 사례는 기존 debug에서 육안 확인한 예시를 포함했다. 선글라스의 전체 993개 내 존재 여부를 별도로 판정하지 않았다.
+review/index 대신 outputs/fallback_quality_validation/index.html을 열면 전체 이미지와 CSV 링크를 볼 수 있다.
+검토 세트는 의도적으로 극단 사례를 포함하므로 수동 PASS/FAIL 비율도 전체 모집단 오류율로 곧바로 일반화하면 안 된다.
+
+SCRFD는 OpenCV DNN CPU wrapper를 사용했으며, 현재 구현/configuration에서 YuNet보다 낮은 rescue rate(31.4%)를 보였다.
+31.4%는 해당 비교의 feature 생성 성공률이며 SCRFD 모델 자체의 일반 성능을 뜻하지 않는다.
+
+Production audit / NPZ 2,074개: SHA-256, size, mtime 동일. 기존 comparison CSV도 변경 없음.
+전체 19,199 NO_FACE rescue 및 production quality gate 확정은 수행하지 않았다.
+다음 판단은 사람이 manual_review.csv를 작성한 뒤에 한다. 현재 자동 경고만으로 quality gate를 결정하지 않는다.

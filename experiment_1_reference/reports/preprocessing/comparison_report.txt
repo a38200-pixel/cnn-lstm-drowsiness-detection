@@ -1,0 +1,78 @@
+Recommendation: YUNET_RECOMMENDED
+해석: YuNet은 HOG 실패 sample의 99.3%에서 Dlib landmark와 ROI/EAR/MAR feature 생성까지 성공했다. Landmark spatial accuracy는 아직 검증되지 않았다.
+SCRFD는 OpenCV DNN CPU wrapper를 사용했으며, 현재 구현/configuration에서 YuNet보다 낮은 rescue rate(31.4%)를 보였다. 이 수치는 SCRFD 모델 자체의 일반적 성능을 뜻하지 않는다.
+후속 자료: outputs/fallback_quality_validation/quality_report.txt 및 manual_review.csv. 자동 geometry 경고는 검토 표시이며 production quality gate가 아니다.
+Review: For this fixed 640-input, score-0.5 CPU comparison, YuNet has 993/1000 RESCUED_VALID versus SCRFD 314/1000, with 679 YuNet-only successes and no SCRFD-only successes. Reviewed boxes surround actual driver faces; no obvious background-box pattern reverses the numerical result. The remaining full-video maximum failure run falls from 100 to 84 with sampled YuNet rescues, versus 100 for SCRFD. Absolute class rescue-rate gap is 1.4 percentage points for YuNet versus 4.4 for SCRFD. YuNet mean detector latency is 45.11 ms versus 149.58 ms and its native FaceDetectorYN integration is simpler. This recommends YuNet as the fallback candidate in the tested configuration, not automatic production-cache rescue or a guarantee of landmark accuracy.
+
+Design: seed=42; 1000 unique train/val HOG NO_FACE frames; no test inference.
+Eligible NO_FACE population: 16786. Stratified coverage sample, not prevalence-weighted.
+Strata: split x label x failure-run bucket; every zero-success train/val video represented.
+Low success means production success_ratio < 0.5; zero success means exactly 0.
+One decode per selected source_frame_index; identical ndarray passed to both detectors.
+640x640 top-left padded, aspect-preserving input; score=0.5, NMS=0.4 for both.
+OpenCV CPU, one OpenCV thread; three warmups; alternating detector order per frame.
+Timing includes resize/preprocessing/postprocessing; full rescue includes Dlib and existing ROI/EAR/MAR, excludes video decode/debug output.
+Driver selection: largest returned bbox area; YuNet/SCRFD keypoints ignored.
+RESCUED_VALID means the existing downstream checks pass; it does not verify semantic landmark accuracy.
+Run metrics apply only these 1000 rescues to the full audit sequences of sampled videos.
+Unsampled NO_FACE frames remain failures; run values are not estimates for a full fallback rollout.
+Rates reflect coverage strata and must not be extrapolated to all 19,199 NO_FACE frames.
+Debug images: first 40 per category in deterministic video/frame order, not random quality estimates.
+bbox_disagreement: both detect and selected-box IoU < 0.5.
+
+Fairness: {"same_sample_id": true, "same_source_frame_index": true, "missing_results": 0, "duplicate_results": 0, "test_samples": 0}
+Debug counts: {"both_success": 40, "yunet_only": 40, "scrfd_only": 0, "both_fail": 7, "bbox_disagreement": 0}
+Sample classes: {"drowsy": 500, "not_drowsy": 500}
+Sample splits: {"train": 505, "val": 495}
+Sample run buckets: {"2-3": 199, "isolated": 198, "6-10": 199, ">10": 205, "4-5": 199}
+Low-success samples: 251
+Zero-success samples: 24
+
+{
+  "detector": "yunet",
+  "tested_frames": 1000,
+  "face_detected": 993,
+  "detection_rate": 0.993,
+  "rescued_valid": 993,
+  "final_rescue_rate": 0.993,
+  "detector_fail": 7,
+  "landmark_fail": 0,
+  "feature_fail": 0,
+  "multiple_face_rate": 0.0,
+  "original_max_failure_run": 100,
+  "remaining_max_failure_run": 84,
+  "drowsy_rescue_rate": 1.0,
+  "not_drowsy_rescue_rate": 0.986,
+  "mean_detector_ms": 45.10829000000376,
+  "median_detector_ms": 42.54255001433194,
+  "p95_detector_ms": 57.68542491132392,
+  "mean_full_rescue_ms": 48.6579263007734,
+  "median_full_rescue_ms": 46.02464992785826,
+  "p95_full_rescue_ms": 61.33159993914887
+}
+{
+  "detector": "scrfd",
+  "tested_frames": 1000,
+  "face_detected": 314,
+  "detection_rate": 0.314,
+  "rescued_valid": 314,
+  "final_rescue_rate": 0.314,
+  "detector_fail": 686,
+  "landmark_fail": 0,
+  "feature_fail": 0,
+  "multiple_face_rate": 0.0,
+  "original_max_failure_run": 100,
+  "remaining_max_failure_run": 100,
+  "drowsy_rescue_rate": 0.336,
+  "not_drowsy_rescue_rate": 0.292,
+  "mean_detector_ms": 149.58226050133817,
+  "median_detector_ms": 143.41134997084737,
+  "p95_detector_ms": 176.99740995303728,
+  "mean_full_rescue_ms": 150.79701199999545,
+  "median_full_rescue_ms": 144.6575000300072,
+  "p95_full_rescue_ms": 178.98914490360767
+}
+
+SCRFD reference: https://github.com/deepinsight/insightface/blob/master/python-package/insightface/model_zoo/scrfd.py
+Model provenance and hashes: assets/models/model_manifest.txt
+Protected production SHA256/size/mtime equality: see production_integrity.json.

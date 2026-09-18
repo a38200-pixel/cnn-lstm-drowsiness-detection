@@ -1,0 +1,93 @@
+[FINAL DATASET PREPARATION]
+
+Sequence Policy: T=20, stride=10, sampling=10 Hz, STRICT_VALID_SEQUENCE, V1 HOG_DLIB only.
+
+TRAIN:
+Sequences: 10088; covered videos: 1350/1452; drowsy: 4992; not_drowsy: 5096
+
+VAL:
+Sequences: 2150; covered videos: 289/311; drowsy: 1092; not_drowsy: 1058
+
+TEST:
+Sequences: 2229; covered videos: 295/311; drowsy: 1058; not_drowsy: 1171
+
+Normalization (unique TRAIN strict-used frames, ddof=0):
+{
+  "source": "TRAIN_UNIQUE_HOG_DLIB_FRAMES",
+  "frame_count": 116530,
+  "sequence_length": 20,
+  "stride": 10,
+  "std_ddof": 0,
+  "ear": {
+    "mean": 0.31834560612226664,
+    "std": 0.07200157516057815
+  },
+  "mar": {
+    "mean": 0.33212707391570423,
+    "std": 0.08611524015263751
+  },
+  "unique_frame_identity_sha256": "38aa0ecb21027fa1050f2d2a90e8cd509e454d30097496c08ec23958b8375c24",
+  "fit_split": "train",
+  "geometry_order": [
+    "EAR_norm",
+    "MAR_norm"
+  ]
+}
+Runtime normalized train mean=[-2.8953090509839976e-09, 1.0958836520862079e-07], std=[0.9999999823470872, 0.9999999880692787]
+
+Visual Dataset: float32 [20,1,45,135], range [0,1], original uint8 ROI /255.
+Hybrid Dataset: same ROI plus float32 [20,2], order EAR_norm,MAR_norm.
+Batch size 8: visual [8,20,1,45,135], geometric [8,20,2], labels int64 [8].
+Label mapping: not_drowsy=0; drowsy=1. All trace metadata is separate from model input tensors.
+Default train shuffle=True, val/test=False. No weighted sampler, class duplication, balancing or augmentation.
+A/B full metadata order identical; 300 ROI/label pairs and seeded DataLoader batches identical.
+Worker-local LRU: 4 videos; cleared on process change/pickling. Returned tensors do not mutate cached arrays.
+
+Video coverage limitation (separate from sequence-count balance):
+Train: drowsy 658/683=96.340%, not_drowsy 692/769=89.987%.
+Val: drowsy 142/146=97.260%, not_drowsy 147/165=89.091%.
+Near-balanced sequence counts do not imply equal class video representation.
+
+Timestamp convention: end_index exclusive; end_timestamp/end_source_frame_index are the last included frame. window_end_timestamp is the nominal exclusive boundary.
+No frame compaction or cross-video windows; nominal context2.0s, first-to-last timestamp span1.9s.
+Test received only the previously fixed policy and integrity/smoke checks. No model metric, test evaluation or hyperparameter selection.
+
+Integrity:
+{
+  "status": "DATASET_PREPARATION_COMPLETE",
+  "metadata_windows_checked": 14467,
+  "invalid_sequence": 0,
+  "cross_video": 0,
+  "timestamp_order_violation": 0,
+  "cross_split_video_duplicate": 0,
+  "cross_split_sequence_duplicate": 0,
+  "cross_split_content_duplicate": 0,
+  "ab_metadata_records_checked": 14467,
+  "ab_roi_samples_checked": 300,
+  "ab_roi_mismatch": 0,
+  "ab_label_mismatch": 0,
+  "train_unique_frames": 116530,
+  "normalized_train_mean": [
+    -2.8953090509839976e-09,
+    1.0958836520862079e-07
+  ],
+  "normalized_train_std": [
+    0.9999999823470872,
+    0.9999999880692787
+  ],
+  "torch_version": "2.14.0+cpu",
+  "numpy_version": "2.5.2",
+  "python_executable": "C:\\Users\\AISW_203_113\\Desktop\\\uc878\uc74c\ud0d0\uc9c0\\.venv-dataset\\Scripts\\python.exe",
+  "protected_files_unchanged": 7039
+}
+
+Reproduce:
+.venv/bin/python.exe scripts/prepare_sequence_dataset.py
+.venv-dataset/Scripts/python.exe scripts/validate_sequence_dataset.py
+Dataset runtime is the separate native Windows .venv-dataset environment. Existing preprocessing .venv is unchanged.
+No sequence tensors persisted; metadata + original per-video cache only. No architecture, training loop, optimizer, scheduler or learned model created.
+
+Final Status:
+DATASET_PREPARATION_COMPLETE
+
+Determinism check: all three split CSVs, normalization_stats.json and dataset_summary.json are byte-identical after rerun. PASS.

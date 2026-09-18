@@ -1,0 +1,25 @@
+1. Experiment purpose: test whether replacing BatchNorm2d with fixed GroupNorm(4,C) reduces order-sensitive instability.
+2. Prior Controlled Train-Order result: CONTROLLED_ORDER_EFFECT_SUPPORTED.
+3. Prior BN Swap result: BN_BUFFER_EFFECT_MIXED
+4. Hypothesis: removing the BN running-statistics pathway may reduce validation oscillation.
+5. Controlled variable: BatchNorm2d -> GroupNorm only.
+6. BN architecture: Conv-BN-ReLU-Pool, channels 16/32/64.
+7. GN architecture: Conv-GroupNorm(4,C)-ReLU-Pool, channels 16/32/64.
+8. Parameter count comparison: BN=58,946; GN=58,946.
+9. Initialization audit: all comparable learned parameters exact.
+10. Train-order fidelity: all shared epochs exact.
+11. Environment / deterministic settings: inherited from frozen protocol.
+12. Training configuration: seed42, LR=.0003, AdamW, batch32, max50, val-loss selection.
+13. Official best checkpoint comparison: {"BN": {"epoch": 17, "val_loss": 0.5032928074099297, "val_accuracy": 0.7651162790697674, "val_precision": 0.801025641025641, "val_recall": 0.7152014652014652, "val_f1": 0.7556845670053217}, "GN": {"epoch": 48, "val_loss": 0.5100592832648477, "val_accuracy": 0.7558139534883721, "val_precision": 0.7617728531855956, "val_recall": 0.7554945054945055, "val_f1": 0.7586206896551724}, "BN_epochs_completed": 26, "GN_epochs_completed": 50}
+14. Full-history val-loss stability: see gn_stability_summary.csv.
+15. Full-history F1 stability: see gn_stability_summary.csv.
+16. Full-history Recall stability: see gn_stability_summary.csv.
+17. Precision-Recall oscillation: {"BN_opposite_direction_transition_count": 19, "GN_opposite_direction_transition_count": 20}
+18. Predicted-drowsy fraction: see gn_vs_bn_epoch_metrics.csv.
+19. Epoch9-13 detailed comparison: see gn_known_window_comparison.csv.
+20. Train-vs-Val gap: see gn_train_val_gap.csv.
+21. Posthoc max-F1 comparison: {"BN": {"epoch": 9, "val_f1": 0.7761327949753252}, "GN": {"epoch": 47, "val_f1": 0.7754569190600523}}
+22. Interpretation: This result describes stability under the fixed GroupNorm replacement; GroupNorm also changes feature scaling and the gradient landscape, so it cannot identify BN running statistics as a unique cause.
+23. Limitations: one seed; GN changes normalization rule and optimization landscape; no unique BN-causality claim.
+24. Final category: GN_STABILITY_MIXED
+25. Test isolation: TEST_LOAD_COUNT=0, TEST_INFERENCE_COUNT=0, TEST_METRIC_COUNT=0.

@@ -1,0 +1,285 @@
+[EAR/MAR LANDMARK FEATURE CALIBRATION]
+
+Samples: train=4000, val=1000, test=0; failed pairs=0
+Recommended: CALIBRATION_NOT_RELIABLE
+
+Validation metrics (held-out val; mapping selected by TRAIN video-group CV):
+Feature | Method | Pearson | Spearman | MAE | Median AE | RMSE | Bias
+EAR | raw | 0.2026 | 0.2212 | 0.061899 | 0.051771 | 0.082438 | 0.006799
+EAR | huber | 0.2026 | 0.2212 | 0.057732 | 0.050792 | 0.071164 | 0.008554
+EAR | constant_median | nan | nan | 0.059004 | 0.051600 | 0.073378 | 0.013994
+MAE reduction vs raw=6.73%; vs constant=2.16%; catastrophic residual=0.00%; criteria PASS=False
+MAR | raw | 0.6367 | 0.5397 | 0.076323 | 0.063249 | 0.101035 | 0.063375
+MAR | huber | 0.6367 | 0.5397 | 0.048014 | 0.032939 | 0.067872 | -0.001305
+MAR | constant_median | nan | nan | 0.060464 | 0.040600 | 0.088839 | -0.012231
+MAE reduction vs raw=37.09%; vs constant=20.59%; catastrophic residual=0.40%; criteria PASS=False
+
+Validation selected calibration by yaw:
+Yaw bin | Feature | n | Pearson | MAE | raw TD > 1 count
+0~<15 | ear | 312 | -0.0079 | 0.067436 | 0
+0~<15 | mar | 312 | 0.5915 | 0.047028 | 0
+15~<30 | ear | 532 | 0.1226 | 0.054511 | 0
+15~<30 | mar | 532 | 0.5434 | 0.042589 | 1
+30~<45 | ear | 131 | 0.1958 | 0.048266 | 0
+30~<45 | mar | 131 | 0.5544 | 0.057072 | 0
+45~<60 | ear | 20 | 0.1644 | 0.059713 | 0
+45~<60 | mar | 20 | 0.7039 | 0.115393 | 0
+>=60 | ear | 5 | -0.3592 | 0.034972 | 1
+>=60 | mar | 5 | 0.4987 | 0.179956 | 3
+
+Pitch/roll: Spearman correlation with absolute feature error (raw -> calibrated):
+pitch / ear: 0.0107 -> 0.0182
+pitch / mar: 0.1275 -> -0.0145
+roll / ear: -0.0249 -> -0.0789
+roll / mar: 0.1033 -> 0.1376
+
+Outliers (diagnostic only): {'train': {'ear': 8, 'mar': 19}, 'val': {'ear': 1, 'mar': 4}}
+Train-selected yaw gate: None
+No supported gate passed train OOF criteria.
+
+Interpretation: MAE improvement is evaluated jointly with correlation and the constant-reference baseline. A mapping that largely predicts central values cannot reconstruct frame-level dynamics.
+Scope limit: HOG-valid paired samples are a different population from HOG-failed fallback frames. No production fallback calibration is established by this sample alone.
+
+Observed EAR range compression:
+Lowest vs highest reference quintile: reference means 0.2062 vs 0.4040; calibrated means 0.3160 vs 0.3223.
+The modest aggregate EAR error reduction does not recover this frame-level reference variation.
+Outlier mechanism evidence (paired distances, normalized by the identical HOG bbox width):
+train EAR>1 n=8: median |yaw|=69.74; right-eye horizontal span Dlib=0.1148, TD=0.0249; vertical sums Dlib=0.0866, TD=0.0874.
+train MAR>1 n=19: median |yaw|=56.76; mouth horizontal span Dlib=0.2471, TD=0.1479; vertical sums Dlib=0.3640, TD=0.3520.
+val EAR>1 n=1: median |yaw|=70.96; right-eye horizontal span Dlib=0.1154, TD=0.0250; vertical sums Dlib=0.1067, TD=0.0853.
+val MAR>1 n=4: median |yaw|=70.76; mouth horizontal span Dlib=0.2155, TD=0.1029; vertical sums Dlib=0.2547, TD=0.2494.
+These paired measurements support denominator shrinkage as a contributor to large ratios. They do not establish anatomical correctness of either landmarker.
+Validation yaw >=45 has only 25 samples (>=60: 5); these tail estimates cannot establish a reliable production cutoff.
+
+{
+  "samples": {
+    "train": 4000,
+    "val": 1000,
+    "test": 0,
+    "failed_pairs": 0
+  },
+  "validation": [
+    {
+      "feature": "ear",
+      "selected": "huber",
+      "raw": {
+        "n": 1000,
+        "pearson": 0.20262023434876972,
+        "spearman": 0.22121387321387323,
+        "mae": 0.06189890848840747,
+        "median_absolute_error": 0.05177107772946554,
+        "rmse": 0.08243838458280889,
+        "bias": 0.0067992663841609105,
+        "p95_absolute_error": 0.1413027992902714,
+        "p99_absolute_error": 0.212836020912067
+      },
+      "calibrated": {
+        "n": 1000,
+        "pearson": 0.2026202343487698,
+        "spearman": 0.22121387321387323,
+        "mae": 0.057731719552911,
+        "median_absolute_error": 0.05079183641999907,
+        "rmse": 0.0711635429511743,
+        "bias": 0.008553965150223254,
+        "p95_absolute_error": 0.14093459525411217,
+        "p99_absolute_error": 0.17727458831982093
+      },
+      "constant_reference": {
+        "n": 1000,
+        "pearson": null,
+        "spearman": null,
+        "mae": 0.05900430915504694,
+        "median_absolute_error": 0.05159980058670044,
+        "rmse": 0.07337809089422538,
+        "bias": 0.013994025357067586,
+        "p95_absolute_error": 0.14767280593514442,
+        "p99_absolute_error": 0.1842101965844631
+      },
+      "mae_reduction_fraction": 0.06732249464910844,
+      "mae_reduction_vs_constant_fraction": 0.021567740057627405,
+      "catastrophic_residual_rate": 0.0,
+      "passes": false
+    },
+    {
+      "feature": "mar",
+      "selected": "huber",
+      "raw": {
+        "n": 1000,
+        "pearson": 0.6367388146582525,
+        "spearman": 0.5397059461824175,
+        "mae": 0.07632281016718034,
+        "median_absolute_error": 0.0632491435700816,
+        "rmse": 0.10103490207016616,
+        "bias": 0.06337477530618733,
+        "p95_absolute_error": 0.18477184428898205,
+        "p99_absolute_error": 0.28598066283312007
+      },
+      "calibrated": {
+        "n": 1000,
+        "pearson": 0.6367388146582522,
+        "spearman": 0.5397059461824175,
+        "mae": 0.048014259829568015,
+        "median_absolute_error": 0.03293872283148874,
+        "rmse": 0.06787224491767985,
+        "bias": -0.0013047503328232621,
+        "p95_absolute_error": 0.14758638060936202,
+        "p99_absolute_error": 0.22044488719175
+      },
+      "constant_reference": {
+        "n": 1000,
+        "pearson": null,
+        "spearman": null,
+        "mae": 0.0604641238078475,
+        "median_absolute_error": 0.040599822998046875,
+        "rmse": 0.08883945655130356,
+        "bias": -0.012231118477880954,
+        "p95_absolute_error": 0.1761330053210258,
+        "p99_absolute_error": 0.33199923217296595
+      },
+      "mae_reduction_fraction": 0.37090550355266294,
+      "mae_reduction_vs_constant_fraction": 0.20590497627724902,
+      "catastrophic_residual_rate": 0.004,
+      "passes": false
+    }
+  ],
+  "outliers": {
+    "train": {
+      "ear": 8,
+      "mar": 19
+    },
+    "val": {
+      "ear": 1,
+      "mar": 4
+    }
+  },
+  "selected_pose_gate": null,
+  "pose_gate_validation": [],
+  "recommendation": "CALIBRATION_NOT_RELIABLE"
+}
+
+Reference: existing project HOG+Dlib feature space; not anatomical ground truth.
+All 5000 original HOG-selected rectangles were reconstructed with the original pipeline; Dlib float32 EAR/MAR and uint8 ROI composite must exactly match V1 cache before inclusion.
+V1 did not save historical bbox coordinates. Fairness is checked through deterministic HOG reconstruction and exact cached feature/ROI agreement, not a comparison to a saved historical bbox.
+No YuNet used. Original inclusive HOG rectangle endpoints are passed unchanged to the two landmark paths.
+Sampling: seed42, class-balanced, round-robin across videos, EAR/MAR quintile-cell coverage; feature-enriched, not prevalence-weighted.
+Train/val source is HOG-valid frames only. This experiment does not establish transfer to HOG-failed YuNet fallback frames.
+Fitting and candidate selection use train only (5-fold video-group CV); validation is held out. Constant-median predictor is a sanity baseline, not a calibration recommendation.
+Linear scaling cannot recover lost sample ranking; a lower MAE alone does not demonstrate reliable feature alignment.
+Huber is residual-weighted IRLS (delta1.345); quantile mapping has linear tail extrapolation, without clipping.
+Recommendation criteria are exploratory operational criteria, not clinical/anatomical quality thresholds: Pearson/Spearman>=.7, MAE reduction>=20% vs raw and >=10% vs constant, catastrophic residual rate<=1%.
+Catastrophic residual means abs(error)>3*train-reference IQR for reporting only. No production gate or feature threshold applied.
+Yaw gate candidates were derived from train yaw quantiles and assessed with train OOF predictions before any validation assessment.
+Each candidate gate refits/selects simple calibration maps inside that TRAIN pose subset, then the widest jointly passing gate is eligible for held-out validation.
+
+Pose conventions: degrees, official 3DDFA camera matrix decomposition; model estimates, not measured head pose.
+https://github.com/cleardusk/3DDFA_V2/blob/1b6c67601abffc1e9f248b291708aef0e43b55ae/utils/pose.py
+Pitch/roll retain official Euler-angle convention; large angles near 180 degrees may represent branch ambiguity. No angle relabeling.
+
+Raw paired metrics:
+{'split': 'train', 'feature': 'ear', 'n': 4000, 'pearson': 0.1575930638973902, 'spearman': 0.23103815176693357, 'mae': 0.06281560015544535, 'median_absolute_error': 0.05177715780008185, 'rmse': 0.09454505931314361, 'bias': 0.002717082301029718, 'p95_absolute_error': 0.14683031267943608, 'p99_absolute_error': 0.22009220737722326}
+{'split': 'val', 'feature': 'ear', 'n': 1000, 'pearson': 0.20262023434876972, 'spearman': 0.22121387321387323, 'mae': 0.06189890848840747, 'median_absolute_error': 0.05177107772946554, 'rmse': 0.08243838458280889, 'bias': 0.0067992663841609105, 'p95_absolute_error': 0.1413027992902714, 'p99_absolute_error': 0.212836020912067}
+{'split': 'pooled_descriptive_only', 'feature': 'ear', 'n': 5000, 'pearson': 0.16454662329716035, 'spearman': 0.2289228173403366, 'mae': 0.06263226182203778, 'median_absolute_error': 0.05177715780008185, 'rmse': 0.09225091892737598, 'bias': 0.0035335191176559563, 'p95_absolute_error': 0.14602750775650353, 'p99_absolute_error': 0.21826853409849042}
+{'split': 'train', 'feature': 'mar', 'n': 4000, 'pearson': 0.6219562354896685, 'spearman': 0.5146586268916348, 'mae': 0.0792162241630839, 'median_absolute_error': 0.06294212700513238, 'rmse': 0.11037454307638397, 'bias': 0.06606438539612802, 'p95_absolute_error': 0.198377820017742, 'p99_absolute_error': 0.32652045613208475}
+{'split': 'val', 'feature': 'mar', 'n': 1000, 'pearson': 0.6367388146582525, 'spearman': 0.5397059461824175, 'mae': 0.07632281016718034, 'median_absolute_error': 0.0632491435700816, 'rmse': 0.10103490207016616, 'bias': 0.06337477530618733, 'p95_absolute_error': 0.18477184428898205, 'p99_absolute_error': 0.28598066283312007}
+{'split': 'pooled_descriptive_only', 'feature': 'mar', 'n': 5000, 'pearson': 0.6243710886113673, 'spearman': 0.5199279691021635, 'mae': 0.07863754136390318, 'median_absolute_error': 0.06304134262013322, 'rmse': 0.10857090814173954, 'bias': 0.06552646337813987, 'p95_absolute_error': 0.19574374428928307, 'p99_absolute_error': 0.3248543247541672}
+
+Train group CV:
+{'feature': 'ear', 'method': 'raw', 'n': 4000, 'pearson': 0.1575930638973902, 'spearman': 0.23103815176693357, 'mae': 0.06281560015544535, 'median_absolute_error': 0.05177715780008185, 'rmse': 0.09454505931314361, 'bias': 0.002717082301029718, 'p95_absolute_error': 0.14683031267943608, 'p99_absolute_error': 0.22009220737722326}
+{'feature': 'ear', 'method': 'linear', 'n': 4000, 'pearson': 0.14940945379451467, 'spearman': 0.2287550763419212, 'mae': 0.05799419697802642, 'median_absolute_error': 0.05142381060855164, 'rmse': 0.07130464550648416, 'bias': 2.0125048806161062e-05, 'p95_absolute_error': 0.1379296820406054, 'p99_absolute_error': 0.18007755146830703}
+{'feature': 'ear', 'method': 'huber', 'n': 4000, 'pearson': 0.15098356681831926, 'spearman': 0.22919785218230218, 'mae': 0.05784363152418257, 'median_absolute_error': 0.05099313536335623, 'rmse': 0.07139491514398773, 'bias': 0.0023590552946284706, 'p95_absolute_error': 0.1386167430144954, 'p99_absolute_error': 0.1817880024050234}
+{'feature': 'ear', 'method': 'quantile', 'n': 4000, 'pearson': 0.24297521366384706, 'spearman': 0.23085171666144402, 'mae': 0.06931638954062615, 'median_absolute_error': 0.05572290648565664, 'rmse': 0.08857064154230293, 'bias': 7.047486357611543e-06, 'p95_absolute_error': 0.1779946495486658, 'p99_absolute_error': 0.2392526203606862}
+{'feature': 'ear', 'method': 'constant_median', 'n': 4000, 'pearson': -0.01766433009318736, 'spearman': -0.019433033007138088, 'mae': 0.058215099964290855, 'median_absolute_error': 0.05076834559440613, 'rmse': 0.0724737062723744, 'bias': 0.007220678944140673, 'p95_absolute_error': 0.14482246339321128, 'p99_absolute_error': 0.19115875273942934}
+{'feature': 'mar', 'method': 'raw', 'n': 4000, 'pearson': 0.6219562354896685, 'spearman': 0.5146586268916348, 'mae': 0.0792162241630839, 'median_absolute_error': 0.06294212700513238, 'rmse': 0.11037454307638397, 'bias': 0.06606438539612802, 'p95_absolute_error': 0.198377820017742, 'p99_absolute_error': 0.32652045613208475}
+{'feature': 'mar', 'method': 'linear', 'n': 4000, 'pearson': 0.6166028353684204, 'spearman': 0.5140672436962611, 'mae': 0.05132657212156846, 'median_absolute_error': 0.03546098762609942, 'rmse': 0.07418706197212163, 'bias': 7.758528302455359e-05, 'p95_absolute_error': 0.15573362641794417, 'p99_absolute_error': 0.24618934316350224}
+{'feature': 'mar', 'method': 'huber', 'n': 4000, 'pearson': 0.6179604996001377, 'spearman': 0.5139275226245177, 'mae': 0.05130508061795279, 'median_absolute_error': 0.03563144490720643, 'rmse': 0.0743583648632723, 'bias': 0.0009031655518491947, 'p95_absolute_error': 0.15392360886665343, 'p99_absolute_error': 0.2447737259806367}
+{'feature': 'mar', 'method': 'quantile', 'n': 4000, 'pearson': 0.6102740302698715, 'spearman': 0.5142020814239315, 'mae': 0.05989117409769629, 'median_absolute_error': 0.04350470948007579, 'rmse': 0.08946960719415364, 'bias': 0.0015416653669284627, 'p95_absolute_error': 0.1695837680356965, 'p99_absolute_error': 0.28257460045838423}
+{'feature': 'mar', 'method': 'constant_median', 'n': 4000, 'pearson': 0.006385755239134911, 'spearman': 0.001806790317570282, 'mae': 0.06325367931835353, 'median_absolute_error': 0.042285069823265076, 'rmse': 0.09484637261621096, 'bias': -0.010883703069761396, 'p95_absolute_error': 0.19403249248862264, 'p99_absolute_error': 0.3174099701642989}
+
+Validation reference-range response (quintiles learned from train reference):
+{'split': 'val', 'feature': 'ear', 'train_reference_quintile': 1, 'reference_lower': np.float64(-inf), 'reference_upper': np.float64(0.25373668074607847), 'n': 220, 'reference_mean': 0.2061876784332774, 'raw_td_mean': 0.3012889243756041, 'calibrated_mean': 0.3159758713399816, 'calibrated_bias': 0.10978819290670426, 'calibrated_mae': 0.10978819290670426}
+{'split': 'val', 'feature': 'ear', 'train_reference_quintile': 2, 'reference_lower': np.float64(0.25373668074607847), 'reference_upper': np.float64(0.30443852543830874), 'n': 220, 'reference_mean': 0.2807423572648655, 'raw_td_mean': 0.31386999076766514, 'calibrated_mean': 0.3183376878327261, 'calibrated_bias': 0.03759533056786054, 'calibrated_mae': 0.03759533056786054}
+{'split': 'val', 'feature': 'ear', 'train_reference_quintile': 3, 'reference_lower': np.float64(0.30443852543830874), 'reference_upper': np.float64(0.3426626443862915), 'n': 186, 'reference_mean': 0.32400973605853256, 'raw_td_mean': 0.3187360088249321, 'calibrated_mean': 0.3192511749206646, 'calibrated_bias': -0.004758561137867967, 'calibrated_mae': 0.010569066466127012}
+{'split': 'val', 'feature': 'ear', 'train_reference_quintile': 4, 'reference_lower': np.float64(0.3426626443862915), 'reference_upper': np.float64(0.3795541226863861), 'n': 188, 'reference_mean': 0.36105004761447296, 'raw_td_mean': 0.3205470309240193, 'calibrated_mean': 0.3195911541981802, 'calibrated_bias': -0.04145889341629278, 'calibrated_mae': 0.04239961353746796}
+{'split': 'val', 'feature': 'ear', 'train_reference_quintile': 5, 'reference_lower': np.float64(0.3795541226863861), 'reference_upper': np.float64(inf), 'n': 186, 'reference_mean': 0.4039941297103, 'raw_td_mean': 0.33509301847098866, 'calibrated_mean': 0.32232184110667356, 'calibrated_bias': -0.08167228860362645, 'calibrated_mae': 0.08263640150947928}
+{'split': 'val', 'feature': 'mar', 'train_reference_quintile': 1, 'reference_lower': np.float64(-inf), 'reference_upper': np.float64(0.2750662088394165), 'n': 175, 'reference_mean': 0.22504970316376005, 'raw_td_mean': 0.3519519171356341, 'calibrated_mean': 0.3063606408055903, 'calibrated_bias': 0.08131093764183028, 'calibrated_mae': 0.08162031832582613}
+{'split': 'val', 'feature': 'mar', 'train_reference_quintile': 2, 'reference_lower': np.float64(0.2750662088394165), 'reference_upper': np.float64(0.3085754156112671), 'n': 195, 'reference_mean': 0.2923791122742188, 'raw_td_mean': 0.36077949622387057, 'calibrated_mean': 0.31162507407962386, 'calibrated_bias': 0.019245961805405047, 'calibrated_mae': 0.024547699712851534}
+{'split': 'val', 'feature': 'mar', 'train_reference_quintile': 3, 'reference_lower': np.float64(0.3085754156112671), 'reference_upper': np.float64(0.33835001587867736), 'n': 200, 'reference_mean': 0.32293655499815943, 'raw_td_mean': 0.37146617030530465, 'calibrated_mean': 0.3179982010786245, 'calibrated_bias': -0.004938353919534935, 'calibrated_mae': 0.02070222538080573}
+{'split': 'val', 'feature': 'mar', 'train_reference_quintile': 4, 'reference_lower': np.float64(0.33835001587867736), 'reference_upper': np.float64(0.3863394141197205), 'n': 233, 'reference_mean': 0.3602608085446092, 'raw_td_mean': 0.4093219190523605, 'calibrated_mean': 0.3405739334878673, 'calibrated_bias': -0.01968687505674187, 'calibrated_mae': 0.034947150850707785}
+{'split': 'val', 'feature': 'mar', 'train_reference_quintile': 5, 'reference_lower': np.float64(0.3863394141197205), 'reference_upper': np.float64(inf), 'n': 197, 'reference_mean': 0.4616343191432469, 'raw_td_mean': 0.4956020916366083, 'calibrated_mean': 0.39202815518350215, 'calibrated_bias': -0.06960616395974469, 'calibrated_mae': 0.08457244392977832}
+
+Validation all candidates:
+{'split': 'val', 'feature': 'ear', 'method': 'raw', 'n': 1000, 'pearson': 0.20262023434876972, 'spearman': 0.22121387321387323, 'mae': 0.06189890848840747, 'median_absolute_error': 0.05177107772946554, 'rmse': 0.08243838458280889, 'bias': 0.0067992663841609105, 'p95_absolute_error': 0.1413027992902714, 'p99_absolute_error': 0.212836020912067}
+{'split': 'val', 'feature': 'ear', 'method': 'linear', 'n': 1000, 'pearson': 0.20262023434876983, 'spearman': 0.22121387321387323, 'mae': 0.05784162016310675, 'median_absolute_error': 0.05176439760165866, 'rmse': 0.07105746907487837, 'bias': 0.006301481210887293, 'p95_absolute_error': 0.13897227301574924, 'p99_absolute_error': 0.17371319574966573}
+{'split': 'val', 'feature': 'ear', 'method': 'huber', 'n': 1000, 'pearson': 0.2026202343487698, 'spearman': 0.22121387321387323, 'mae': 0.057731719552911, 'median_absolute_error': 0.05079183641999907, 'rmse': 0.0711635429511743, 'bias': 0.008553965150223254, 'p95_absolute_error': 0.14093459525411217, 'p99_absolute_error': 0.17727458831982093}
+{'split': 'val', 'feature': 'ear', 'method': 'quantile', 'n': 1000, 'pearson': 0.23818609522296946, 'spearman': 0.22121387321387323, 'mae': 0.06993880753202988, 'median_absolute_error': 0.05584125823714137, 'rmse': 0.09033127907375982, 'bias': 0.0019263309347319956, 'p95_absolute_error': 0.17791964017347117, 'p99_absolute_error': 0.25443717059815374}
+{'split': 'val', 'feature': 'ear', 'method': 'constant_median', 'n': 1000, 'pearson': nan, 'spearman': nan, 'mae': 0.05900430915504694, 'median_absolute_error': 0.05159980058670044, 'rmse': 0.07337809089422538, 'bias': 0.013994025357067586, 'p95_absolute_error': 0.14767280593514442, 'p99_absolute_error': 0.1842101965844631}
+{'split': 'val', 'feature': 'mar', 'method': 'raw', 'n': 1000, 'pearson': 0.6367388146582525, 'spearman': 0.5397059461824175, 'mae': 0.07632281016718034, 'median_absolute_error': 0.0632491435700816, 'rmse': 0.10103490207016616, 'bias': 0.06337477530618733, 'p95_absolute_error': 0.18477184428898205, 'p99_absolute_error': 0.28598066283312007}
+{'split': 'val', 'feature': 'mar', 'method': 'linear', 'n': 1000, 'pearson': 0.6367388146582525, 'spearman': 0.5397059461824175, 'mae': 0.047927612027508656, 'median_absolute_error': 0.032277873666187507, 'rmse': 0.06798126993057345, 'bias': -0.002072286882640338, 'p95_absolute_error': 0.14565618647211248, 'p99_absolute_error': 0.22039881858056476}
+{'split': 'val', 'feature': 'mar', 'method': 'huber', 'n': 1000, 'pearson': 0.6367388146582522, 'spearman': 0.5397059461824175, 'mae': 0.048014259829568015, 'median_absolute_error': 0.03293872283148874, 'rmse': 0.06787224491767985, 'bias': -0.0013047503328232621, 'p95_absolute_error': 0.14758638060936202, 'p99_absolute_error': 0.22044488719175}
+{'split': 'val', 'feature': 'mar', 'method': 'quantile', 'n': 1000, 'pearson': 0.6318128614736815, 'spearman': 0.5397059461824175, 'mae': 0.057593510025647145, 'median_absolute_error': 0.04186978524811799, 'rmse': 0.07807242311885738, 'bias': -0.001743033530743383, 'p95_absolute_error': 0.1608109863186908, 'p99_absolute_error': 0.23637221180733367}
+{'split': 'val', 'feature': 'mar', 'method': 'constant_median', 'n': 1000, 'pearson': nan, 'spearman': nan, 'mae': 0.0604641238078475, 'median_absolute_error': 0.040599822998046875, 'rmse': 0.08883945655130356, 'bias': -0.012231118477880954, 'p95_absolute_error': 0.1761330053210258, 'p99_absolute_error': 0.33199923217296595}
+
+Pose error relationships:
+{'split': 'train', 'axis': 'yaw', 'feature': 'ear', 'raw_error_spearman': -0.013301024894437541, 'calibrated_error_spearman': -0.048901008621105274, 'min': 0.0056664956994091735, 'median': 19.609809240591137, 'p95': 38.09957950897129, 'max': 74.66208442688415}
+{'split': 'train', 'axis': 'yaw', 'feature': 'mar', 'raw_error_spearman': 0.20638361659615023, 'calibrated_error_spearman': 0.12316090229707953, 'min': 0.0056664956994091735, 'median': 19.609809240591137, 'p95': 38.09957950897129, 'max': 74.66208442688415}
+{'split': 'val', 'axis': 'yaw', 'feature': 'ear', 'raw_error_spearman': -0.04547267747267748, 'calibrated_error_spearman': -0.15590089190089193, 'min': 0.08062016447148238, 'median': 18.830639727902806, 'p95': 36.84037601591574, 'max': 71.12730012441101}
+{'split': 'val', 'axis': 'yaw', 'feature': 'mar', 'raw_error_spearman': 0.19190350790350794, 'calibrated_error_spearman': 0.06091657291657292, 'min': 0.08062016447148238, 'median': 18.830639727902806, 'p95': 36.84037601591574, 'max': 71.12730012441101}
+{'split': 'train', 'axis': 'pitch', 'feature': 'ear', 'raw_error_spearman': 0.03316993501062094, 'calibrated_error_spearman': 0.07097830756114422, 'min': 0.0003290335146895682, 'median': 4.187953474028085, 'p95': 18.467524793137564, 'max': 120.73527988013008}
+{'split': 'train', 'axis': 'pitch', 'feature': 'mar', 'raw_error_spearman': 0.1450173521885845, 'calibrated_error_spearman': 0.06457114172319635, 'min': 0.0003290335146895682, 'median': 4.187953474028085, 'p95': 18.467524793137564, 'max': 120.73527988013008}
+{'split': 'val', 'axis': 'pitch', 'feature': 'ear', 'raw_error_spearman': 0.010732186732186733, 'calibrated_error_spearman': 0.01818175818175818, 'min': 0.0008088159116658734, 'median': 4.181957816797605, 'p95': 17.66528416776692, 'max': 51.229718911460004}
+{'split': 'val', 'axis': 'pitch', 'feature': 'mar', 'raw_error_spearman': 0.1275011235011235, 'calibrated_error_spearman': -0.014505146505146506, 'min': 0.0008088159116658734, 'median': 4.181957816797605, 'p95': 17.66528416776692, 'max': 51.229718911460004}
+{'split': 'train', 'axis': 'roll', 'feature': 'ear', 'raw_error_spearman': -0.07498449712403106, 'calibrated_error_spearman': -0.055582685911417865, 'min': 0.000641913082226834, 'median': 4.0742667636355065, 'p95': 12.781436832248284, 'max': 168.15190107768905}
+{'split': 'train', 'axis': 'roll', 'feature': 'mar', 'raw_error_spearman': 0.1326340466646279, 'calibrated_error_spearman': 0.11769254929328433, 'min': 0.000641913082226834, 'median': 4.0742667636355065, 'p95': 12.781436832248284, 'max': 168.15190107768905}
+{'split': 'val', 'axis': 'roll', 'feature': 'ear', 'raw_error_spearman': -0.024944100944100947, 'calibrated_error_spearman': -0.07891851091851093, 'min': 0.013747416679426099, 'median': 3.565548430177015, 'p95': 12.44531458764691, 'max': 101.36975698351925}
+{'split': 'val', 'axis': 'roll', 'feature': 'mar', 'raw_error_spearman': 0.10333011133011134, 'calibrated_error_spearman': 0.1375947415947416, 'min': 0.013747416679426099, 'median': 3.565548430177015, 'p95': 12.44531458764691, 'max': 101.36975698351925}
+
+Validation yaw bins:
+{'split': 'val', 'axis': 'yaw', 'bin': '0~<15', 'feature': 'ear', 'method': 'raw', 'n': 312, 'pearson': -0.007924103320988975, 'spearman': 0.0460461381996572, 'mae': 0.0640613516274867, 'median_absolute_error': 0.058593932166601775, 'rmse': 0.07948982424252152, 'bias': 0.009061167601120069, 'p95_absolute_error': 0.1403520657111771, 'p99_absolute_error': 0.18972665164172797, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.003205128205128205}
+{'split': 'val', 'axis': 'yaw', 'bin': '0~<15', 'feature': 'ear', 'method': 'huber', 'n': 312, 'pearson': -0.00792410332098914, 'spearman': 0.0460461381996572, 'mae': 0.06743618248634511, 'median_absolute_error': 0.058735685190234366, 'rmse': 0.0823543109451553, 'bias': 0.031235135393701388, 'p95_absolute_error': 0.15634459342008183, 'p99_absolute_error': 0.1931211227214365, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '0~<15', 'feature': 'mar', 'method': 'raw', 'n': 312, 'pearson': 0.5914534556519279, 'spearman': 0.4671221009772239, 'mae': 0.07022822047288428, 'median_absolute_error': 0.060100650503559866, 'rmse': 0.08966347452247554, 'bias': 0.05219507497690028, 'p95_absolute_error': 0.16228308531065092, 'p99_absolute_error': 0.21108183537820593, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.009615384615384616}
+{'split': 'val', 'axis': 'yaw', 'bin': '0~<15', 'feature': 'mar', 'method': 'huber', 'n': 312, 'pearson': 0.5914534556519274, 'spearman': 0.4671221009772239, 'mae': 0.047027869757662766, 'median_absolute_error': 0.03412442306005117, 'rmse': 0.0633782073128543, 'bias': -0.006951338450823088, 'p95_absolute_error': 0.12521070973626, 'p99_absolute_error': 0.1805429368626861, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '15~<30', 'feature': 'ear', 'method': 'raw', 'n': 532, 'pearson': 0.12257895427427731, 'spearman': 0.10246177022356828, 'mae': 0.05586712179532863, 'median_absolute_error': 0.049828899096485524, 'rmse': 0.06791206120297855, 'bias': -0.009889550165769662, 'p95_absolute_error': 0.13130553206030915, 'p99_absolute_error': 0.15296599437035324, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '15~<30', 'feature': 'ear', 'method': 'huber', 'n': 532, 'pearson': 0.12257895427427766, 'spearman': 0.10246177022356828, 'mae': 0.05451074309870186, 'median_absolute_error': 0.04935347339792201, 'rmse': 0.06655009473379624, 'bias': -0.001936604749068152, 'p95_absolute_error': 0.12891911845102466, 'p99_absolute_error': 0.1558223523761489, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '15~<30', 'feature': 'mar', 'method': 'raw', 'n': 532, 'pearson': 0.5434305867546287, 'spearman': 0.5089789658814483, 'mae': 0.06802042426169863, 'median_absolute_error': 0.05691891582092787, 'rmse': 0.08721735652486617, 'bias': 0.05808208669286049, 'p95_absolute_error': 0.17979059372441575, 'p99_absolute_error': 0.24857239170880854, 'td_gt_1_count': 1, 'td_gt_1_rate': 0.0018796992481203006, 'catastrophic_residual_rate': 0.007518796992481203}
+{'split': 'val', 'axis': 'yaw', 'bin': '15~<30', 'feature': 'mar', 'method': 'huber', 'n': 532, 'pearson': 0.5434305867546287, 'spearman': 0.5089789658814483, 'mae': 0.04258932637853713, 'median_absolute_error': 0.03019101064821611, 'rmse': 0.06019539976552002, 'bias': 0.0002525808396744066, 'p95_absolute_error': 0.13387816273608785, 'p99_absolute_error': 0.18930100672809702, 'td_gt_1_count': 1, 'td_gt_1_rate': 0.0018796992481203006, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '30~<45', 'feature': 'ear', 'method': 'raw', 'n': 131, 'pearson': 0.19581913027370743, 'spearman': 0.22238296055089946, 'mae': 0.05459625167163066, 'median_absolute_error': 0.05091710443910252, 'rmse': 0.07063682361013583, 'bias': 0.03244711762087573, 'p95_absolute_error': 0.15802019717496607, 'p99_absolute_error': 0.1993575284830737, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '30~<45', 'feature': 'ear', 'method': 'huber', 'n': 131, 'pearson': 0.19581913027370704, 'spearman': 0.22238296055089946, 'mae': 0.048265643681280265, 'median_absolute_error': 0.04090530329679848, 'rmse': 0.06085323440044663, 'bias': -0.0008797374397581451, 'p95_absolute_error': 0.11986187056461467, 'p99_absolute_error': 0.16750262158318105, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '30~<45', 'feature': 'mar', 'method': 'raw', 'n': 131, 'pearson': 0.5543843890118115, 'spearman': 0.5935728393743661, 'mae': 0.10517981747681358, 'median_absolute_error': 0.10155013013868935, 'rmse': 0.12334868017919658, 'bias': 0.09404361299022437, 'p95_absolute_error': 0.22164202296186034, 'p99_absolute_error': 0.2923504008005764, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.03816793893129771}
+{'split': 'val', 'axis': 'yaw', 'bin': '30~<45', 'feature': 'mar', 'method': 'huber', 'n': 131, 'pearson': 0.5543843890118115, 'spearman': 0.5935728393743661, 'mae': 0.05707176629078494, 'median_absolute_error': 0.042593804150755143, 'rmse': 0.07894191703633231, 'bias': 0.013435923290006497, 'p95_absolute_error': 0.17887455337505115, 'p99_absolute_error': 0.257525693193816, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.015267175572519083}
+{'split': 'val', 'axis': 'yaw', 'bin': '45~<60', 'feature': 'ear', 'method': 'raw', 'n': 20, 'pearson': 0.1643868332430098, 'spearman': 0.12932330827067667, 'mae': 0.13471611796113103, 'median_absolute_error': 0.13503301566268122, 'rmse': 0.1595976834902178, 'bias': 0.1319411857577818, 'p95_absolute_error': 0.30373431241678644, 'p99_absolute_error': 0.32480968211091954, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.05}
+{'split': 'val', 'axis': 'yaw', 'bin': '45~<60', 'feature': 'ear', 'method': 'huber', 'n': 20, 'pearson': 0.1643868332430095, 'spearman': 0.12932330827067667, 'mae': 0.059712679555788926, 'median_absolute_error': 0.05319254845715443, 'rmse': 0.06908398843182224, 'bias': -0.008042572847666537, 'p95_absolute_error': 0.13016868732661585, 'p99_absolute_error': 0.14044195384476926, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '45~<60', 'feature': 'mar', 'method': 'raw', 'n': 20, 'pearson': 0.7038978683413637, 'spearman': 0.7157894736842104, 'mae': 0.10336043627416473, 'median_absolute_error': 0.09858232010014761, 'rmse': 0.13265898329620288, 'bias': 0.07457768168011794, 'p95_absolute_error': 0.27643885807549157, 'p99_absolute_error': 0.33858843482972945, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.1}
+{'split': 'val', 'axis': 'yaw', 'bin': '45~<60', 'feature': 'mar', 'method': 'huber', 'n': 20, 'pearson': 0.7038978683413641, 'spearman': 0.7157894736842104, 'mae': 0.11539310595943968, 'median_absolute_error': 0.11748655937823227, 'rmse': 0.13932540783408584, 'bias': -0.09183823559845838, 'p95_absolute_error': 0.2149117413575753, 'p99_absolute_error': 0.293545342303383, 'td_gt_1_count': 0, 'td_gt_1_rate': 0.0, 'catastrophic_residual_rate': 0.05}
+{'split': 'val', 'axis': 'yaw', 'bin': '>=60', 'feature': 'ear', 'method': 'raw', 'n': 5, 'pearson': -0.35919033363430725, 'spearman': -0.19999999999999998, 'mae': 0.4688053314621107, 'median_absolute_error': 0.40759435642667463, 'rmse': 0.4915289554508379, 'bias': 0.4688053314621107, 'p95_absolute_error': 0.6949256284393087, 'p99_absolute_error': 0.7416962217493992, 'td_gt_1_count': 1, 'td_gt_1_rate': 0.2, 'catastrophic_residual_rate': 1.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '>=60', 'feature': 'ear', 'method': 'huber', 'n': 5, 'pearson': -0.35919033363430775, 'spearman': -0.19999999999999998, 'mae': 0.03497247505968938, 'median_absolute_error': 0.015407586127179518, 'rmse': 0.04785455983439387, 'bias': 0.02299473909086479, 'p95_absolute_error': 0.08278110722186484, 'p99_absolute_error': 0.08828622163982332, 'td_gt_1_count': 1, 'td_gt_1_rate': 0.2, 'catastrophic_residual_rate': 0.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '>=60', 'feature': 'mar', 'method': 'raw', 'n': 5, 'pearson': 0.4986556377210113, 'spearman': 0.6, 'mae': 0.4757949714941835, 'median_absolute_error': 0.4442741846419156, 'rmse': 0.5114181009053476, 'bias': 0.4757949714941835, 'p95_absolute_error': 0.7214777643329001, 'p99_absolute_error': 0.7387694100074341, 'td_gt_1_count': 3, 'td_gt_1_rate': 0.6, 'catastrophic_residual_rate': 1.0}
+{'split': 'val', 'axis': 'yaw', 'bin': '>=60', 'feature': 'mar', 'method': 'huber', 'n': 5, 'pearson': 0.4986556377210113, 'spearman': 0.6, 'mae': 0.1799558657027705, 'median_absolute_error': 0.21557285675724724, 'rmse': 0.21028820988177335, 'bias': 0.16127060362101475, 'p95_absolute_error': 0.3187482175777589, 'p99_absolute_error': 0.33773940238113914, 'td_gt_1_count': 3, 'td_gt_1_rate': 0.6, 'catastrophic_residual_rate': 0.2}
+
+Outlier geometry:
+{'split': 'train', 'feature': 'ear', 'group': 'td_gt_1', 'count': 8, 'abs_yaw_median': 69.7418560113071, 'abs_pitch_median': 13.346587614580631, 'abs_roll_median': 8.499134690714168, 'bbox_aspect_ratio_median': 1.0018726591760299, 'dlib_ear_median': 0.37357835471630096, 'td_ear_median': 1.4182123571422114, 'dlib_left_eye_horizontal_bbox_fraction_median': 0.14549220136810603, 'dlib_left_eye_vertical_sum_bbox_fraction_median': 0.08583198405657239, 'td_left_eye_horizontal_bbox_fraction_median': 0.08316492945905556, 'td_left_eye_vertical_sum_bbox_fraction_median': 0.0847226655355601, 'dlib_right_eye_horizontal_bbox_fraction_median': 0.11476305314697194, 'dlib_right_eye_vertical_sum_bbox_fraction_median': 0.08664506817606374, 'td_right_eye_horizontal_bbox_fraction_median': 0.024853980592811777, 'td_right_eye_vertical_sum_bbox_fraction_median': 0.08735360718268215}
+{'split': 'train', 'feature': 'ear', 'group': 'td_le_1', 'count': 3992, 'abs_yaw_median': 19.59931964078533, 'abs_pitch_median': 4.185817481510155, 'abs_roll_median': 4.068371529402007, 'bbox_aspect_ratio_median': 1.0, 'dlib_ear_median': 0.32433538138866425, 'td_ear_median': 0.30678313619359243, 'dlib_left_eye_horizontal_bbox_fraction_median': 0.1499998831048748, 'dlib_left_eye_vertical_sum_bbox_fraction_median': 0.09667370081036497, 'td_left_eye_horizontal_bbox_fraction_median': 0.14389711446509462, 'td_left_eye_vertical_sum_bbox_fraction_median': 0.08801981741863804, 'dlib_right_eye_horizontal_bbox_fraction_median': 0.1588785046728972, 'dlib_right_eye_vertical_sum_bbox_fraction_median': 0.09624429602015687, 'td_right_eye_horizontal_bbox_fraction_median': 0.15064430593766984, 'td_right_eye_vertical_sum_bbox_fraction_median': 0.0894643027168138}
+{'split': 'train', 'feature': 'mar', 'group': 'td_gt_1', 'count': 19, 'abs_yaw_median': 56.75764030359095, 'abs_pitch_median': 19.214593924217834, 'abs_roll_median': 7.349724711573245, 'bbox_aspect_ratio_median': 1.0, 'dlib_mar_median': 0.6790531873703003, 'td_mar_median': 1.3409695948473972, 'dlib_mouth_horizontal_bbox_fraction_median': 0.24707015649717573, 'dlib_mouth_vertical_sum_bbox_fraction_median': 0.3640163856573504, 'td_mouth_horizontal_bbox_fraction_median': 0.14793240627321025, 'td_mouth_vertical_sum_bbox_fraction_median': 0.3520196038592537}
+{'split': 'train', 'feature': 'mar', 'group': 'td_le_1', 'count': 3981, 'abs_yaw_median': 19.58798873701343, 'abs_pitch_median': 4.151840105505401, 'abs_roll_median': 4.0613492075202196, 'bbox_aspect_ratio_median': 1.0, 'dlib_mar_median': 0.32341834902763367, 'td_mar_median': 0.3754252727122278, 'dlib_mouth_horizontal_bbox_fraction_median': 0.315011657572534, 'dlib_mouth_vertical_sum_bbox_fraction_median': 0.2044542360080767, 'td_mouth_horizontal_bbox_fraction_median': 0.3132687648622085, 'td_mouth_vertical_sum_bbox_fraction_median': 0.2355806776205874}
+{'split': 'val', 'feature': 'ear', 'group': 'td_gt_1', 'count': 1, 'abs_yaw_median': 70.96067810158083, 'abs_pitch_median': 23.0946394051851, 'abs_roll_median': 23.009524948707234, 'bbox_aspect_ratio_median': 1.0, 'dlib_ear_median': 0.38310450315475464, 'td_ear_median': 1.1364933732316764, 'dlib_left_eye_horizontal_bbox_fraction_median': 0.16925953529228815, 'dlib_left_eye_vertical_sum_bbox_fraction_median': 0.10299254176887164, 'td_left_eye_horizontal_bbox_fraction_median': 0.07308344888253455, 'td_left_eye_vertical_sum_bbox_fraction_median': 0.08267692426399134, 'dlib_right_eye_horizontal_bbox_fraction_median': 0.11543306737475953, 'dlib_right_eye_vertical_sum_bbox_fraction_median': 0.10665198060084714, 'td_right_eye_horizontal_bbox_fraction_median': 0.024994516161898284, 'td_right_eye_vertical_sum_bbox_fraction_median': 0.0853489262640336}
+{'split': 'val', 'feature': 'ear', 'group': 'td_le_1', 'count': 999, 'abs_yaw_median': 18.809947499279392, 'abs_pitch_median': 4.164588004092817, 'abs_roll_median': 3.565327631375016, 'bbox_aspect_ratio_median': 1.0, 'dlib_ear_median': 0.31955596804618835, 'td_ear_median': 0.30629073737019, 'dlib_left_eye_horizontal_bbox_fraction_median': 0.15034178831169664, 'dlib_left_eye_vertical_sum_bbox_fraction_median': 0.09420579190249402, 'td_left_eye_horizontal_bbox_fraction_median': 0.14385972232004626, 'td_left_eye_vertical_sum_bbox_fraction_median': 0.08893836551677038, 'dlib_right_eye_horizontal_bbox_fraction_median': 0.1591531436067888, 'dlib_right_eye_vertical_sum_bbox_fraction_median': 0.09387932560795878, 'td_right_eye_horizontal_bbox_fraction_median': 0.15175271388231507, 'td_right_eye_vertical_sum_bbox_fraction_median': 0.08996184880999403}
+{'split': 'val', 'feature': 'mar', 'group': 'td_gt_1', 'count': 4, 'abs_yaw_median': 70.7559436039094, 'abs_pitch_median': 34.35873350413836, 'abs_roll_median': 33.55027989775981, 'bbox_aspect_ratio_median': 1.0, 'dlib_mar_median': 0.574179083108902, 'td_mar_median': 1.1427389204652627, 'dlib_mouth_horizontal_bbox_fraction_median': 0.21546998222711522, 'dlib_mouth_vertical_sum_bbox_fraction_median': 0.2546515757795429, 'td_mouth_horizontal_bbox_fraction_median': 0.10291175380182502, 'td_mouth_vertical_sum_bbox_fraction_median': 0.24942797684810747}
+{'split': 'val', 'feature': 'mar', 'group': 'td_le_1', 'count': 996, 'abs_yaw_median': 18.788673080482113, 'abs_pitch_median': 4.159984300184025, 'abs_roll_median': 3.5537327781326002, 'bbox_aspect_ratio_median': 1.0, 'dlib_mar_median': 0.32622136175632477, 'td_mar_median': 0.3748372504843488, 'dlib_mouth_horizontal_bbox_fraction_median': 0.31240960534269835, 'dlib_mouth_vertical_sum_bbox_fraction_median': 0.20567292222520966, 'td_mouth_horizontal_bbox_fraction_median': 0.31297605933308165, 'td_mouth_vertical_sum_bbox_fraction_median': 0.23467910522248223}
+
+Largest paired TD features:
+{'feature': 'ear', 'sample_id': 'train_n_681_f73', 'split': 'train', 'video_id': 'n_681', 'source_frame_index': '73', 'dlib_ear': '0.31874603033065796', 'td_ear': '2.169785040378973', 'yaw': '71.94225052166385', 'pitch': '-0.42630229167138006', 'roll': '-4.707990345599215', 'bbox_x': '111', 'bbox_y': '350', 'bbox_width': '268', 'bbox_height': '267'}
+{'feature': 'ear', 'sample_id': 'train_n_627_f36', 'split': 'train', 'video_id': 'n_627', 'source_frame_index': '36', 'dlib_ear': '0.35927996039390564', 'td_ear': '1.698544689285123', 'yaw': '-74.66208442688415', 'pitch': '17.152914130803982', 'roll': '14.983729105443214', 'bbox_x': '349', 'bbox_y': '409', 'bbox_width': '268', 'bbox_height': '267'}
+{'feature': 'ear', 'sample_id': 'train_n_681_f12', 'split': 'train', 'video_id': 'n_681', 'source_frame_index': '12', 'dlib_ear': '0.35243818163871765', 'td_ear': '1.6515492790454191', 'yaw': '70.52975333248861', 'pitch': '2.132516324315938', 'roll': '-7.749693728945527', 'bbox_x': '111', 'bbox_y': '350', 'bbox_width': '268', 'bbox_height': '267'}
+{'feature': 'ear', 'sample_id': 'train_n_314_f15', 'split': 'train', 'video_id': 'n_314', 'source_frame_index': '15', 'dlib_ear': '0.40000537037849426', 'td_ear': '1.6340007450585852', 'yaw': '-73.05674953068427', 'pitch': '-19.863639418199593', 'roll': '-27.697845400703184', 'bbox_x': '538', 'bbox_y': '638', 'bbox_width': '223', 'bbox_height': '223'}
+{'feature': 'ear', 'sample_id': 'train_d_500_f177', 'split': 'train', 'video_id': 'd_500', 'source_frame_index': '177', 'dlib_ear': '0.40298065543174744', 'td_ear': '1.2024239692258374', 'yaw': '68.95395869012562', 'pitch': '-22.80236983087298', 'roll': '25.285408194523427', 'bbox_x': '92', 'bbox_y': '390', 'bbox_width': '223', 'bbox_height': '223'}
+{'feature': 'mar', 'sample_id': 'train_d_49_f213', 'split': 'train', 'video_id': 'd_49', 'source_frame_index': '213', 'dlib_mar': '0.8348551988601685', 'td_mar': '2.0923510050144962', 'yaw': '-56.75764030359095', 'pitch': '-23.431471714010126', 'roll': '-26.198894519819326', 'bbox_x': '375', 'bbox_y': '247', 'bbox_width': '385', 'bbox_height': '385'}
+{'feature': 'mar', 'sample_id': 'train_d_49_f237', 'split': 'train', 'video_id': 'd_49', 'source_frame_index': '237', 'dlib_mar': '1.0834455490112305', 'td_mar': '1.889030373844247', 'yaw': '-55.27035117981618', 'pitch': '-32.068069161529', 'roll': '-29.691032386804288', 'bbox_x': '375', 'bbox_y': '247', 'bbox_width': '385', 'bbox_height': '385'}
+{'feature': 'mar', 'sample_id': 'train_d_76_f54', 'split': 'train', 'video_id': 'd_76', 'source_frame_index': '54', 'dlib_mar': '0.6413286328315735', 'td_mar': '1.6752846562124601', 'yaw': '-31.25383493663628', 'pitch': '-22.980283861323734', 'roll': '-5.937761747074864', 'bbox_x': '76', 'bbox_y': '247', 'bbox_width': '385', 'bbox_height': '385'}
+{'feature': 'mar', 'sample_id': 'train_d_76_f78', 'split': 'train', 'video_id': 'd_76', 'source_frame_index': '78', 'dlib_mar': '0.9068776369094849', 'td_mar': '1.5437479681050896', 'yaw': '-30.189188392709013', 'pitch': '-25.19069389547698', 'roll': '-6.758913680937278', 'bbox_x': '76', 'bbox_y': '247', 'bbox_width': '385', 'bbox_height': '385'}
+{'feature': 'mar', 'sample_id': 'train_n_314_f15', 'split': 'train', 'video_id': 'n_314', 'source_frame_index': '15', 'dlib_mar': '0.6907188892364502', 'td_mar': '1.440133932689413', 'yaw': '-73.05674953068427', 'pitch': '-19.863639418199593', 'roll': '-27.697845400703184', 'bbox_x': '538', 'bbox_y': '638', 'bbox_width': '223', 'bbox_height': '223'}
+EAR/MAR divide vertical distances by horizontal landmark spans. Smaller projected horizontal spans can amplify finite ratios; see measured geometry, not a claim of a single causal source.
+
+Original V1/V2 caches, audits, comparisons and manual review SHA256 hashes unchanged.
+No production modification, clipping, filtering, normalization, interpolation, sequences or model training.
+
+Recommended:
+CALIBRATION_NOT_RELIABLE

@@ -1,0 +1,116 @@
+[FINAL FALLBACK PREPROCESSING V2]
+
+Cache:
+{
+  "videos": 2074,
+  "train": 1452,
+  "val": 311,
+  "test": 311,
+  "valid_npz": 2074,
+  "invalid_npz": 0,
+  "missing": 0,
+  "duplicate": 0,
+  "corrupt": 0,
+  "array_length_mismatch": 0,
+  "original_valid_preserved": 188381,
+  "time_axis_exact": true,
+  "protected_files_unchanged": 2812,
+  "resume_all_reused_verified": true
+}
+
+Metric | V1 | V2
+Valid frames | 188381 | 207264
+Invalid frames | 19199 | 316
+Overall success rate (%) | 90.751036 | 99.847770
+Drowsy success rate (%) | 93.610574 | 99.993857
+Not-drowsy success rate (%) | 88.209603 | 99.717933
+Class success gap (pp) | 5.400971 | 0.275924
+>10 frame failure runs | 452 | 7
+Max consecutive failure frames | 100 | 36
+100% success videos | 1205 | 2037
+<80% success videos | 318 | 4
+
+Fallback:
+{
+  "total_sampled_frames": 207580,
+  "original_hog_valid": 188381,
+  "fallback_attempted": 19199,
+  "yunet_detected": 18883,
+  "td_feature_valid": 18883,
+  "fallback_rescued": 18883,
+  "remaining_invalid": 316,
+  "success_frames": 207264,
+  "failure_frames": 316,
+  "overall_success_rate_percent": 99.84776953463725,
+  "NOT_NEEDED": 188381,
+  "RESCUED_VALID": 18883,
+  "YUNET_FAIL": 316
+}
+
+Split:
+{'group': 'split:train', 'videos': 1452, 'sampled_frames': 145324, 'v1_valid': 131570, 'v2_valid': 145164, 'attempted': 13754, 'detected': 13594, 'rescued': 13594, 'v1_invalid': 13754, 'v2_invalid': 160, 'v1_success_rate_percent': 90.5356307285789, 'v2_success_rate_percent': 99.88990118631472, 'improvement_percentage_point': 9.354270457735819}
+{'group': 'split:val', 'videos': 311, 'sampled_frames': 31132, 'v1_valid': 28100, 'v2_valid': 31006, 'attempted': 3032, 'detected': 2906, 'rescued': 2906, 'v1_invalid': 3032, 'v2_invalid': 126, 'v1_success_rate_percent': 90.26082487472696, 'v2_success_rate_percent': 99.59527174611333, 'improvement_percentage_point': 9.334446871386355}
+{'group': 'split:test', 'videos': 311, 'sampled_frames': 31124, 'v1_valid': 28711, 'v2_valid': 31094, 'attempted': 2413, 'detected': 2383, 'rescued': 2383, 'v1_invalid': 2413, 'v2_invalid': 30, 'v1_success_rate_percent': 92.24714047037656, 'v2_success_rate_percent': 99.90361136100758, 'improvement_percentage_point': 7.656470890631025}
+
+Temporal maximum (frames, worst video, seconds):
+{'V1': (100, 'd_61', 10.0), 'V2': (36, 'n_82', 3.6)}
+Run bins:
+{'version': 'V1', 'bin': '1', 'count': 1384, 'affected_videos': 587}
+{'version': 'V1', 'bin': '2~3', 'count': 915, 'affected_videos': 454}
+{'version': 'V1', 'bin': '4~5', 'count': 380, 'affected_videos': 271}
+{'version': 'V1', 'bin': '6~10', 'count': 465, 'affected_videos': 325}
+{'version': 'V1', 'bin': '>10', 'count': 452, 'affected_videos': 312}
+{'version': 'V2', 'bin': '1', 'count': 26, 'affected_videos': 19}
+{'version': 'V2', 'bin': '2~3', 'count': 14, 'affected_videos': 9}
+{'version': 'V2', 'bin': '4~5', 'count': 11, 'affected_videos': 10}
+{'version': 'V2', 'bin': '6~10', 'count': 10, 'affected_videos': 9}
+{'version': 'V2', 'bin': '>10', 'count': 7, 'affected_videos': 7}
+
+Original zero-HOG videos:
+{'video_id': 'd_61', 'split': 'train', 'label': 'drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'd_62', 'split': 'train', 'label': 'drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_678', 'split': 'train', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_830', 'split': 'train', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_879', 'split': 'train', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_61', 'split': 'val', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_877', 'split': 'val', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+{'video_id': 'n_682', 'split': 'test', 'label': 'not_drowsy', 'sampled_frames': 100, 'v1_valid': 0, 'v2_valid': 100, 'v2_invalid': 0, 'v2_success_rate_percent': 100.0}
+
+Feature Distribution:
+{'source_method': 'ALL_VALID', 'feature': 'ear', 'count': 207264, 'min': 0.021423835307359695, 'max': 19.130958557128906, 'mean': 0.3379813845544595, 'median': 0.3265603631734848, 'std': 0.20173670579099287, 'p1': 0.13838423237204553, 'p5': 0.18968883901834488, 'p95': 0.43710286319255826, 'p99': 1.045355086326599}
+{'source_method': 'ALL_VALID', 'feature': 'mar', 'count': 207264, 'min': 0.011891287751495838, 'max': 59.47456359863281, 'mean': 0.3718481906510641, 'median': 0.33099550008773804, 'std': 0.41869601814316837, 'p1': 0.13896572306752206, 'p5': 0.20714814066886902, 'p95': 0.558377614617346, 'p99': 1.0788610696792578}
+{'source_method': 'HOG_DLIB', 'feature': 'ear', 'count': 188381, 'min': 0.021423835307359695, 'max': 0.6803752183914185, 'mean': 0.3165583120494493, 'median': 0.3250959515571594, 'std': 0.0724313708539859, 'p1': 0.13608373403549195, 'p5': 0.1860365867614746, 'p95': 0.4200183153152466, 'p99': 0.4584979593753815}
+{'source_method': 'HOG_DLIB', 'feature': 'mar', 'count': 188381, 'min': 0.011891287751495838, 'max': 1.4871423244476318, 'mean': 0.33404435735097315, 'median': 0.3242303133010864, 'std': 0.08984742363349991, 'p1': 0.1353996366262436, 'p5': 0.20132818818092346, 'p95': 0.49329009652137756, 'p99': 0.6280622959136971}
+{'source_method': 'YUNET_3DDFA', 'feature': 'ear', 'count': 18883, 'min': 0.10755857825279236, 'max': 19.130958557128906, 'mean': 0.5517027117570394, 'median': 0.3365817070007324, 'std': 0.5866117214573393, 'p1': 0.26965531170368195, 'p5': 0.29668094515800475, 'p95': 1.4740508675575255, 'p99': 2.836466374397278}
+{'source_method': 'YUNET_3DDFA', 'feature': 'mar', 'count': 18883, 'min': 0.14927449822425842, 'max': 59.47456359863281, 'mean': 0.7489876240517119, 'median': 0.4778209924697876, 'std': 1.298913531545629, 'p1': 0.3046382063627243, 'p5': 0.3411447435617447, 'p95': 1.7879041671752924, 'p99': 5.705097637176515}
+{'feature': 'ear', 'absolute_mean_difference_in_hog_std': 3.2464441434032327, 'td_to_hog_std_ratio': 8.098862613547483, 'warning': 'FEATURE_DISTRIBUTION_SHIFT'}
+{'feature': 'mar', 'absolute_mean_difference_in_hog_std': 4.618310129774559, 'td_to_hog_std_ratio': 14.456881221704, 'warning': 'FEATURE_DISTRIBUTION_SHIFT'}
+Reporting flag only: absolute mean difference >= 0.5 HOG standard deviations OR TD/HOG std ratio outside (0.5, 2). No feature changes or filtering.
+Source groups contain different frames/poses; distribution differences cannot isolate the landmark-model effect.
+
+Performance:
+{
+  "fallback_attempted_frames": 19199,
+  "workers": 4,
+  "total_fallback_elapsed_wall_seconds": 923.5997247999464,
+  "aggregate_fallback_compute_seconds": 2320.7195129992906,
+  "aggregate_decode_seconds": 1036.9775434953626,
+  "yunet_mean_ms": 101.54055826396217,
+  "td_landmark_mean_ms": 18.490216739660237,
+  "full_fallback_mean_ms": 120.87710365119489,
+  "decode_plus_fallback_mean_ms": 174.88916383637968,
+  "estimated_added_compute_ms_per_all_sampled_frame": 11.17988010887027
+}
+Wall time includes worker startup, source seeking/decoding, copying, compressed NPZ writes and validation. Aggregate compute is summed across workers.
+The interrupted first session includes preflight; its wall time is retained. Per-frame means use completed cache entries, excluding discarded partial work.
+TD mean includes crop, inference and sparse68 restoration; fallback mean adds detection, ROI and EAR/MAR but excludes MP4 decode.
+Estimated additional compute is fallback mean * 19199 / 207580, not end-to-end deployment wall latency.
+
+Configuration: existing YuNet CPU score=0.5 NMS=0.4 padded640 largest bbox; ThreeDDFA68 CPU sparse68; no FaceBoxes.
+Topology RIGHT=36:42 LEFT=42:48 MOUTH=48:68; margins eye=.30 mouth=.20; ROI45x45; composite LEFT|RIGHT|MOUTH45x135.
+source_method and fallback_status are audit metadata, excluded from future model inputs.
+V1 valid arrays and all time-axis values preserved byte-for-byte. All original protected file SHA256 values unchanged.
+No HOG/Dlib rerun, EAR/MAR normalization, threshold-based selection, manual labels, interpolation, sequences or training.
+
+Final Status:
+FALLBACK_PREPROCESSING_COMPLETE

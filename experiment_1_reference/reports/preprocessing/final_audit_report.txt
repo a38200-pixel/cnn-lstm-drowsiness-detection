@@ -1,0 +1,11 @@
+[FINAL PREPROCESSING AUDIT]
+Dataset Integrity: videos=2074, frame_rows=207580, manifest=2074, npz=2074, missing=0, unexpected=0, duplicates=0
+Cache Validation: valid=2074, invalid=0, corrupt=0
+Overall: success=188381, failure=19199, success_rate=0.907510
+Failure Reasons: NO_FACE=19199
+Quality: 100%=1205, 99~<100%=81, 95~<99%=164, 90~<95%=141, 80~<90%=165, <80%=318
+Consecutive: max=100 frames / 10.0s, video=d_61
+n_253 runs: [(0.800000011920929, 5), (4.0, 2), (5.400000095367432, 7), (7.300000190734863, 2), (7.599999904632568, 1), (8.300000190734863, 1), (8.5, 1), (8.699999809265137, 7), (9.5, 5)]
+Storage: total_bytes=373514722, avg_bytes=180093.9, min_bytes=3667, max_bytes=315701
+Performance: unavailable (full run was resumed and has no persisted wall-clock timing).
+Final Status: PREPROCESSING_AUDIT_COMPLETE

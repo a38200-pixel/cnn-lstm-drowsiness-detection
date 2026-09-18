@@ -1,0 +1,373 @@
+1. 분석 목적
+고정된 video label을 상속한 2초 sequence의 weak-label/label granularity mismatch 가능성을 진단한다. 재학습 및 label 수정 없음.
+2. Original video label vs sequence label
+10 Hz, T20, stride10; sequence label은 video label을 상속한다. 모든 inference는 Validation-only.
+3. 사용 checkpoint
+outputs/training/model_a/seed_42/best_checkpoint.pt
+outputs/training/model_a/seed_43/best_checkpoint.pt
+outputs/training/model_a/seed_44/best_checkpoint.pt
+outputs/training/model_b/seed_42/best_checkpoint.pt
+outputs/training/model_b/seed_43/best_checkpoint.pt
+outputs/training/model_b/seed_44/best_checkpoint.pt
+4. Validation-only / Test isolation 및 coverage
+{
+  "original_videos": 311,
+  "evaluable_videos": 289,
+  "no_valid_sequence_videos": 22,
+  "evaluable_classes": {
+    "not_drowsy": 147,
+    "drowsy": 142
+  }
+}
+원본 311개를 inventory에 모두 포함했으나, 22개(drowsy 4 / not_drowsy 18)는 고정 strict sequence가 없다. 311개 전수 video metric 계산은 불가능하다.
+Video 지표 분모는 289개(142 drowsy / 147 not_drowsy)이며, 누락 영상을 임의 예측하거나 sequence를 새로 만들지 않았다.
+NO_VALID_SEQUENCE 행은 probability/prediction이 비어 있다. 이 coverage 제한 때문에 요청한 무조건적 COMPLETE 조건을 충족했다고 표시하지 않는다.
+model.eval(), inference_mode, shuffle=False, batch32, FP32; model/BN hash unchanged, gradient=0. Test load/inference/metric/aggregation=0.
+5. Sequence-level metric 재현
+6/6 PASS; 기존 checkpoint 선택 epoch의 history/summary loss와 classification metrics atol=1e-6, confusion counts exact.
+6. Video aggregation
+Mean probability >=0.5; no threshold search
+Majority ties predict drowsy; median >=0.5
+Secondary 방법은 descriptive comparison만 수행하며 성능을 보고 공식 방법을 재선택하지 않았다.
+7. Sequence vs Video metric
+Run | Seq Acc | Video Acc | Seq F1 | Video F1 | F1 delta(pp)
+model_a/42 | 0.735349 | 0.723183 | 0.741950 | 0.727891 | -1.406
+model_a/43 | 0.760930 | 0.782007 | 0.762477 | 0.780488 | +1.801
+model_a/44 | 0.700930 | 0.702422 | 0.733306 | 0.736196 | +0.289
+model_b/42 | 0.775349 | 0.782007 | 0.784855 | 0.790698 | +0.584
+model_b/43 | 0.745116 | 0.768166 | 0.716062 | 0.737255 | +2.119
+model_b/44 | 0.713953 | 0.730104 | 0.709769 | 0.719424 | +0.966
+8. 3-seed aggregate (mean ± sample std, ddof=1)
+model_a
+sequence_accuracy: 0.732403 ± 0.030108
+video_accuracy: 0.735871 ± 0.041281
+sequence_f1: 0.745911 ± 0.014984
+video_f1: 0.748192 ± 0.028276
+f1_delta: 0.002281 ± 0.016044
+mixed_prediction_video_rate: 0.277970 ± 0.024549
+model_b
+sequence_accuracy: 0.744806 ± 0.030699
+video_accuracy: 0.760092 ± 0.026877
+sequence_f1: 0.736895 ± 0.041653
+video_f1: 0.749126 ± 0.037090
+f1_delta: 0.012230 ± 0.007992
+mixed_prediction_video_rate: 0.265283 ± 0.046979
+9. Within-video consistency
+model_a_42 label=all: consistent=201, mixed=88/289 (30.45%), opposite-label prediction present in 130 videos
+model_a_42 label=0: consistent=100, mixed=47/147 (31.97%), opposite-label prediction present in 70 videos
+model_a_42 label=1: consistent=101, mixed=41/142 (28.87%), opposite-label prediction present in 60 videos
+model_a_43 label=all: consistent=215, mixed=74/289 (25.61%), opposite-label prediction present in 116 videos
+model_a_43 label=0: consistent=108, mixed=39/147 (26.53%), opposite-label prediction present in 58 videos
+model_a_43 label=1: consistent=107, mixed=35/142 (24.65%), opposite-label prediction present in 58 videos
+model_a_44 label=all: consistent=210, mixed=79/289 (27.34%), opposite-label prediction present in 134 videos
+model_a_44 label=0: consistent=96, mixed=51/147 (34.69%), opposite-label prediction present in 89 videos
+model_a_44 label=1: consistent=114, mixed=28/142 (19.72%), opposite-label prediction present in 45 videos
+model_b_42 label=all: consistent=214, mixed=75/289 (25.95%), opposite-label prediction present in 117 videos
+model_b_42 label=0: consistent=106, mixed=41/147 (27.89%), opposite-label prediction present in 68 videos
+model_b_42 label=1: consistent=108, mixed=34/142 (23.94%), opposite-label prediction present in 49 videos
+model_b_43 label=all: consistent=225, mixed=64/289 (22.15%), opposite-label prediction present in 109 videos
+model_b_43 label=0: consistent=126, mixed=21/147 (14.29%), opposite-label prediction present in 34 videos
+model_b_43 label=1: consistent=99, mixed=43/142 (30.28%), opposite-label prediction present in 75 videos
+model_b_44 label=all: consistent=198, mixed=91/289 (31.49%), opposite-label prediction present in 137 videos
+model_b_44 label=0: consistent=100, mixed=47/147 (31.97%), opposite-label prediction present in 66 videos
+model_b_44 label=1: consistent=98, mixed=44/142 (30.99%), opposite-label prediction present in 71 videos
+10. Drowsy video prediction fraction distribution; pooled video-seed observations, not independent videos; distribution std ddof=0
+model_a: {"n": 426, "mean": 0.7668315448245024, "std": 0.36501820167048543, "median": 1.0, "q25": 0.6666666666666666, "q75": 1.0, "min": 0.0, "max": 1.0}
+model_b: {"n": 426, "mean": 0.7117184589015575, "std": 0.3922047524128338, "median": 1.0, "q25": 0.4444444444444444, "q75": 1.0, "min": 0.0, "max": 1.0}
+11. Not-drowsy video prediction fraction distribution; pooled video-seed observations, not independent videos; distribution std ddof=0
+model_a: {"n": 441, "mean": 0.32644422848504484, "std": 0.40185213071940157, "median": 0.0, "q25": 0.0, "q75": 0.7142857142857143, "min": 0.0, "max": 1.0}
+model_b: {"n": 441, "mean": 0.22773638555951484, "std": 0.3618079891317453, "median": 0.0, "q25": 0.0, "q75": 0.3333333333333333, "min": 0.0, "max": 1.0}
+12. Probability dispersion (within-video std ddof=0; single-sequence video std=0)
+model_a label=all: std={"n": 867, "mean": 0.06830726117951755, "std": 0.062476659127469296, "median": 0.05024945158760316, "q25": 0.021840829753044154, "q75": 0.09605893796391952, "min": 0.0, "max": 0.353579634782493}; range={"n": 867, "mean": 0.19989860269275006, "std": 0.17825351345589244, "median": 0.14820162951946259, "q25": 0.06774431467056274, "q75": 0.28548674285411835, "min": 0.0, "max": 0.9106159880757332}; entropy={"n": 867, "mean": 0.48361080655824085, "std": 0.17847602584015734, "median": 0.5430553845367235, "q25": 0.367714722635645, "q75": 0.6308126694140755, "min": 0.0029615632140852586, "max": 0.6930250931714272}
+model_a label=0: std={"n": 441, "mean": 0.0708935797277339, "std": 0.06159709042102347, "median": 0.05434047119450973, "q25": 0.02699121020509387, "q75": 0.095983532482065, "min": 0.0, "max": 0.3403298063372835}; range={"n": 441, "mean": 0.20511218871745227, "std": 0.17493627086596428, "median": 0.15314941108226776, "q25": 0.0767093300819397, "q75": 0.2783021032810211, "min": 0.0, "max": 0.8445518761873245}; entropy={"n": 441, "mean": 0.5036568545489368, "std": 0.17643448158253008, "median": 0.5614985342166265, "q25": 0.42302913868837333, "q75": 0.6404665357725152, "min": 0.0029615632140852586, "max": 0.6930250931714272}
+model_a label=1: std={"n": 426, "mean": 0.06562987507678653, "std": 0.0632630540515444, "median": 0.04458668694968164, "q25": 0.01699056281770254, "q75": 0.097265835611804, "min": 0.0, "max": 0.353579634782493}; range={"n": 426, "mean": 0.19450143969534708, "std": 0.18146602272497794, "median": 0.13883817195892334, "q25": 0.051974356174468994, "q75": 0.2877044379711151, "min": 0.0, "max": 0.9106159880757332}; entropy={"n": 426, "mean": 0.4628589118073092, "std": 0.178205318563398, "median": 0.5185486067386014, "q25": 0.3290803877917573, "q75": 0.6151190797549714, "min": 0.03160201582566932, "max": 0.6898422508431629}
+model_b label=all: std={"n": 867, "mean": 0.07687246700945448, "std": 0.0714336366923048, "median": 0.053252216527308036, "q25": 0.024533802439540585, "q75": 0.10809521963408403, "min": 0.0, "max": 0.3460187286045926}; range={"n": 867, "mean": 0.22417675582098537, "std": 0.20080513172471803, "median": 0.1592060625553131, "q25": 0.07444709539413452, "q75": 0.32037348952144384, "min": 0.0, "max": 0.8941050916910172}; entropy={"n": 867, "mean": 0.4494322643319114, "std": 0.18341341366954492, "median": 0.5014410043945033, "q25": 0.32742108297624223, "q75": 0.5987439132329326, "min": 0.0057363691427151356, "max": 0.6929923418708235}
+model_b label=0: std={"n": 441, "mean": 0.07518958675903428, "std": 0.06765458615729628, "median": 0.056018107866550954, "q25": 0.024370076490450362, "q75": 0.10770507440989122, "min": 0.0, "max": 0.3460187286045926}; range={"n": 441, "mean": 0.2171313739843696, "std": 0.19046038580685454, "median": 0.1723564714193344, "q25": 0.07293554209172726, "q75": 0.31030723452568054, "min": 0.0, "max": 0.800101101398468}; entropy={"n": 441, "mean": 0.4574000997246336, "std": 0.18528581760056168, "median": 0.5274484689083045, "q25": 0.3539790712652743, "q75": 0.5969609102121792, "min": 0.0057363691427151356, "max": 0.6853026612808707}
+model_b label=1: std={"n": 426, "mean": 0.07861460360672047, "std": 0.07510610376958933, "median": 0.04828550546866639, "q25": 0.02478056384812133, "q75": 0.10938660454593006, "min": 0.0, "max": 0.341057467326294}; range={"n": 426, "mean": 0.23147021448283409, "std": 0.21073249072983893, "median": 0.15236058831214905, "q25": 0.07667327299714088, "q75": 0.35260314820334315, "min": 0.0, "max": 0.8941050916910172}; entropy={"n": 426, "mean": 0.4411838713549385, "std": 0.18108578178355655, "median": 0.4722593243202445, "q25": 0.302147470119108, "q75": 0.6050209279056541, "min": 0.02443599249653667, "max": 0.6929923418708235}
+13. Temporal position
+Center of [start_timestamp, window_end_timestamp) / original duration; 3 equal bins; video-balanced within bin; paired early-late only videos present in both
+Bin 단순 비교는 coverage 차이의 영향을 받으므로 early/late가 모두 있는 같은 영상의 차이도 계산했다. Seed별 drowsy 121개, not_drowsy 117개가 paired 대상이다.
+{
+  "model_a_42": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.018002959100948783,
+        "std": 0.1327291317522427,
+        "median": 0.012691477934519524,
+        "q25": -0.04268084218104681,
+        "q75": 0.06545904278755188,
+        "min": -0.4913766086101532,
+        "max": 0.5276141601304214
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.03699605350610967,
+        "std": 0.12733247488049806,
+        "median": 0.011017004648844475,
+        "q25": -0.01387295126914978,
+        "q75": 0.09412195285161329,
+        "min": -0.4717011166115602,
+        "max": 0.31740454832712817
+      }
+    }
+  ],
+  "model_a_43": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.005499036619230763,
+        "std": 0.17005222908149972,
+        "median": 0.00047628034371882677,
+        "q25": -0.04089177648226422,
+        "q75": 0.04974718391895294,
+        "min": -0.6068626673271259,
+        "max": 0.5889246463775635
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.03088872668335917,
+        "std": 0.14682068701549597,
+        "median": 0.012882749239603752,
+        "q25": -0.008275608221689823,
+        "q75": 0.08515783150990808,
+        "min": -0.6053428513308365,
+        "max": 0.5411526213089625
+      }
+    }
+  ],
+  "model_a_44": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.013220659284679982,
+        "std": 0.14540388318795233,
+        "median": 0.00682830810546875,
+        "q25": -0.060858527819315555,
+        "q75": 0.07800828417142225,
+        "min": -0.4944263100624084,
+        "max": 0.489951362212499
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.013164556305598952,
+        "std": 0.11596256377236358,
+        "median": 0.006095568339030022,
+        "q25": -0.03663392861684156,
+        "q75": 0.060501585404078184,
+        "min": -0.47402561704317725,
+        "max": 0.4281660318374634
+      }
+    }
+  ],
+  "model_b_42": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.010293803469641425,
+        "std": 0.16080466814538016,
+        "median": 0.0003681182861328125,
+        "q25": -0.04288792610168457,
+        "q75": 0.07329062620798749,
+        "min": -0.42674849430720013,
+        "max": 0.5817203372716904
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.04426734295696759,
+        "std": 0.1535552899562569,
+        "median": 0.011693358421325684,
+        "q25": -0.022552907466888428,
+        "q75": 0.07951527833938599,
+        "min": -0.47933138161897665,
+        "max": 0.5840250998735428
+      }
+    }
+  ],
+  "model_b_43": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.0025604098103774653,
+        "std": 0.14998311697956043,
+        "median": 0.00041641791661584104,
+        "q25": -0.047318694492181124,
+        "q75": 0.049534191687901824,
+        "min": -0.4866931500534217,
+        "max": 0.6694392710924149
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.03425972036935245,
+        "std": 0.16937356068408713,
+        "median": 0.011097937822341919,
+        "q25": -0.03097256024678552,
+        "q75": 0.07792208716273308,
+        "min": -0.49378039439519245,
+        "max": 0.6197113494078318
+      }
+    }
+  ],
+  "model_b_44": [
+    {
+      "true_label": 0,
+      "late_minus_early_same_video": {
+        "n": 117,
+        "mean": 0.008487082736571968,
+        "std": 0.15060791040118438,
+        "median": 0.00788350380025804,
+        "q25": -0.03746958076953888,
+        "q75": 0.06852519325911999,
+        "min": -0.7519966724018257,
+        "max": 0.3929112702608108
+      }
+    },
+    {
+      "true_label": 1,
+      "late_minus_early_same_video": {
+        "n": 121,
+        "mean": 0.011061449968782007,
+        "std": 0.15708252815758605,
+        "median": 0.00545336802800489,
+        "q25": -0.044443686803182,
+        "q75": 0.06928835312525428,
+        "min": -0.5851329366366068,
+        "max": 0.4019483526547749
+      }
+    }
+  ]
+}
+14. Model A vs Model B
+{
+  "0": {
+    "predicted_drowsy_fraction_b_minus_a": {
+      "n": 441,
+      "mean": -0.09870784292552999,
+      "std": 0.2847615686326023,
+      "median": 0.0,
+      "q25": -0.14285714285714285,
+      "q75": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    "mean_drowsy_probability_b_minus_a": {
+      "n": 441,
+      "mean": -0.057910323101889385,
+      "std": 0.1344984554233145,
+      "median": -0.04405227489769459,
+      "q25": -0.1331590861082077,
+      "q75": 0.01859842571947312,
+      "min": -0.52733699646261,
+      "max": 0.46201709657907486
+    },
+    "std_drowsy_probability_b_minus_a": {
+      "n": 441,
+      "mean": 0.004296007031300391,
+      "std": 0.060141421220833456,
+      "median": 0.001065522185796895,
+      "q25": -0.021622602380137516,
+      "q75": 0.029874634407272165,
+      "min": -0.18471194905566946,
+      "max": 0.23471222473877973
+    },
+    "probability_range_b_minus_a": {
+      "n": 441,
+      "mean": 0.012019185266917351,
+      "std": 0.1651019378178971,
+      "median": 0.0005175934929866344,
+      "q25": -0.06569927930831909,
+      "q75": 0.09397193789482117,
+      "min": -0.5970704555511475,
+      "max": 0.6166059821844101
+    }
+  },
+  "1": {
+    "predicted_drowsy_fraction_b_minus_a": {
+      "n": 426,
+      "mean": -0.05511308592294508,
+      "std": 0.25946349287380344,
+      "median": 0.0,
+      "q25": 0.0,
+      "q75": 0.0,
+      "min": -1.0,
+      "max": 1.0
+    },
+    "mean_drowsy_probability_b_minus_a": {
+      "n": 426,
+      "mean": -0.019868776686497915,
+      "std": 0.14663857510913242,
+      "median": -0.012000696526633381,
+      "q25": -0.09933778674652176,
+      "q75": 0.05618251001255381,
+      "min": -0.5183441191911697,
+      "max": 0.5563967440809523
+    },
+    "std_drowsy_probability_b_minus_a": {
+      "n": 426,
+      "mean": 0.012984728529933941,
+      "std": 0.0647739287569085,
+      "median": 0.005156741036582844,
+      "q25": -0.018171193414816322,
+      "q75": 0.03711315053401274,
+      "min": -0.19580082781783054,
+      "max": 0.30705278199920727
+    },
+    "probability_range_b_minus_a": {
+      "n": 426,
+      "mean": 0.036968774787487,
+      "std": 0.18179536319621137,
+      "median": 0.018694937229156494,
+      "q25": -0.05722180847078562,
+      "q75": 0.10585344210267067,
+      "min": -0.5362935438752174,
+      "max": 0.7921558022499084
+    }
+  }
+}
+B의 평균 probability std/range는 A보다 크지만 전체 mixed class rate는 B가 낮다. 확률 변동과 0.5 경계를 넘는 class 변동은 다르다. EAR/MAR 민감도가 원인이라고 단정하지 않는다.
+15. Label ambiguity hypothesis evidence
+Video F1 improvement is small: A +0.228 +/- 1.604 pp, B +1.223 +/- 0.799 pp; only 5/6 runs improve and A42 declines. Mixed predictions occur in 27.80% (A) and 26.53% (B) of evaluable videos, indicating real model prediction inconsistency, but most videos remain class-consistent. Mean within-video probability std is 0.0683/0.0769 and range is 0.1999/0.2242, with some large outliers. Drowsy same-video late-minus-early probability averages only +2.70/+2.99 pp; this is a modest shift, not a general alert-to-drowsy transition. Wide predicted fraction distributions also include consistently misclassified videos. Taken together, evidence that label granularity mismatch is a major cause is WEAK, not evidence that no local ambiguity exists. Coverage is limited to 289/311 videos; smoothing, model errors and weighting changes remain alternatives.
+16. Alternative explanations
+Video-level performance improvement alone does not prove sequence-level label noise.
+Ensemble/smoothing, 상관된 sequence 예측의 평균, random error cancellation, 모델 자체의 오류로도 같은 현상이 나타날 수 있다.
+Sequence 지표는 sequence마다, video 지표는 video마다 동일 가중치를 부여하므로 영상별 sequence 개수와 class 비율의 영향도 달라진다. 평가 대상이 289/311개로 제한되는 선택 편향도 남는다.
+Sequence는 중첩되어 독립 표본이 아니다. 3개 seed의 반복도 독립적인 추가 영상이 아니다. Validation으로 checkpoint를 선택했으므로 독립적인 최종 평가가 아니다.
+넓은 predicted fraction 분포에는 영상 간 난이도 차이와 일관된 오예측도 포함된다. Mixed prediction 및 확률 변동은 실제 생리 상태 변화나 잘못된 label을 직접 보여주지 않는다.
+17. 최종 판단
+LABEL_GRANULARITY_MISMATCH_EVIDENCE_WEAK
+현재 instability의 주요 원인을 label granularity mismatch로 귀속할 근거는 제한적이다. Optimization stability는 후속 진단 후보일 뿐 이번 분석으로 원인임이 증명되지 않았다. 추가 실험은 수행하지 않았다.
+Integrity:
+{
+  "validation_sequence_metric_reproduced": "PASS",
+  "model_state_unchanged": "PASS",
+  "bn_state_unchanged": "PASS",
+  "gradient_created": 0,
+  "existing_files_unchanged": "PASS",
+  "test_load": 0,
+  "test_inference": 0,
+  "test_metric": 0,
+  "test_aggregation": 0
+}
+Warnings:
+["22 original validation videos have no fixed strict sequence; no prediction assigned."]
+Status: LABEL_AMBIGUITY_DIAGNOSTIC_COMPLETE_WITH_COVERAGE_LIMITATION
