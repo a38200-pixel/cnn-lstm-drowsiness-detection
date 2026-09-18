@@ -1,0 +1,94 @@
+STEP 2-C YuNet Landmark ROI Margin Audit
+
+[Scope]
+Source frames: 160
+YuNet success frames: 157
+Unique videos: 32
+Test split used: False
+
+[Margin Candidates]
+RAW=0%, M05=5%, M10=10%, M15=15% (width/height independently, no forced square)
+
+[RAW]
+Dlib68 success: 157/157
+Geometry valid: 157/157
+EAR valid: 157/157
+MAR valid: 157/157
+Head Pose success: 157/157
+ROI clipped: 0/157
+Dlib+feature mean latency: 3.959661146854258 ms
+
+[M05]
+Dlib68 success: 157/157
+Geometry valid: 157/157
+EAR valid: 157/157
+MAR valid: 157/157
+Head Pose success: 157/157
+ROI clipped: 157/157
+Dlib+feature mean latency: 3.8429968171029287 ms
+
+[M10]
+Dlib68 success: 157/157
+Geometry valid: 157/157
+EAR valid: 157/157
+MAR valid: 157/157
+Head Pose success: 157/157
+ROI clipped: 155/157
+Dlib+feature mean latency: 3.8020592364541903 ms
+
+[M15]
+Dlib68 success: 157/157
+Geometry valid: 157/157
+EAR valid: 157/157
+MAR valid: 157/157
+Head Pose success: 157/157
+ROI clipped: 157/157
+Dlib+feature mean latency: 3.741575794844669 ms
+
+[Geometry]
+후보별 geometry valid rate는 위 후보 표를 참조하십시오.
+
+[EAR]
+raw_m05 absolute difference: median=0.03673796077392058 p95=0.2127801367532262
+raw_m10 absolute difference: median=0.08405307036014098 p95=0.2850864024889943
+raw_m15 absolute difference: median=0.09615429772176076 p95=0.3091879387259435
+m05_m10 absolute difference: median=0.050468964811099415 p95=0.2453828590710578
+m10_m15 absolute difference: median=0.06289244611943912 p95=0.2047564754403292
+
+[MAR]
+raw_m05 absolute difference: median=0.035328213449209146 p95=0.4591832146397276
+raw_m10 absolute difference: median=0.10921873968259085 p95=0.545451336136038
+raw_m15 absolute difference: median=0.15521890915326536 p95=0.4581660840448784
+m05_m10 absolute difference: median=0.1138375990838785 p95=0.5811960485425226
+m10_m15 absolute difference: median=0.1299974522998525 p95=0.48797977252008334
+
+[Head Pose]
+raw_m05 circular difference: pitch=2.4970674934278065 yaw=1.9536581310089787 roll=1.0890244624612535 (median degrees)
+raw_m10 circular difference: pitch=3.874614206063427 yaw=2.748200279837505 roll=2.42717669372027 (median degrees)
+raw_m15 circular difference: pitch=6.159953745057891 yaw=6.4638206128739455 roll=5.649728183245088 (median degrees)
+m05_m10 circular difference: pitch=3.3358452382316557 yaw=3.1230490076666797 roll=2.095200983339879 (median degrees)
+m10_m15 circular difference: pitch=4.594258174626219 yaw=3.709456710079735 roll=4.07453644814106 (median degrees)
+
+[ROI Boundary]
+RAW clipped: 0/157
+M05 clipped: 157/157
+M10 clipped: 155/157
+M15 clipped: 157/157
+
+[Latency]
+RAW Dlib+feature: mean=3.959661146854258 median=3.9158000145107508 p95=4.2146199790295205 ms
+M05 Dlib+feature: mean=3.8429968171029287 median=3.8133000198286027 p95=4.13042000727728 ms
+M10 Dlib+feature: mean=3.8020592364541903 median=3.7561000208370388 p95=4.142079962184652 ms
+M15 Dlib+feature: mean=3.741575794844669 median=3.673800005344674 p95=4.197799979010597 ms
+
+[Visual Review]
+Review samples: 35
+Manual CSV: roi_margin_manual_review.csv
+
+[Decision]
+WAITING_FOR_MANUAL_LANDMARK_ROI_REVIEW
+
+[Limitations]
+No ground-truth landmarks; HOG values are reference only.
+Temporal changes are diagnostics, not drowsiness labels or an automatic margin score.
+Context CNN crop margin and Head Pose sign convention remain separate unresolved policies.

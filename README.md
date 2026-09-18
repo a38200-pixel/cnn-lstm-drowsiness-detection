@@ -163,7 +163,7 @@ Head Pose에서는 OpenCV Euler pitch가 ±180° 부근으로 표현되어 raw p
 
 ### STEP 2-B — HOG vs YuNet Primary Detector Comparison
 
-Status: **IMPLEMENTED — WAITING FOR MANUAL RUN**
+Status: **AUTOMATIC + VISUAL REVIEW COMPLETE — PRIMARY DETECTOR CANDIDATE: YUNET — LANDMARK ROI POLICY: NOT FINALIZED**
 
 #### 목적
 
@@ -202,4 +202,91 @@ python scripts/run_detector_primary_comparison.py --config configs/detector_prim
 - `visual_samples/`
 - `contact_sheets/`
 
-자동 비교 후에도 Decision은 `WAITING_FOR_MANUAL_PRIMARY_DETECTOR_REVIEW`입니다. Comparison image와 crop, landmark, pose axis를 수동 검토하기 전에는 HOG 또는 YuNet을 primary detector로 승인하지 않습니다.
+자동 비교 수치와 visual review를 함께 검토한 현재 결론은 **YuNet을 primary detector 후보로 채택**하는 것입니다. 이는 `YUNET_PRIMARY_FINAL_APPROVED`가 아닙니다. Dlib68 fitting ROI, Context CNN crop, Head Pose sign convention과 시간축 threshold가 아직 확정되지 않았습니다.
+
+#### Visual Review Pack
+
+STEP 2-B 자동 비교 결과를 바탕으로 중복 제거한 수동 검토 표본 45개와 고해상도 검토 시트 5장을 준비했습니다. YuNet-only 6개, HOG-only 1개, both-failed 2개를 모두 포함하며, 지표별 극단값 후보와 train/validation 및 drowsy/not_drowsy 균형 정상 참조 10개를 함께 제공합니다.
+
+```bash
+python scripts/build_detector_review_pack.py --dry-run
+python scripts/build_detector_review_pack.py
+```
+
+생성 위치는 `outputs/preprocessing_v2/detector_primary_comparison/review_pack/`이며 다음 파일을 포함합니다.
+
+- `review_manifest.csv`
+- `review_manual.csv`
+- `review_numeric_summary.md`
+- `repeated_outlier_videos.csv`
+- `selected_images/`
+- `review_sheet_*.jpg`
+
+배포용 묶음은 `outputs/preprocessing_v2/detector_primary_comparison/step2b_visual_review_pack.zip`입니다.
+
+#### 실제 결과와 visual review 결론
+
+Experiment 1의 `HOG → Dlib68` 대 `YuNet → 3DDFA` 비교와 달리, STEP 2-B는 `HOG → Dlib68`과 `YuNet → Dlib68`로 landmark model과 EAR/MAR·Head Pose 계산을 통제했습니다.
+
+| Metric | HOG | YuNet |
+|---|---:|---:|
+| Detection success | 152/160 (95.0%) | 157/160 (98.125%) |
+| Detector latency mean | 372.15 ms | 39.44 ms |
+| Behavior pipeline mean | 376.17 ms | 43.78 ms |
+| Dlib68 success after detection | 152/152 (100%) | 157/157 (100%) |
+
+- Both success: 151
+- HOG only: 1
+- YuNet only: 6
+- Both failed: 2
+- Test split은 사용하지 않았습니다.
+- YuNet bbox는 육안상 얼굴 전체를 더 자연스럽게 포함하는 사례가 많았습니다.
+- HOG bbox에는 얼굴 좌우 padding이 상대적으로 큰 사례가 관찰됐습니다.
+- 따라서 HOG bbox geometry를 landmark 정확도의 ground truth로 취급하지 않습니다.
+
+같은 Dlib68 predictor를 사용해도 입력 rectangle geometry가 달라지면 landmark fitting과 EAR/MAR가 달라질 수 있습니다. EAR Pearson 약 0.60과 MAR Pearson 약 0.27은 YuNet detector 실패의 증거가 아니라, detector bbox와 Dlib68 fitting ROI가 서로 다른 정책 문제임을 보여주는 진단 신호입니다. 다음 단계에서는 YuNet detection bbox는 고정하고 Dlib68에 전달할 ROI margin만 비교합니다.
+
+Head Pose는 raw Euler angle의 ±180° wrap 문제 때문에 circular angular difference로 비교합니다. `pitch_centered_candidate`는 분석 후보일 뿐이며 부호 규약과 generic camera model의 angle을 ground truth로 간주하지 않습니다.
+
+현재 방향은 다음과 같습니다.
+
+- Primary detector candidate: **YuNet**
+- 미확정: Dlib68 fitting ROI margin, Context CNN crop margin, Head Pose sign convention, EAR/MAR temporal threshold
+- 다음 단계: STEP 2-C — YuNet Landmark ROI Margin Audit
+
+### STEP 2-C — YuNet Landmark ROI Margin Audit
+
+Status: **AUDIT COMPLETE — VISUAL REVIEW PACK COMPLETE — WAITING FOR MANUAL LANDMARK ROI REVIEW**
+
+YuNet detector 선택과 Dlib68 fitting rectangle을 분리해 평가합니다. STEP 2-B의 동일 160개 frame 중 YuNet 성공 157개만 사용하고, 저장된 YuNet raw detection bbox를 변경하거나 detector를 재실행하지 않습니다. HOG 값은 참고값일 뿐 ground truth가 아닙니다.
+
+후보는 RAW(0%), M05(+5%), M10(+10%), M15(+15%)입니다. bbox width와 height에 margin을 각각 독립적으로 적용합니다. 예를 들어 `(100, 100, 300, 300)`에 5%를 적용하면 `(90, 90, 310, 310)`이 됩니다. 강제 square, HOG aspect ratio·크기 복제, bbox 중심 변경, detector ensemble은 적용하지 않습니다. frame 밖으로 나간 ROI는 clipping하고 clipping 여부와 손실 면적 비율을 기록합니다.
+
+각 후보에서 동일 Dlib68로 landmark, EAR, MAR, raw/centered pitch, yaw, roll, geometry validity와 latency를 계산합니다. RAW↔M05/M10/M15 및 인접 margin의 normalized landmark difference도 기록합니다. 같은 영상의 인접 audit timestamp 변화량은 안정성 진단에만 사용하며 drowsy/not_drowsy 판정이나 자동 best margin 선정에는 사용하지 않습니다.
+
+시각 자료는 `Original | RAW | +5% | +10% | +15%` 5-panel 구조이며, YuNet detection bbox와 landmark fitting ROI를 다른 색으로 표시합니다. 수동 검토자는 눈·입·전체 landmark와 pose axis를 확인하고 `preferred_landmark_roi`에 `RAW`, `M05`, `M10`, `M15`, `TIE`, `UNCERTAIN` 중 하나를 기록합니다.
+
+```bash
+python scripts/run_landmark_roi_margin_audit.py --dry-run
+python scripts/run_landmark_roi_margin_audit.py --config configs/landmark_roi_margin_audit.yaml
+```
+
+실제 실행 결과는 `outputs/preprocessing_v2/landmark_roi_margin_audit/`에 생성됩니다. 이번 구현 단계에서는 실제 dataset audit를 실행하지 않았습니다. 실행 후 Decision은 `WAITING_FOR_MANUAL_LANDMARK_ROI_REVIEW`이며, ground-truth landmark가 없으므로 자동 best margin은 선택하지 않습니다.
+
+Landmark ROI margin과 Context CNN full-face crop margin은 별도 정책입니다. Context branch의 square RGB 224×224 crop과 20–30% margin 후보는 이후 단계에서 독립적으로 검토합니다.
+
+#### STEP 2-C Visual Review Pack
+
+Visual review pack 준비를 완료했습니다. 기존 18개 contact sheet와 수동 검토 대상으로 선정된 35개 5-panel 이미지를 다시 계산하지 않고 후처리하여, 중복 없는 35개 표본과 고해상도 compact sheet 5장으로 재구성했습니다.
+
+- Overview / Normal Reference: 7개
+- Eye / EAR: 7개
+- Mouth / MAR: 7개
+- Head Pose / Landmark Change: 7개
+- ROI / Edge / Difficult Cases: 7개
+- detector, Dlib68, EAR/MAR, Head Pose 및 ROI margin audit 재실행 없음
+- 자동 metric은 검토 표본 분류에만 사용하고 best margin은 자동 선택하지 않음
+
+산출물은 `outputs/preprocessing_v2/landmark_roi_margin_audit/review_pack/`에 있으며, 배포용 ZIP은 `outputs/preprocessing_v2/landmark_roi_margin_audit/step2c_visual_review_pack.zip`입니다.
+
+기존 결과의 YuNet 성공 157개 행 모두에서 M05/M10/M15 중 하나 이상이 `roi_clipped=True`이지만 `clipped_fraction=0.0`이므로 두 값을 별도로 확인해야 합니다. 후처리 단계에서는 기존 audit 계산값을 수정하지 않았습니다. 현재 Decision은 계속 `WAITING_FOR_MANUAL_LANDMARK_ROI_REVIEW`입니다.
