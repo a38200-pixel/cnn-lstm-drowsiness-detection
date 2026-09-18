@@ -91,15 +91,15 @@ STEP 2에서는 소규모 샘플을 대상으로 다음 preprocessing audit을 �
 
 `HOG primary → HOG failure → YuNet fallback → Dlib68 landmarks → EAR/MAR/HeadPose → automatic geometry validation → visual audit → detector policy 결정`
 
-STEP 2 코드는 아직 구현하지 않았습니다.
+STEP 2-A 자동 audit 구현과 실행이 완료됐으며 아래에 실제 결과를 기록합니다.
 
-### STEP 2 — Detector / Landmark Compatibility Audit
+### STEP 2-A — HOG → YuNet Fallback Compatibility Audit
 
-Status: **IMPLEMENTED — WAITING FOR MANUAL RUN**
+Status: **AUTOMATIC AUDIT COMPLETE — PRIMARY DETECTOR POLICY NOT FINALIZED**
 
 #### 목적과 데이터 범위
 
-전체 2,074개 영상을 전처리하기 전에 소규모 표본에서 HOG, YuNet, Dlib68 조합의 호환성과 geometry 품질을 검증합니다. 기존 frozen split은 변경하지 않으며 정책 선택에 영향을 주는 이 단계에서는 `train.csv`와 `val.csv`만 사용합니다. **test split은 읽거나 audit하지 않습니다.**
+전체 2,074개 영상을 전처리하기 전에 train/validation의 160개 frame에서 HOG, YuNet fallback, Dlib68 조합의 호환성과 geometry 품질을 검증했습니다. 기존 frozen split은 변경하지 않았으며 **test split은 사용하지 않았습니다.**
 
 라벨은 train/validation 및 drowsy/not_drowsy 표본 균형과 보고서 표시에만 사용합니다. detector 실행, fallback, bbox 선택, landmark, EAR/MAR, Head Pose, geometry validity에는 라벨을 전달하지 않아 같은 frame이 라벨과 무관하게 동일하게 처리되도록 구성했습니다.
 
@@ -144,4 +144,62 @@ python scripts/run_detector_landmark_audit.py --config configs/detector_landmark
 
 #### 현재 Decision과 다음 단계
 
-현재는 구현만 완료되어 실제 audit 수치가 없습니다. 사용자가 소규모 audit을 실행한 뒤 manual visual review를 완료해야 하며, 그 결과를 바탕으로 다음 단계에서 HOG primary + YuNet fallback 정책의 최종 채택 여부를 결정합니다.
+| 항목 | 실제 결과 |
+|---|---:|
+| Candidate frames | 160 |
+| HOG detection | 152/160 (95.00%) |
+| HOG failure | 8 |
+| YuNet fallback recovery | 6/8 (75.00%) |
+| Combined detection | 158/160 (98.75%) |
+| HOG bbox → Dlib68 | 152/152 |
+| YuNet bbox → Dlib68 | 6/6 |
+| HOG detector 평균 latency | 371.82 ms |
+| YuNet fallback 평균 latency | 39.48 ms |
+| Dlib68 평균 latency | 약 3.30 ms |
+
+Head Pose에서는 OpenCV Euler pitch가 ±180° 부근으로 표현되어 raw pitch 중앙값이 159.40°였고, 158개 유효 pose가 모두 기존 large-pose flag 대상이 됐습니다. 12개 paired sample의 단순 pitch 절댓값 차이는 최대 357.44°였습니다. 이는 Head Pose 모델 실패로 단정할 결과가 아니라 ±180° wrap-around를 고려하지 않은 **표현 및 비교 convention 문제**입니다.
+
+따라서 primary detector 정책은 아직 확정하지 않습니다. STEP 2-B에서 raw angle을 보존하면서 circular angular distance를 사용하고, front-centered pitch 후보 표현과 pose axis를 visual review합니다.
+
+### STEP 2-B — HOG vs YuNet Primary Detector Comparison
+
+Status: **IMPLEMENTED — WAITING FOR MANUAL RUN**
+
+#### 목적
+
+STEP 2-A의 동일한 160개 frame에서 HOG와 YuNet을 모두 실행하고, detector 이외의 조건을 동일하게 통제해 primary detector 후보를 비교합니다. Test split과 새로운 random sampling은 사용하지 않습니다.
+
+Experiment 1 비교는 `HOG → Dlib68`과 `YuNet → 3DDFA`처럼 landmark source가 달라 EAR/MAR scale mismatch와 calibration failure가 발생했습니다. Experiment 2 비교는 `HOG → Dlib68`과 `YuNet → Dlib68`로 동일한 landmark source, EAR/MAR 공식, Head Pose estimator를 사용합니다. 따라서 이전에 YuNet을 fallback으로 제한했던 핵심 제약이 이번 비교에 그대로 적용되지는 않습니다.
+
+또한 STEP 2-A에서 HOG 평균 latency가 약 372 ms로 측정되어 Behavior branch의 10 FPS 참고 budget인 100 ms/frame에 불리할 가능성이 확인됐습니다. 이는 자동 채택 기준이 아니며, YuNet primary의 검출·landmark·crop 품질과 함께 비교하기 위한 근거입니다.
+
+#### Head Pose 비교 수정
+
+- `pitch_raw`, `yaw_raw`, `roll_raw`는 그대로 보존합니다.
+- detector 차이의 주요 metric으로 ±180°를 고려한 circular angular distance를 사용합니다.
+- `pitch_centered_candidate = wrap_to_180(pitch_raw - 180)`을 정면≈0 분석 후보로 추가합니다.
+- centered pitch의 부호와 실제 head up/down 관계는 가정하지 않으며 visual review 후 결정합니다.
+- large-pose audit 표본은 raw pitch가 아니라 centered 후보의 절댓값으로 선택합니다.
+
+#### Full Face crop preview
+
+HOG와 YuNet bbox 모두에 25% margin, square crop, frame 밖 고정값 padding, RGB 224×224의 동일한 audit preview 정책을 적용합니다. 이는 Context model 학습 데이터나 최종 crop 정책이 아닙니다.
+
+#### 실행 및 결과
+
+```bash
+python scripts/run_detector_primary_comparison.py --dry-run
+python scripts/run_detector_primary_comparison.py --config configs/detector_primary_comparison.yaml
+```
+
+실행 결과는 STEP 2-A와 분리된 `outputs/preprocessing_v2/detector_primary_comparison/`에 생성됩니다.
+
+- `comparison_report.txt`
+- `comparison_summary.json`
+- `paired_primary_results.csv`
+- `manual_review.csv`
+- `MANUAL_REVIEW_GUIDE.md`
+- `visual_samples/`
+- `contact_sheets/`
+
+자동 비교 후에도 Decision은 `WAITING_FOR_MANUAL_PRIMARY_DETECTOR_REVIEW`입니다. Comparison image와 crop, landmark, pose axis를 수동 검토하기 전에는 HOG 또는 YuNet을 primary detector로 승인하지 않습니다.

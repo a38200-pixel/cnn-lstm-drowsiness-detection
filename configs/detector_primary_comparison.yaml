@@ -1,0 +1,46 @@
+# STEP 2-A의 동일한 160개 frame을 재사용하며 새 random sampling을 하지 않는다.
+step2a_results_dir: "outputs/preprocessing_v2/detector_landmark_audit"
+step2a_config: "configs/detector_landmark_audit.yaml"
+raw_dir: "data/raw/SUST Driver Drowsiness Dataset"
+train_metadata: "data/metadata/train.csv"
+val_metadata: "data/metadata/val.csv"
+
+dlib_predictor: "assets/dlib/shape_predictor_68_face_landmarks.dat"
+yunet_model: "assets/yunet/face_detection_yunet_2023mar.onnx"
+hog_upsample: 1
+face_selection_policy: "largest_valid_bbox"
+
+face_crop_preview:
+  enabled: true
+  # 25% margin과 224 크기는 audit preview 후보이며 최종 학습 정책이 아니다.
+  margin_ratio: 0.25
+  square_crop: true
+  output_size: 224
+  padding_value: 0
+
+# 이 값은 visual audit 표본 선택 전용이며 졸음 판정 threshold가 아니다.
+audit_large_pose_deg: 75.0
+
+comparison_priority:
+  bbox_iou_below: 0.50
+  normalized_landmark_diff_above: 0.05
+  ear_abs_diff_above: 0.10
+  mar_abs_diff_above: 0.10
+  pose_circular_diff_above: 10.0
+  crop_mean_abs_diff_above: 0.15
+
+visual_audit:
+  max_normal_pairs: 20
+  max_detector_only: 20
+  max_both_failed: 10
+  max_bbox_difference: 20
+  max_landmark_difference: 20
+  max_ear_difference: 20
+  max_mar_difference: 20
+  max_pose_difference: 20
+  max_crop_difference: 20
+  contact_sheet_columns: 2
+  thumbnail_size: [960, 540]
+
+output_dir: "outputs/preprocessing_v2/detector_primary_comparison"
+

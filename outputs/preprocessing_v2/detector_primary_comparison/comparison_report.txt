@@ -1,0 +1,409 @@
+Experiment 2 STEP 2-B — HOG vs YuNet Primary Detector Comparison
+동일한 STEP 2-A frame과 동일한 Dlib68/feature/pose 정책을 사용함.
+pitch_centered_candidate는 분석 후보이며 sign convention은 미확정.
+
+[Scope]
+{
+  "source": "STEP 2-A sample_results.csv",
+  "frame_count": 160,
+  "unique_video_count": 32,
+  "split_counts": {
+    "train": 80,
+    "val": 80
+  },
+  "label_counts": {
+    "drowsy": 80,
+    "not_drowsy": 80
+  },
+  "test_split_used": false,
+  "new_random_sampling": false,
+  "label_usage": "reporting_only"
+}
+
+[Detector Detection]
+{
+  "hog": {
+    "attempted": 160,
+    "success": 152,
+    "failure": 8,
+    "success_rate": 0.95,
+    "multiple_face_count": 1,
+    "latency_ms": {
+      "count": 160,
+      "mean": 372.15171437401295,
+      "median": 364.74035000719596,
+      "min": 356.07160002109595,
+      "max": 476.5625,
+      "p90": 396.0201600071741,
+      "p95": 410.97192000015616
+    }
+  },
+  "yunet": {
+    "attempted": 160,
+    "success": 157,
+    "failure": 3,
+    "success_rate": 0.98125,
+    "multiple_face_count": 0,
+    "latency_ms": {
+      "count": 160,
+      "mean": 39.443987501181255,
+      "median": 37.42459999921266,
+      "min": 34.07369999331422,
+      "max": 66.67170001310296,
+      "p90": 45.70562000153586,
+      "p95": 49.823365011252456
+    },
+    "confidence": {
+      "count": 157,
+      "mean": 0.9346923680062507,
+      "median": 0.9355084896087646,
+      "min": 0.903111457824707,
+      "max": 0.9494891166687012,
+      "p90": 0.9435328960418701,
+      "p95": 0.9451180815696716
+    }
+  }
+}
+
+[Outcome Matrix]
+{
+  "both_success": {
+    "count": 151,
+    "ratio": 0.94375
+  },
+  "hog_only": {
+    "count": 1,
+    "ratio": 0.00625
+  },
+  "yunet_only": {
+    "count": 6,
+    "ratio": 0.0375
+  },
+  "both_failed": {
+    "count": 2,
+    "ratio": 0.0125
+  }
+}
+
+[Landmark]
+{
+  "hog": {
+    "attempted": 152,
+    "success": 152,
+    "failure": 0,
+    "success_rate": 1.0,
+    "latency_ms": {
+      "count": 152,
+      "mean": 3.4341901300649624,
+      "median": 3.307999999378808,
+      "min": 3.128000011201948,
+      "max": 5.41529999463819,
+      "p90": 3.8816100044641644,
+      "p95": 4.1741499822819605
+    }
+  },
+  "yunet": {
+    "attempted": 157,
+    "success": 157,
+    "failure": 0,
+    "success_rate": 1.0,
+    "latency_ms": {
+      "count": 157,
+      "mean": 3.623476432700149,
+      "median": 3.4505000221543014,
+      "min": 3.2242999877780676,
+      "max": 6.17390000843443,
+      "p90": 4.04503999161534,
+      "p95": 4.843339993385597
+    }
+  },
+  "mean_difference": {
+    "count": 151,
+    "mean": 11.698161045650602,
+    "median": 7.292232607083013,
+    "min": 1.8500319027700147,
+    "max": 80.0705005041512,
+    "p90": 27.69269758282976,
+    "p95": 36.10129422549394
+  },
+  "normalized_difference": {
+    "count": 151,
+    "mean": 0.045175930091888396,
+    "median": 0.027921985784795718,
+    "min": 0.006877442017732396,
+    "max": 0.3032976181669219,
+    "p90": 0.10743753084179737,
+    "p95": 0.1385049516132682
+  }
+}
+
+[EAR]
+{
+  "pair_count": 151,
+  "hog_distribution": {
+    "count": 151,
+    "mean": 0.3213694472485026,
+    "median": 0.33000992574231836,
+    "min": 0.11750850973601215,
+    "max": 0.5534822253938176,
+    "p90": 0.40092310605663184,
+    "p95": 0.4230504111486689
+  },
+  "yunet_distribution": {
+    "count": 151,
+    "mean": 0.36662007151062376,
+    "median": 0.37020785789033533,
+    "min": 0.0910135274675635,
+    "max": 0.6047330478067698,
+    "p90": 0.4565958513807824,
+    "p95": 0.48740538778440823
+  },
+  "absolute_difference": {
+    "count": 151,
+    "mean": 0.060669412437233665,
+    "median": 0.04295431587066029,
+    "min": 0.0019494518189909216,
+    "max": 0.26243069790281054,
+    "p90": 0.13339411642240734,
+    "p95": 0.211469025136252
+  },
+  "correlation": {
+    "count": 151,
+    "pearson": 0.5993209338796793,
+    "spearman": 0.5533983966538863
+  }
+}
+
+[MAR]
+{
+  "pair_count": 151,
+  "hog_distribution": {
+    "count": 151,
+    "mean": 0.08398913930432403,
+    "median": 0.060158878841454114,
+    "min": 0.0,
+    "max": 0.6784973061162981,
+    "p90": 0.17999778465628316,
+    "p95": 0.2295086463098412
+  },
+  "yunet_distribution": {
+    "count": 151,
+    "mean": 0.14030500313054606,
+    "median": 0.0703435148638134,
+    "min": 0.0,
+    "max": 1.027244056855349,
+    "p90": 0.36065870192817323,
+    "p95": 0.45870890868447506
+  },
+  "absolute_difference": {
+    "count": 151,
+    "mean": 0.09719545412898607,
+    "median": 0.037503053651500834,
+    "min": 0.0,
+    "max": 0.6468167433830272,
+    "p90": 0.27071143302908607,
+    "p95": 0.4145966525614651
+  },
+  "correlation": {
+    "count": 151,
+    "pearson": 0.27232553063638054,
+    "spearman": 0.39284643724854784
+  }
+}
+
+[Head Pose]
+{
+  "pitch_raw_hog": {
+    "count": 152,
+    "mean": 5.76760975565858,
+    "median": 159.1120202818688,
+    "min": -179.93359403864108,
+    "max": 179.81772984853535,
+    "p90": 175.81454767608528,
+    "p95": 178.3102786819024
+  },
+  "pitch_raw_yunet": {
+    "count": 157,
+    "mean": -4.733015920311611,
+    "median": -154.79124449145314,
+    "min": -179.87989336667957,
+    "max": 179.94820847763222,
+    "p90": 175.68996305740606,
+    "p95": 177.79196731077167
+  },
+  "pitch_centered_hog": {
+    "count": 152,
+    "mean": -1.337653402236158,
+    "median": -0.58034779808537,
+    "min": -40.831809540159924,
+    "max": 24.12391017087407,
+    "p90": 11.15562357987537,
+    "p95": 13.429472593227555
+  },
+  "pitch_centered_yunet": {
+    "count": 157,
+    "mean": 0.9994681561215126,
+    "median": 0.42540900047197283,
+    "min": -23.276910719263583,
+    "max": 52.41712839295889,
+    "p90": 17.906683979044306,
+    "p95": 20.88391629466371
+  },
+  "pitch_raw_abs_diff": {
+    "count": 151,
+    "mean": 36.00143576107075,
+    "median": 2.6534497216037494,
+    "min": 0.009397767754165898,
+    "max": 357.4398409185934,
+    "p90": 30.163667650934315,
+    "p95": 352.74715796752866
+  },
+  "pitch_circular_diff": {
+    "count": 151,
+    "mean": 4.575163053009471,
+    "median": 2.5601590814065958,
+    "min": 0.009397767754165898,
+    "max": 42.967217623806505,
+    "p90": 9.948865512762978,
+    "p95": 12.548784663742083
+  },
+  "yaw_raw_abs_diff": {
+    "count": 151,
+    "mean": 6.074090561831469,
+    "median": 2.6684629531020008,
+    "min": 0.0021201084560260597,
+    "max": 98.01200374164009,
+    "p90": 14.40868548659665,
+    "p95": 17.10340111746731
+  },
+  "yaw_circular_diff": {
+    "count": 151,
+    "mean": 6.074090561831468,
+    "median": 2.6684629531019937,
+    "min": 0.0021201084560402705,
+    "max": 98.01200374164009,
+    "p90": 14.408685486596653,
+    "p95": 17.103401117467314
+  },
+  "roll_raw_abs_diff": {
+    "count": 151,
+    "mean": 8.152939025263926,
+    "median": 1.3247012671099625,
+    "min": 0.01640065823758219,
+    "max": 298.9247771567248,
+    "p90": 6.39598896570622,
+    "p95": 14.209081198498772
+  },
+  "roll_circular_diff": {
+    "count": 151,
+    "mean": 6.2104336856970095,
+    "median": 1.3247012671099583,
+    "min": 0.016400658237586185,
+    "max": 175.6686890057505,
+    "p90": 6.395988965706209,
+    "p95": 14.20908119849878
+  },
+  "pitch_centered_candidate_note": "정면≈0 분석 후보이며 부호와 head up/down 관계는 미확정"
+}
+
+[Full Face Crop]
+{
+  "preview_pair_count": 151,
+  "suspicious_padding_count": 13,
+  "mean_absolute_difference": {
+    "count": 151,
+    "mean": 0.16779769735028413,
+    "median": 0.16642242670059204,
+    "min": 0.0997823104262352,
+    "max": 0.2398230880498886,
+    "p90": 0.20731818675994873,
+    "p95": 0.22458764910697937
+  },
+  "policy": {
+    "enabled": true,
+    "margin_ratio": 0.25,
+    "square_crop": true,
+    "output_size": 224,
+    "padding_value": 0
+  },
+  "training_data_created": false
+}
+
+[Latency]
+{
+  "hog_detector_ms": {
+    "count": 160,
+    "mean": 372.15171437401295,
+    "median": 364.74035000719596,
+    "min": 356.07160002109595,
+    "max": 476.5625,
+    "p90": 396.0201600071741,
+    "p95": 410.97192000015616
+  },
+  "yunet_detector_ms": {
+    "count": 160,
+    "mean": 39.443987501181255,
+    "median": 37.42459999921266,
+    "min": 34.07369999331422,
+    "max": 66.67170001310296,
+    "p90": 45.70562000153586,
+    "p95": 49.823365011252456
+  },
+  "hog_behavior_pipeline_ms": {
+    "count": 160,
+    "mean": 376.1701349974828,
+    "median": 368.6439000448445,
+    "min": 357.5171999982558,
+    "max": 480.7895000267308,
+    "p90": 400.11882999096997,
+    "p95": 415.5872499934046
+  },
+  "yunet_behavior_pipeline_ms": {
+    "count": 160,
+    "mean": 43.78219062436983,
+    "median": 41.575899987947196,
+    "min": 35.15229999902658,
+    "max": 73.68959998711944,
+    "p90": 50.31961002387106,
+    "p95": 55.55689500324661
+  },
+  "reference_10fps_budget_ms": 100.0,
+  "budget_note": "참고값이며 detector 자동 승인 hard rule이 아님"
+}
+
+[Real-Time Context]
+{
+  "reference": "10 FPS ≈ 100 ms/frame; 자동 채택 기준이 아님"
+}
+
+[Visual Review]
+{
+  "category_counts": {
+    "both_success": 20,
+    "both_failed": 2,
+    "large_ear_difference": 20,
+    "full_face_crop_difference": 20,
+    "yunet_only": 6,
+    "large_mar_difference": 20,
+    "large_pose_difference": 15,
+    "large_bbox_difference": 2,
+    "large_landmark_difference": 20,
+    "hog_only": 1
+  },
+  "manual_review_csv": "manual_review.csv",
+  "contact_sheet_dir": "contact_sheets"
+}
+
+[Decision]
+{
+  "decision": "WAITING_FOR_MANUAL_PRIMARY_DETECTOR_REVIEW"
+}
+
+[Limitations]
+[
+  "video-level split이며 subject-wise independence를 보장하지 않음",
+  "pitch centered 표현과 부호 convention은 visual review 전 후보 상태",
+  "generic camera model의 pose는 ground-truth angle이 아님",
+  "crop margin과 크기는 audit preview 후보이며 학습 정책이 아님",
+  "수동 paired review 전에는 primary detector를 승인하지 않음"
+]
