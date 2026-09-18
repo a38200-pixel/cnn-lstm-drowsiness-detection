@@ -1,0 +1,42 @@
+{
+  "pairwise_overlap": {
+    "train_vs_test": {
+      "count": 0,
+      "examples": []
+    },
+    "train_vs_val": {
+      "count": 0,
+      "examples": []
+    },
+    "val_vs_test": {
+      "count": 0,
+      "examples": []
+    }
+  },
+  "splits": {
+    "test": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 311,
+      "row_count": 311,
+      "unique_video_id_count": 311,
+      "video_id_column": "video_id"
+    },
+    "train": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 1452,
+      "row_count": 1452,
+      "unique_video_id_count": 1452,
+      "video_id_column": "video_id"
+    },
+    "val": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 311,
+      "row_count": 311,
+      "unique_video_id_count": 311,
+      "video_id_column": "video_id"
+    }
+  }
+}

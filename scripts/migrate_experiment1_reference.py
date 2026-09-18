@@ -1,9 +1,9 @@
-"""Copy selected Experiment-1 reference artifacts into this scaffold.
+"""선택한 1차 실험 참조 산출물을 이 프로젝트 구조로 복사한다.
 
-Usage:
+사용법:
     python scripts/migrate_experiment1_reference.py --src "C:/.../졸음탐지" --dst "."
 
-This script intentionally does NOT copy raw videos, V1/V2 NPZ caches, or checkpoints by default.
+이 스크립트는 원본 영상, V1/V2 NPZ cache, checkpoint를 기본적으로 복사하지 않는다.
 """
 from __future__ import annotations
 import argparse

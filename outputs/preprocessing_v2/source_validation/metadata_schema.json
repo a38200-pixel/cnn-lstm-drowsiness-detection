@@ -1,0 +1,258 @@
+{
+  "split_summary.csv": {
+    "columns": [
+      "split",
+      "total_videos",
+      "drowsy_count",
+      "not_drowsy_count",
+      "drowsy_ratio",
+      "not_drowsy_ratio"
+    ],
+    "duplicate_row_count": 0,
+    "label_candidates": [],
+    "null_count_total": 0,
+    "null_counts_by_column": {
+      "drowsy_count": 0,
+      "drowsy_ratio": 0,
+      "not_drowsy_count": 0,
+      "not_drowsy_ratio": 0,
+      "split": 0,
+      "total_videos": 0
+    },
+    "path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\data\\metadata\\split_summary.csv",
+    "row_count": 4,
+    "selected_label_column": null,
+    "selected_source_path_column": null,
+    "selected_video_id_column": "total_videos",
+    "source_path_candidates": [],
+    "video_id_candidates": [
+      "total_videos"
+    ]
+  },
+  "sust_ddd_video_metadata.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error"
+    ],
+    "duplicate_row_count": 0,
+    "label_candidates": [
+      "label",
+      "label_source"
+    ],
+    "null_count_total": 4148,
+    "null_counts_by_column": {
+      "decoded_frame_count": 0,
+      "duration_seconds": 0,
+      "extension": 0,
+      "fps": 0,
+      "frame_count": 0,
+      "height": 0,
+      "is_readable": 0,
+      "label": 0,
+      "label_source": 0,
+      "read_error": 2074,
+      "subject_id": 2074,
+      "subject_id_reason": 0,
+      "video_id": 0,
+      "video_path": 0,
+      "width": 0
+    },
+    "path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\data\\metadata\\sust_ddd_video_metadata.csv",
+    "row_count": 2074,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id",
+    "source_path_candidates": [
+      "video_path",
+      "label_source"
+    ],
+    "video_id_candidates": [
+      "video_id",
+      "video_path"
+    ]
+  },
+  "test.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "label_candidates": [
+      "label",
+      "label_source"
+    ],
+    "null_count_total": 622,
+    "null_counts_by_column": {
+      "decoded_frame_count": 0,
+      "duration_seconds": 0,
+      "extension": 0,
+      "fps": 0,
+      "frame_count": 0,
+      "height": 0,
+      "is_readable": 0,
+      "label": 0,
+      "label_source": 0,
+      "read_error": 311,
+      "split": 0,
+      "subject_id": 311,
+      "subject_id_reason": 0,
+      "video_id": 0,
+      "video_path": 0,
+      "width": 0
+    },
+    "path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\data\\metadata\\test.csv",
+    "row_count": 311,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id",
+    "source_path_candidates": [
+      "video_path",
+      "label_source"
+    ],
+    "video_id_candidates": [
+      "video_id",
+      "video_path"
+    ]
+  },
+  "train.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "label_candidates": [
+      "label",
+      "label_source"
+    ],
+    "null_count_total": 2904,
+    "null_counts_by_column": {
+      "decoded_frame_count": 0,
+      "duration_seconds": 0,
+      "extension": 0,
+      "fps": 0,
+      "frame_count": 0,
+      "height": 0,
+      "is_readable": 0,
+      "label": 0,
+      "label_source": 0,
+      "read_error": 1452,
+      "split": 0,
+      "subject_id": 1452,
+      "subject_id_reason": 0,
+      "video_id": 0,
+      "video_path": 0,
+      "width": 0
+    },
+    "path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\data\\metadata\\train.csv",
+    "row_count": 1452,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id",
+    "source_path_candidates": [
+      "video_path",
+      "label_source"
+    ],
+    "video_id_candidates": [
+      "video_id",
+      "video_path"
+    ]
+  },
+  "val.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "label_candidates": [
+      "label",
+      "label_source"
+    ],
+    "null_count_total": 622,
+    "null_counts_by_column": {
+      "decoded_frame_count": 0,
+      "duration_seconds": 0,
+      "extension": 0,
+      "fps": 0,
+      "frame_count": 0,
+      "height": 0,
+      "is_readable": 0,
+      "label": 0,
+      "label_source": 0,
+      "read_error": 311,
+      "split": 0,
+      "subject_id": 311,
+      "subject_id_reason": 0,
+      "video_id": 0,
+      "video_path": 0,
+      "width": 0
+    },
+    "path": "C:\\Users\\AISW_203_113\\Documents\\GitHub\\cnn-lstm-drowsiness-detection\\data\\metadata\\val.csv",
+    "row_count": 311,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id",
+    "source_path_candidates": [
+      "video_path",
+      "label_source"
+    ],
+    "video_id_candidates": [
+      "video_id",
+      "video_path"
+    ]
+  }
+}

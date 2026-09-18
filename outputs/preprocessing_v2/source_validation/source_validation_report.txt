@@ -1,0 +1,431 @@
+Experiment 2 — Source Data Validation
+Project root: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection
+Raw directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset
+Metadata directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\metadata
+Output directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\outputs\preprocessing_v2\source_validation
+
+[Environment]
+{
+  "dlib": null,
+  "opencv": "5.0.0.93",
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.12",
+  "pytorch": "2.11.0+cu128"
+}
+
+[Required Paths]
+[
+  {
+    "expected_type": "directory",
+    "item": "raw SUST-DDD dataset directory",
+    "path": "data/raw/SUST Driver Drowsiness Dataset",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "sust_ddd_video_metadata.csv",
+    "path": "data/metadata/sust_ddd_video_metadata.csv",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "train.csv",
+    "path": "data/metadata/train.csv",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "val.csv",
+    "path": "data/metadata/val.csv",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "test.csv",
+    "path": "data/metadata/test.csv",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "split_summary.csv",
+    "path": "data/metadata/split_summary.csv",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "Dlib68 predictor",
+    "path": "assets/dlib/shape_predictor_68_face_landmarks.dat",
+    "status": "FOUND"
+  },
+  {
+    "expected_type": "file",
+    "item": "YuNet ONNX",
+    "path": "assets/yunet/face_detection_yunet_2023mar.onnx",
+    "status": "FOUND"
+  }
+]
+
+[Metadata Summary]
+{
+  "split_summary.csv": {
+    "columns": [
+      "split",
+      "total_videos",
+      "drowsy_count",
+      "not_drowsy_count",
+      "drowsy_ratio",
+      "not_drowsy_ratio"
+    ],
+    "duplicate_row_count": 0,
+    "null_count_total": 0,
+    "row_count": 4,
+    "selected_label_column": null,
+    "selected_source_path_column": null,
+    "selected_video_id_column": "total_videos"
+  },
+  "sust_ddd_video_metadata.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error"
+    ],
+    "duplicate_row_count": 0,
+    "null_count_total": 4148,
+    "row_count": 2074,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id"
+  },
+  "test.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "null_count_total": 622,
+    "row_count": 311,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id"
+  },
+  "train.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "null_count_total": 2904,
+    "row_count": 1452,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id"
+  },
+  "val.csv": {
+    "columns": [
+      "video_id",
+      "video_path",
+      "extension",
+      "label",
+      "label_source",
+      "subject_id",
+      "subject_id_reason",
+      "fps",
+      "frame_count",
+      "decoded_frame_count",
+      "duration_seconds",
+      "width",
+      "height",
+      "is_readable",
+      "read_error",
+      "split"
+    ],
+    "duplicate_row_count": 0,
+    "null_count_total": 622,
+    "row_count": 311,
+    "selected_label_column": "label",
+    "selected_source_path_column": "video_path",
+    "selected_video_id_column": "video_id"
+  }
+}
+
+[Split Integrity]
+{
+  "pairwise_overlap": {
+    "train_vs_test": {
+      "count": 0,
+      "examples": []
+    },
+    "train_vs_val": {
+      "count": 0,
+      "examples": []
+    },
+    "val_vs_test": {
+      "count": 0,
+      "examples": []
+    }
+  },
+  "splits": {
+    "test": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 311,
+      "row_count": 311,
+      "unique_video_id_count": 311,
+      "video_id_column": "video_id"
+    },
+    "train": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 1452,
+      "row_count": 1452,
+      "unique_video_id_count": 1452,
+      "video_id_column": "video_id"
+    },
+    "val": {
+      "duplicate_video_id_count": 0,
+      "duplicate_video_id_examples": [],
+      "non_empty_id_count": 311,
+      "row_count": 311,
+      "unique_video_id_count": 311,
+      "video_id_column": "video_id"
+    }
+  }
+}
+
+[Raw Video Matching]
+{
+  "discovered_extensions": [
+    ".mp4"
+  ],
+  "duplicate_metadata_reference_count": 0,
+  "duplicate_raw_filename_count": 0,
+  "duplicate_raw_filename_examples": [],
+  "master_metadata_file": "sust_ddd_video_metadata.csv",
+  "matched_metadata_video_count": 2074,
+  "metadata_missing_from_raw_count": 0,
+  "metadata_missing_from_raw_examples": [],
+  "metadata_video_count": 2074,
+  "raw_missing_from_metadata_count": 0,
+  "raw_missing_from_metadata_examples": [],
+  "raw_video_count": 2074,
+  "source_path_column": "video_path",
+  "supported_extensions": [
+    ".avi",
+    ".mkv",
+    ".mov",
+    ".mp4"
+  ],
+  "video_id_column": "video_id"
+}
+
+[Label Distribution]
+{
+  "test": {
+    "conflicting_label_id_count": 0,
+    "conflicting_label_id_examples": [],
+    "label_column": "label",
+    "labels": {
+      "drowsy": {
+        "count": 146,
+        "ratio": 0.4694533762057878
+      },
+      "not_drowsy": {
+        "count": 165,
+        "ratio": 0.5305466237942122
+      }
+    },
+    "total_videos": 311,
+    "video_id_column": "video_id"
+  },
+  "train": {
+    "conflicting_label_id_count": 0,
+    "conflicting_label_id_examples": [],
+    "label_column": "label",
+    "labels": {
+      "drowsy": {
+        "count": 683,
+        "ratio": 0.4703856749311295
+      },
+      "not_drowsy": {
+        "count": 769,
+        "ratio": 0.5296143250688705
+      }
+    },
+    "total_videos": 1452,
+    "video_id_column": "video_id"
+  },
+  "val": {
+    "conflicting_label_id_count": 0,
+    "conflicting_label_id_examples": [],
+    "label_column": "label",
+    "labels": {
+      "drowsy": {
+        "count": 146,
+        "ratio": 0.4694533762057878
+      },
+      "not_drowsy": {
+        "count": 165,
+        "ratio": 0.5305466237942122
+      }
+    },
+    "total_videos": 311,
+    "video_id_column": "video_id"
+  }
+}
+
+[Video Decode Smoke Test]
+{
+  "sample_count": 6,
+  "samples": [
+    {
+      "duration_seconds": 10.0,
+      "first_frame_decoded": true,
+      "fps": 30.0,
+      "frame_count": 300,
+      "height": 1280,
+      "label": "drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/drowsiness/d_10.mp4",
+      "split": "train",
+      "status": "OK",
+      "video_id": "d_10",
+      "width": 720
+    },
+    {
+      "duration_seconds": 10.0,
+      "first_frame_decoded": true,
+      "fps": 30.0,
+      "frame_count": 300,
+      "height": 1280,
+      "label": "not_drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/not drowsiness/n_1.mp4",
+      "split": "train",
+      "status": "OK",
+      "video_id": "n_1",
+      "width": 720
+    },
+    {
+      "duration_seconds": 10.0,
+      "first_frame_decoded": true,
+      "fps": 25.0,
+      "frame_count": 250,
+      "height": 1280,
+      "label": "drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/drowsiness/d_103.mp4",
+      "split": "val",
+      "status": "OK",
+      "video_id": "d_103",
+      "width": 720
+    },
+    {
+      "duration_seconds": 10.026737967914437,
+      "first_frame_decoded": true,
+      "fps": 29.92,
+      "frame_count": 300,
+      "height": 1280,
+      "label": "not_drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/not drowsiness/n_1002.mp4",
+      "split": "val",
+      "status": "OK",
+      "video_id": "n_1002",
+      "width": 720
+    },
+    {
+      "duration_seconds": 10.0,
+      "first_frame_decoded": true,
+      "fps": 30.0,
+      "frame_count": 300,
+      "height": 1280,
+      "label": "drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/drowsiness/d_1.mp4",
+      "split": "test",
+      "status": "OK",
+      "video_id": "d_1",
+      "width": 720
+    },
+    {
+      "duration_seconds": 10.026737967914437,
+      "first_frame_decoded": true,
+      "fps": 29.92,
+      "frame_count": 300,
+      "height": 1280,
+      "label": "not_drowsy",
+      "opened": true,
+      "path": "data/raw/SUST Driver Drowsiness Dataset/not drowsiness/n_1000.mp4",
+      "split": "test",
+      "status": "OK",
+      "video_id": "n_1000",
+      "width": 720
+    }
+  ],
+  "status": "OK"
+}
+
+[Asset Load Test]
+{
+  "dlib68": {
+    "error": "ModuleNotFoundError: No module named 'dlib'",
+    "status": "ERROR"
+  },
+  "status": "ERROR",
+  "yunet": {
+    "status": "OK"
+  }
+}
+
+[Warnings]
+[
+  "None"
+]
+
+[Final Decision]
+{
+  "decision": "SOURCE_VALIDATION_FAILED",
+  "reasons": [
+    "Dlib68 load failed: ModuleNotFoundError: No module named 'dlib'"
+  ]
+}
