@@ -1,28 +1,25 @@
 {
   "asset_load_test": {
     "dlib68": {
-      "error": "ModuleNotFoundError: No module named 'dlib'",
-      "status": "ERROR"
+      "status": "OK"
     },
-    "status": "ERROR",
+    "status": "OK",
     "yunet": {
       "status": "OK"
     }
   },
-  "decision": "SOURCE_VALIDATION_FAILED",
+  "decision": "READY_FOR_PREPROCESSING_AUDIT",
   "decision_reasons": [
-    "Dlib68 load failed: ModuleNotFoundError: No module named 'dlib'"
+    "All STEP 1 checks passed"
   ],
   "environment": {
     "dlib": null,
     "opencv": "5.0.0.93",
     "os": "Windows-11-10.0.26200-SP0",
-    "python": "3.12.12",
-    "pytorch": "2.11.0+cu128"
+    "python": "3.12.14",
+    "pytorch": null
   },
-  "errors": [
-    "Dlib68 load failed: ModuleNotFoundError: No module named 'dlib'"
-  ],
+  "errors": [],
   "generated_files": [
     "source_validation_report.txt",
     "source_validation_summary.json",

@@ -1,0 +1,63 @@
+Experiment 2 Local Environment Snapshot
+=======================================
+
+Generated at: 2026-09-18T16:08:38+09:00
+Project root: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection
+
+[Python]
+Command: .venv\Scripts\python.exe --version
+Python 3.12.14
+
+[Python Executable]
+Command: .venv\Scripts\python.exe -c "import sys; print(sys.executable)"
+C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\.venv\Scripts\python.exe
+
+[OS]
+Windows-11-10.0.26200-SP0
+
+[pip]
+Command: .venv\Scripts\python.exe -m pip --version
+pip 26.2.1 from C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\.venv\Lib\site-packages\pip (python 3.12)
+
+[Import Checks]
+NumPy=2.5.3
+Pandas=3.0.6
+OpenCV=5.0.0
+dlib_import=20.0.1
+PyYAML=6.0.3
+tqdm=4.70.1
+pytest=9.1.1
+torch=NOT INSTALLED
+torchvision=NOT INSTALLED
+sklearn=NOT INSTALLED
+
+[GPU / CUDA]
+GPU=NVIDIA GeForce RTX 3080
+NVIDIA_DRIVER=595.95
+DRIVER_REPORTED_CUDA=13.2
+PYTORCH_CUDA_RUNTIME=NOT AVAILABLE (PyTorch is not installed)
+
+[pip list --format=freeze]
+colorama==0.4.6
+dlib-bin==20.0.1
+iniconfig==2.3.0
+numpy==2.5.3
+opencv-python==5.0.0.93
+packaging==26.3
+pandas==3.0.6
+pip==26.2.1
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==9.1.1
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+setuptools==84.0.0
+six==1.17.0
+tqdm==4.70.1
+tzdata==2026.4
+wheel==0.48.0
+
+[Snapshot Policy]
+이 파일은 위 생성 시각의 실제 local environment를 기록한다.
+프로젝트가 의도한 dependency specification이 아니며, 향후 작성할
+requirements.txt 또는 pyproject.toml을 대체하지 않는다.

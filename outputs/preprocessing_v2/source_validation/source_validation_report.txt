@@ -9,8 +9,8 @@ Output directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-det
   "dlib": null,
   "opencv": "5.0.0.93",
   "os": "Windows-11-10.0.26200-SP0",
-  "python": "3.12.12",
-  "pytorch": "2.11.0+cu128"
+  "python": "3.12.14",
+  "pytorch": null
 }
 
 [Required Paths]
@@ -408,10 +408,9 @@ Output directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-det
 [Asset Load Test]
 {
   "dlib68": {
-    "error": "ModuleNotFoundError: No module named 'dlib'",
-    "status": "ERROR"
+    "status": "OK"
   },
-  "status": "ERROR",
+  "status": "OK",
   "yunet": {
     "status": "OK"
   }
@@ -424,8 +423,8 @@ Output directory: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-det
 
 [Final Decision]
 {
-  "decision": "SOURCE_VALIDATION_FAILED",
+  "decision": "READY_FOR_PREPROCESSING_AUDIT",
   "reasons": [
-    "Dlib68 load failed: ModuleNotFoundError: No module named 'dlib'"
+    "All STEP 1 checks passed"
   ]
 }
