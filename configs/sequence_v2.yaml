@@ -1,0 +1,22 @@
+training_sample_unit: "one_original_10s_clip"
+window_seconds: 10.0
+
+context_sequence:
+  frames_per_window: 32
+  sampling: "uniform_over_full_clip"
+  input_shape: [3, 224, 224]
+  overlap_within_original_clip: false
+
+behavior_sequence:
+  fps: 10
+  expected_points_per_window: 100
+  features: ["EAR", "MAR", "pitch", "yaw", "roll"]
+
+realtime_inference:
+  rolling_window_seconds: 10.0
+  decision_stride_seconds: 0.5
+  note: "실시간 stride는 학습 sample stride와 별도 설정"
+
+labels:
+  context_label_source: "original_10s_clip_label"
+  create_2s_weak_labels: false

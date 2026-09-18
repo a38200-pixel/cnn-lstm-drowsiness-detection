@@ -1,0 +1,21 @@
+behavior_stream:
+  fps: 10
+  window_seconds: 10
+  landmark_source: "dlib68_only"
+
+features:
+  eye: ["EAR_left", "EAR_right", "EAR_mean", "PERCLOS", "max_closure_duration"]
+  mouth: ["MAR", "max_mar", "yawn_duration", "yawn_count"]
+  head_pose: ["pitch", "yaw", "roll", "max_pitch_drop", "head_down_duration", "head_nod_count"]
+
+thresholds:
+  eye_closed_ear: "TBD"
+  prolonged_eye_closure_seconds: "TBD"
+  yawn_mar: "TBD"
+  yawn_duration_seconds: "TBD"
+  head_drop_pitch_delta: "TBD"
+  head_drop_duration_seconds: "TBD"
+
+calibration_policy:
+  use_test: false
+  preferred_sources: ["train_event_annotations", "validation_confirmation", "literature_prior"]

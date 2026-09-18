@@ -1,0 +1,25 @@
+raw_video_root: "data/raw/SUST Driver Drowsiness Dataset"
+metadata_root: "data/metadata"
+
+face_detector:
+  primary: "yunet"
+  model_path: "assets/yunet/face_detection_yunet_2023mar.onnx"
+  note: "새 조합이므로 YuNet+Dlib68 coverage를 새로 audit할 것"
+
+landmarks:
+  model: "dlib68"
+  model_path: "assets/dlib/shape_predictor_68_face_landmarks.dat"
+  use_single_landmark_source: true
+  allow_3ddfa_features: false
+
+context_crop:
+  mode: "full_face"
+  color: "rgb"
+  output_size: [224, 224]
+  margin_ratio: 0.25
+  force_eye_alignment: false
+
+missing_policy:
+  compact_timeline: false
+  record_valid_mask: true
+  final_acceptance_rule: "TBD_AFTER_TRAIN_VAL_PREPROCESSING_AUDIT"

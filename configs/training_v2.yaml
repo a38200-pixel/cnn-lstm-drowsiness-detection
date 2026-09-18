@@ -1,0 +1,19 @@
+seeds: [42, 43, 44]
+max_epochs: 100
+early_stopping:
+  monitor: "val_loss"
+  patience: 8
+  min_delta: 0.0001
+checkpoint:
+  official_rule: "minimum_validation_loss"
+
+test_policy:
+  sealed_until_final_configuration: true
+
+optimizer:
+  initial_candidate: "AdamW"
+  note: "1차 GN+SGD/AdamW 결론을 그대로 전이하지 말고 2차 구조에서 train/val로 새 검증"
+
+normalization:
+  image: "ImageNet_pretrained_backbone_normalization"
+  behavior_features: "recompute_from_experiment2_train_only_if_needed"

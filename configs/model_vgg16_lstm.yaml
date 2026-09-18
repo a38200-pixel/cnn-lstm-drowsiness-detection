@@ -1,0 +1,19 @@
+model_name: "vgg16_lstm_context"
+backbone:
+  name: "vgg16"
+  pretrained: true
+  weights: "ImageNet"
+  remove_original_classifier: true
+  output_via_gap: 512
+
+temporal:
+  type: "lstm"
+  input_size: 512
+  hidden_size: 128
+  num_layers: 1
+  bidirectional: false
+
+classifier:
+  hidden_size: 64
+  dropout: 0.3
+  num_classes: 2

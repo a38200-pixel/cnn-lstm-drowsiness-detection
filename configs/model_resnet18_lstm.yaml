@@ -1,0 +1,19 @@
+model_name: "resnet18_lstm_context"
+backbone:
+  name: "resnet18"
+  pretrained: true
+  weights: "ImageNet"
+  remove_classifier: true
+  output_via_gap: 512
+
+temporal:
+  type: "lstm"
+  input_size: 512
+  hidden_size: 128
+  num_layers: 1
+  bidirectional: false
+
+classifier:
+  hidden_size: 64
+  dropout: 0.3
+  num_classes: 2
