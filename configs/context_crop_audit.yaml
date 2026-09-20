@@ -1,0 +1,28 @@
+# STEP 2-B의 저장된 YuNet bbox와 동일한 train/validation frame만 사용한다.
+source_results_dir: "outputs/preprocessing_v2/detector_primary_comparison"
+step2b_config: "configs/detector_primary_comparison.yaml"
+train_metadata: "data/metadata/train.csv"
+val_metadata: "data/metadata/val.csv"
+
+output_size: 224
+candidates:
+  raw_resize: true
+  square_0:
+    margin_ratio: 0.0
+  square_m10:
+    margin_ratio: 0.10
+  square_m20:
+    margin_ratio: 0.20
+
+# RGB ImageNet mean을 8-bit로 반올림한 값을 BGR 순서로 canvas에 넣는다.
+padding:
+  mode: "imagenet_mean"
+  rgb_mean: [0.485, 0.456, 0.406]
+
+visual_audit:
+  source_manifest: "outputs/preprocessing_v2/detector_primary_comparison/review_pack/review_manifest.csv"
+  max_samples: 45
+  contact_sheet_rows: 4
+  panel_size: 320
+
+output_dir: "outputs/preprocessing_v2/context_crop_audit"

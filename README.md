@@ -19,6 +19,43 @@
 
 ## Experiment 2 Progress
 
+| 단계 | 현재 상태 |
+|---|---|
+| STEP 1 — Source Data Validation | COMPLETE |
+| STEP 2 — Preprocessing Policy Audit & Selection (2-A ~ 2-D) | **COMPLETE** |
+| STEP 3 — Canonical Dataset Preprocessing | **NOT STARTED** |
+
+STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
+
+시각 검토 결론은 이번 문서화 요청에서 사용자가 제공한 내용입니다. 원본 자동 report의 `WAITING_FOR_MANUAL_*` 상태와 비어 있는 수동 검토 CSV 판정 칸은 그대로 보존하며, CSV에 검토 결과가 입력됐다고 주장하지 않습니다.
+
+### Experiment 2 — Frozen Preprocessing Policy after STEP 2
+
+| 항목 | 확정 정책 |
+|---|---|
+| Face detector | **YuNet** (primary) |
+| Landmark predictor / fitting ROI | **Dlib68 / YuNet RAW bbox** |
+| Behavior features | EAR / MAR / Head Pose |
+| Head Pose 비교 | Circular angular distance; raw angle 보존 |
+| Context crop | **SQUARE_M10**: YuNet bbox의 width·height 각각 양쪽으로 10% 확장 → 중심 유지 정사각형 → frame 밖 ImageNet-mean padding → RGB 224×224 |
+| Context model 계획 | ResNet18과 VGG16을 별도 실험으로 비교; 아직 구현·학습 전 |
+
+```text
+Frame → YuNet → YuNet RAW bbox
+                   ├─ Behavior: RAW bbox → Dlib68 → EAR / MAR / Head Pose
+                   └─ Context: 양쪽 10% margin → 중심 유지 square
+                               → ImageNet-mean padding → RGB 224×224
+                               → ResNet18 또는 VGG16 (이후 단계, 미구현)
+```
+
+### Still Unresolved After STEP 2
+
+- `pitch_centered_candidate = wrap_to_180(pitch_raw - 180)`은 분석 표현 후보입니다. 양·음의 물리적 head-up/head-down 대응은 아직 확정하지 않았습니다.
+- EAR closure, PERCLOS, MAR/yawn, head-drop/nod의 threshold와 시간 규칙은 미확정입니다.
+- Sequence 생성·모델 학습은 시작하지 않았습니다. SQUARE_M10은 crop geometry 선택이지 최고 모델 정확도 입증이 아닙니다.
+- 모든 STEP 2 audit은 train/validation만 사용했습니다. **TEST SPLIT SEALED**: 최종 평가 전에는 preprocessing 정책·임계값·detector·crop·rule calibration·model 선택에 test를 사용하지 않습니다.
+- 기존 split은 video-level stratified split입니다. per-video subject mapping이 없어 subject-wise 독립성을 보장할 수 없으며 unseen-subject 일반화 성능을 주장하지 않습니다.
+
 ### STEP 1 — Source Data Validation
 
 Status: **COMPLETED — READY_FOR_PREPROCESSING_AUDIT**
@@ -87,15 +124,15 @@ Experiment 2는 프로젝트 전용 `.venv`를 사용합니다. 실제 Python �
 
 #### Next Step
 
-STEP 2에서는 소규모 샘플을 대상으로 다음 preprocessing audit을 수행합니다.
+STEP 2에서는 소규모 샘플을 대상으로 다음 preprocessing audit을 수행했습니다.
 
 `HOG primary → HOG failure → YuNet fallback → Dlib68 landmarks → EAR/MAR/HeadPose → automatic geometry validation → visual audit → detector policy 결정`
 
-STEP 2-A 자동 audit 구현과 실행이 완료됐으며 아래에 실제 결과를 기록합니다.
+STEP 2-A부터 2-D까지 완료됐으며 아래에 실제 결과와 최종 정책을 기록합니다.
 
-### STEP 2-A — HOG → YuNet Fallback Compatibility Audit
+### STEP 2-A — Detector / Landmark Compatibility Audit
 
-Status: **AUTOMATIC AUDIT COMPLETE — PRIMARY DETECTOR POLICY NOT FINALIZED**
+Status: **COMPLETE** — 당시 자동 audit에서는 detector 정책을 보류했고, 이후 STEP 2-B에서 YuNet primary를 확정했습니다.
 
 #### 목적과 데이터 범위
 
@@ -159,11 +196,11 @@ python scripts/run_detector_landmark_audit.py --config configs/detector_landmark
 
 Head Pose에서는 OpenCV Euler pitch가 ±180° 부근으로 표현되어 raw pitch 중앙값이 159.40°였고, 158개 유효 pose가 모두 기존 large-pose flag 대상이 됐습니다. 12개 paired sample의 단순 pitch 절댓값 차이는 최대 357.44°였습니다. 이는 Head Pose 모델 실패로 단정할 결과가 아니라 ±180° wrap-around를 고려하지 않은 **표현 및 비교 convention 문제**입니다.
 
-따라서 primary detector 정책은 아직 확정하지 않습니다. STEP 2-B에서 raw angle을 보존하면서 circular angular distance를 사용하고, front-centered pitch 후보 표현과 pose axis를 visual review합니다.
+STEP 2-A 당시에는 primary detector 정책을 확정하지 않았습니다. 이후 STEP 2-B에서 raw angle을 보존하고 circular angular distance와 front-centered pitch 분석 후보를 도입했습니다. Head Pose의 실제 up/down 부호 규약은 여전히 미확정입니다.
 
 ### STEP 2-B — HOG vs YuNet Primary Detector Comparison
 
-Status: **AUTOMATIC + VISUAL REVIEW COMPLETE — PRIMARY DETECTOR CANDIDATE: YUNET — LANDMARK ROI POLICY: NOT FINALIZED**
+Status: **COMPLETE — PRIMARY FACE DETECTOR: YUNET**
 
 #### 목적
 
@@ -202,7 +239,7 @@ python scripts/run_detector_primary_comparison.py --config configs/detector_prim
 - `visual_samples/`
 - `contact_sheets/`
 
-자동 비교 수치와 visual review를 함께 검토한 현재 결론은 **YuNet을 primary detector 후보로 채택**하는 것입니다. 이는 `YUNET_PRIMARY_FINAL_APPROVED`가 아닙니다. Dlib68 fitting ROI, Context CNN crop, Head Pose sign convention과 시간축 threshold가 아직 확정되지 않았습니다.
+자동 비교 수치와 사용자 제공 visual review 결론을 종합해 **YuNet을 Experiment 2의 primary face detector로 확정**했습니다. 자동 report의 수동 검토 대기 Decision은 생성 당시 상태이며, 이후 STEP 2-C에서 Dlib68 fitting ROI, STEP 2-D에서 Context crop을 각각 확정했습니다. Head Pose sign convention과 시간축 threshold는 여전히 미확정입니다.
 
 #### Visual Review Pack
 
@@ -248,15 +285,15 @@ Experiment 1의 `HOG → Dlib68` 대 `YuNet → 3DDFA` 비교와 달리, STEP 2-
 
 Head Pose는 raw Euler angle의 ±180° wrap 문제 때문에 circular angular difference로 비교합니다. `pitch_centered_candidate`는 분석 후보일 뿐이며 부호 규약과 generic camera model의 angle을 ground truth로 간주하지 않습니다.
 
-현재 방향은 다음과 같습니다.
+STEP 2-B 당시 결론과 이후 확정 상태는 다음과 같습니다.
 
-- Primary detector candidate: **YuNet**
-- 미확정: Dlib68 fitting ROI margin, Context CNN crop margin, Head Pose sign convention, EAR/MAR temporal threshold
-- 다음 단계: STEP 2-C — YuNet Landmark ROI Margin Audit
+- Primary face detector: **YuNet** (이번 표본의 통제된 비교 결과; 모든 조건에서의 우월성을 주장하지 않음)
+- 이후 STEP 2-C에서 Dlib68 fitting ROI는 RAW bbox, STEP 2-D에서 Context crop은 SQUARE_M10으로 확정
+- 계속 미확정: Head Pose sign convention과 EAR/MAR 등 행동 threshold·시간 규칙
 
 ### STEP 2-C — YuNet Landmark ROI Margin Audit
 
-Status: **VISUAL REVIEW COMPLETE — CLIPPING METADATA BUG CORRECTED — LANDMARK ROI: YUNET RAW BBOX SELECTED**
+Status: **COMPLETE — LANDMARK ROI: YUNET RAW BBOX → DLIB68**
 
 YuNet detector 선택과 Dlib68 fitting rectangle을 분리해 평가합니다. STEP 2-B의 동일 160개 frame 중 YuNet 성공 157개만 사용하고, 저장된 YuNet raw detection bbox를 변경하거나 detector를 재실행하지 않습니다. HOG 값은 참고값일 뿐 ground truth가 아닙니다.
 
@@ -271,9 +308,18 @@ python scripts/run_landmark_roi_margin_audit.py --dry-run
 python scripts/run_landmark_roi_margin_audit.py --config configs/landmark_roi_margin_audit.yaml
 ```
 
-실제 실행 결과는 `outputs/preprocessing_v2/landmark_roi_margin_audit/`에 생성됩니다. 이번 구현 단계에서는 실제 dataset audit를 실행하지 않았습니다. 실행 후 Decision은 `WAITING_FOR_MANUAL_LANDMARK_ROI_REVIEW`이며, ground-truth landmark가 없으므로 자동 best margin은 선택하지 않습니다.
+실제 실행 결과는 `outputs/preprocessing_v2/landmark_roi_margin_audit/`에 보존되어 있습니다. 수동 시각 검토를 거쳐 YuNet RAW bbox를 Dlib68 fitting ROI로 선택했습니다. 이는 Context CNN crop 정책과는 별개입니다.
 
-Landmark ROI margin과 Context CNN full-face crop margin은 별도 정책입니다. Context branch의 square RGB 224×224 crop과 20–30% margin 후보는 이후 단계에서 독립적으로 검토합니다.
+| 후보 | Dlib68·geometry·EAR·MAR·pose 성공 | RAW 대비 landmark 차이 평균 | EAR 평균 | MAR 평균 |
+|---|---:|---:|---:|---:|
+| RAW | 각 157/157 | 기준 | 0.369 | 0.148 |
+| M05 | 각 157/157 | 0.0278 | 0.406 | 0.194 |
+| M10 | 각 157/157 | 0.0560 | 0.455 | 0.231 |
+| M15 | 각 157/157 | 0.1059 | 0.470 | 0.272 |
+
+Margin을 늘려도 성공률은 개선되지 않았고 landmark fitting과 EAR/MAR 분포가 이동했습니다. 사용자 제공 시각 검토에서는 RAW가 눈·입·턱을 대체로 잘 따랐고, M05의 일관된 개선은 없었으며 M10/M15 일부 표본은 contour·mouth·pose 변화가 컸습니다. 따라서 **LANDMARK ROI = YUNET RAW BBOX**로 확정했습니다.
+
+Landmark ROI margin과 Context CNN full-face crop margin은 별도 정책입니다. Context branch의 RGB 224×224 crop은 이후 STEP 2-D에서 RAW_RESIZE, SQUARE_0, SQUARE_M10, SQUARE_M20으로 독립 비교했습니다.
 
 #### STEP 2-C Visual Review Pack
 
@@ -306,6 +352,44 @@ Visual review pack 준비를 완료했습니다. 기존 18개 contact sheet와 �
 | M10 | 155/157 | 0/157 | 0% |
 | M15 | 157/157 | 0/157 | 0% |
 
-628개 후보의 보정 ROI 좌표가 기존 CSV에 저장된 ROI 좌표와 모두 일치합니다. 따라서 영향은 **`REPORTING_ONLY_BUG`**입니다. Dlib68 fitting, EAR/MAR, Head Pose, visual review 결과는 변경되지 않았고 ROI audit 재실행도 필요하지 않습니다. 시각 검토에서 선택한 `YuNet RAW bbox → Dlib68` 방향을 유지합니다. 다만 Context CNN crop 정책, Head Pose sign convention, temporal rule threshold는 여전히 별도 미확정 항목입니다.
+628개 후보의 보정 ROI 좌표가 기존 CSV에 저장된 ROI 좌표와 모두 일치합니다. 따라서 영향은 **`REPORTING_ONLY_BUG`**입니다. Dlib68 fitting, EAR/MAR, Head Pose, visual review 결과는 변경되지 않았고 ROI audit 재실행도 필요하지 않습니다. 시각 검토에서 선택한 `YuNet RAW bbox → Dlib68` 방향을 유지합니다. Context CNN crop은 이후 STEP 2-D에서 확정했고, Head Pose sign convention과 temporal rule threshold는 여전히 미확정입니다.
 
 원본 `roi_margin_report.txt`, `roi_margin_summary.json`, `roi_margin_results.csv`는 그대로 보존하고, 보정 내역은 `outputs/preprocessing_v2/landmark_roi_margin_audit/clipping_metadata_correction/`의 report·summary·CSV에 기록했습니다. 경계 방향별 clipping, 경계 정확히 접촉, 실수 좌표 정수화, 면적 손실 및 기존 157개 결과 교차 검증을 포함한 회귀 테스트 9개를 추가했습니다. 기존 Dlib inclusive 끝점 테스트도 유지했습니다. 전체 검증은 **39 passed, 5 subtests passed**이며 `git diff --check`에서 공백 오류는 없었습니다.
+
+Clipping 보정은 **`REPORTING_ONLY_BUG`**, **`NO ROI AUDIT RERUN REQUIRED`**입니다. 저장된 ROI 좌표 628/628개가 보정 계산과 일치하므로 실제 Dlib68 입력, EAR/MAR, Head Pose와 시각 검토 결과는 바뀌지 않았습니다. 당시 미확정이던 Context CNN crop 정책은 이후 STEP 2-D에서 독립적으로 검토해 확정했습니다.
+
+### STEP 2-D — Context CNN Crop Policy Audit
+
+Status: **COMPLETE — CONTEXT CROP: SQUARE_M10**
+
+YuNet detection bbox는 고정하고, Dlib68 fitting에는 STEP 2-C에서 확정한 RAW bbox를 그대로 사용합니다. Context CNN crop ROI는 별도 분기이므로 landmark ROI margin과 같은 값을 강제하지 않습니다. 저장된 YuNet bbox를 기준으로 `RAW_RESIZE`, `SQUARE_0`, `SQUARE_M10`, `SQUARE_M20`의 RGB 224×224 audit preview를 비교합니다. 이 단계는 CNN 구현이나 학습이 아닙니다.
+
+```text
+YuNet detection bbox
+├─ Dlib68 fitting ROI: RAW bbox (STEP 2-C 완료)
+└─ Context CNN crop ROI: SQUARE_M10 (STEP 2-D 완료)
+```
+
+M10/M20은 bbox width와 height의 각각 10%/20%를 양쪽에 더한 뒤 긴 축을 줄이지 않고 중심 기준 정사각형으로 확장합니다. frame 밖 영역은 ROI를 줄이는 대신 ImageNet mean RGB `[124, 116, 104]`(OpenCV BGR `[104, 116, 124]`)로 padding합니다. 양 축 축소는 `INTER_AREA`, 확대가 포함되면 `INTER_LINEAR`를 사용합니다. 자동 수치는 distortion, 얼굴 점유율, padding과 시간적 변동을 찾는 진단용이며, 실제 시각 검토를 종합해 **SQUARE_M10**을 선택했습니다. CNN 구현·학습은 아직 시작하지 않았습니다.
+
+```bash
+python scripts/run_context_crop_audit.py --dry-run
+python scripts/run_context_crop_audit.py --config configs/context_crop_audit.yaml
+```
+
+실제 실행 결과는 `outputs/preprocessing_v2/context_crop_audit/`에 보존돼 있습니다. 160개 train/validation frame 중 YuNet 성공 157개에 대해 crop을 비교했고, 42개 visual sample과 11개 contact sheet를 검토했습니다. 원본 자동 report의 Decision `WAITING_FOR_MANUAL_CONTEXT_CROP_REVIEW`는 생성 당시 상태입니다.
+
+| 후보 | 핵심 진단 및 검토 결과 |
+|---|---|
+| RAW_RESIZE | distortion ratio 중앙값 1.426; 육안상 aspect-ratio 왜곡 반복 |
+| SQUARE_0 | 얼굴 면적 비율 평균 0.704, padding 0/157; 얼굴 외곽 여유가 작음 |
+| **SQUARE_M10** | 얼굴 면적 비율 평균 0.488, padding 3/157, padding 비율 평균 0.00077·최대 0.0521; 얼굴·주변 여유의 균형 |
+| SQUARE_M20 | 얼굴 면적 비율 평균 0.358, padding 6/157; 배경 증가와 얼굴 비중 감소 |
+
+인접 frame의 얼굴 면적 비율 변화 중앙값은 SQUARE_0 0.0190, M10 0.0133, M20 0.0100이었습니다. 이는 실제 얼굴 움직임을 포함하는 보조 진단이며 margin이 클수록 좋다는 근거는 아닙니다. SQUARE_M10은 crop geometry·배경량·padding·시각적 일관성을 종합해 선택했으며, 모델 정확도 우위는 아직 검증하지 않았습니다.
+
+### STEP 3 — Canonical Dataset Preprocessing
+
+Status: **NOT STARTED**
+
+다음 작업에서 frozen YuNet 정책 적용, canonical frame sampling, Context crop·Behavior feature 생성, missing detection 처리 및 train/validation/test provenance 유지를 설계합니다. 이번 문서화 작업에서는 데이터 처리나 STEP 3 구현을 수행하지 않았습니다.
