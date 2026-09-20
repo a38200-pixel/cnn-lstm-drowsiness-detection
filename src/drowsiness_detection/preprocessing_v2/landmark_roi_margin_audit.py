@@ -132,21 +132,34 @@ def load_roi_audit_config(config_path: Path, project_root: Path) -> RoiAuditConf
 def expand_landmark_roi(
     bbox: BoundingBox, margin_ratio: float, frame_width: int, frame_height: int,
 ) -> ExpandedRoi:
-    """bbox width와 height에 margin을 각각 적용하고 frame 경계로 clipping한다."""
+    """반개방 [x1, y1, x2, y2) bbox에 margin을 적용해 Dlib 입력 ROI를 만든다.
+
+    margin 적용 뒤 실수 좌표의 시작은 floor, 끝은 ceil로 정수화한다.
+    정수화된 intended ROI를 같은 반개방 좌표계에서 frame에 clipping하고,
+    두 정수 ROI의 차이만 실제 clipping으로 판정한다. Dlib의 inclusive
+    끝점 변환(x2-1, y2-1)은 이후 predictor에서만 수행한다.
+    """
 
     if not bbox.valid or frame_width <= 0 or frame_height <= 0 or margin_ratio < 0:
         raise ValueError("유효한 bbox, frame 크기, 음수가 아닌 margin이 필요합니다")
     margin_x = bbox.width * margin_ratio
     margin_y = bbox.height * margin_ratio
-    raw = (bbox.x1 - margin_x, bbox.y1 - margin_y, bbox.x2 + margin_x, bbox.y2 + margin_y)
-    clipped = BoundingBox(
-        max(0, int(np.floor(raw[0]))), max(0, int(np.floor(raw[1]))),
-        min(frame_width, int(np.ceil(raw[2]))), min(frame_height, int(np.ceil(raw[3]))),
+    intended = BoundingBox(
+        int(np.floor(bbox.x1 - margin_x)), int(np.floor(bbox.y1 - margin_y)),
+        int(np.ceil(bbox.x2 + margin_x)), int(np.ceil(bbox.y2 + margin_y)),
     )
-    raw_area = max(0.0, raw[2] - raw[0]) * max(0.0, raw[3] - raw[1])
-    fraction = 1.0 - clipped.area / raw_area if raw_area > 0 else 1.0
-    was_clipped = any(abs(value - other) > 1.0e-9 for value, other in zip(raw, clipped.as_tuple()))
-    return ExpandedRoi(clipped, was_clipped, float(max(0.0, min(1.0, fraction))))
+    clipped = BoundingBox(
+        min(max(intended.x1, 0), frame_width), min(max(intended.y1, 0), frame_height),
+        min(max(intended.x2, 0), frame_width), min(max(intended.y2, 0), frame_height),
+    )
+    if intended.area <= 0 or not clipped.valid:
+        raise ValueError("frame clipping 후 유효한 ROI 면적이 필요합니다")
+    was_clipped = intended != clipped
+    fraction = 1.0 - clipped.area / intended.area if was_clipped else 0.0
+    fraction = float(max(0.0, min(1.0, fraction)))
+    if was_clipped != (fraction > 1.0e-12):
+        raise AssertionError("ROI clipping flag와 면적 손실 비율이 일치하지 않습니다")
+    return ExpandedRoi(clipped, was_clipped, fraction)
 
 
 def _load_source_rows(config: RoiAuditConfig) -> list[dict[str, str]]:

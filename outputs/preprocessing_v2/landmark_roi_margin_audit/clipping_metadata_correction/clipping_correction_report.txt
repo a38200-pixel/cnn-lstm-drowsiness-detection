@@ -1,0 +1,30 @@
+STEP 2-C Clipping Metadata Correction
+
+[Original Statistics]
+RAW: 0/157, fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M05: 157/157, fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M10: 155/157, fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M15: 157/157, fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+
+[Root Cause]
+기존 roi_clipped는 margin을 적용한 실수 ROI와 floor/ceil로 정수화한 최종 ROI를 직접 비교했다.
+따라서 frame 내부에서 발생한 실수/정수 반올림 차이를 경계 clipping으로 잘못 판정했다.
+clipped_fraction은 면적 비율을 계산하여 0 미만을 0으로 제한했으므로 flag와 불일치했다.
+Dlib inclusive 끝점 변환은 predictor에서 이후에 수행되며 원인이 아니다.
+
+[Corrected Definition]
+반개방 정수 intended ROI와 같은 좌표계의 frame-clipped ROI가 다를 때만 clipped=True.
+clipped_fraction=1-clipped_area/intended_area; 정수 반개방 영역의 면적 손실 비율.
+
+[Corrected Statistics]
+RAW: 0/157 (0.00%), fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M05: 0/157 (0.00%), fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M10: 0/157 (0.00%), fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+M15: 0/157 (0.00%), fraction={'mean': 0.0, 'median': 0.0, 'max': 0.0, 'p90': 0.0, 'p95': 0.0}
+
+[Impact Assessment]
+저장된 ROI 좌표와 보정 코드 계산값 일치: 628/628
+영향 판정: REPORTING_ONLY_BUG
+저장된 ROI가 모두 일치하면 Dlib에 전달된 ROI와 기존 landmark/feature/visual 결과는 변경되지 않는다.
+ROI audit 재실행 필요: False
+기존 STEP 2-C 원본 artifact는 수정하지 않았다.

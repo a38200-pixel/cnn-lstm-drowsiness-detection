@@ -1,0 +1,110 @@
+{
+  "source_frame_count": 157,
+  "candidate_row_count": 628,
+  "frame_dimension_source": "data/metadata/train.csv, data/metadata/val.csv",
+  "original_statistics": {
+    "raw": {
+      "frame_count": 157,
+      "clipped_count": 0,
+      "clipped_rate": 0.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m05": {
+      "frame_count": 157,
+      "clipped_count": 157,
+      "clipped_rate": 1.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m10": {
+      "frame_count": 157,
+      "clipped_count": 155,
+      "clipped_rate": 0.9872611464968153,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m15": {
+      "frame_count": 157,
+      "clipped_count": 157,
+      "clipped_rate": 1.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    }
+  },
+  "corrected_statistics": {
+    "raw": {
+      "frame_count": 157,
+      "clipped_count": 0,
+      "clipped_rate": 0.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m05": {
+      "frame_count": 157,
+      "clipped_count": 0,
+      "clipped_rate": 0.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m10": {
+      "frame_count": 157,
+      "clipped_count": 0,
+      "clipped_rate": 0.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    },
+    "m15": {
+      "frame_count": 157,
+      "clipped_count": 0,
+      "clipped_rate": 0.0,
+      "clipped_fraction": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "p90": 0.0,
+        "p95": 0.0
+      }
+    }
+  },
+  "flag_changed_count": 469,
+  "stored_roi_coordinate_match_count": 628,
+  "impact": "REPORTING_ONLY_BUG",
+  "roi_audit_rerun_required": false,
+  "detector_landmark_feature_rerun_performed": false
+}

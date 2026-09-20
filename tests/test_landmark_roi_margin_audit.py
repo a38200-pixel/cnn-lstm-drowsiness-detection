@@ -75,6 +75,56 @@ def test_zero_margin_clipping_and_invalid_bbox() -> None:
         expand_landmark_roi(BoundingBox(10, 10, 10, 20), 0.05, 200, 200)
 
 
+@pytest.mark.parametrize(
+    ("bbox", "expected"),
+    [
+        (BoundingBox(200, 150, 400, 350), BoundingBox(190, 140, 410, 360)),
+        (BoundingBox(5, 150, 205, 350), BoundingBox(0, 140, 215, 360)),
+        (BoundingBox(200, 5, 400, 205), BoundingBox(190, 0, 410, 215)),
+        (BoundingBox(435, 150, 635, 350), BoundingBox(425, 140, 640, 360)),
+        (BoundingBox(200, 275, 400, 475), BoundingBox(190, 265, 410, 480)),
+    ],
+)
+def test_frame_boundary_clipping_cases(bbox: BoundingBox, expected: BoundingBox) -> None:
+    """내부와 좌·상·우·하 초과를 같은 반개방 정수 좌표계에서 구분한다."""
+
+    result = expand_landmark_roi(bbox, 0.05, 640, 480)
+    assert result.bbox == expected
+    if bbox.x1 == 200 and bbox.y1 == 150:
+        assert result.clipped is False
+        assert result.clipped_fraction == 0.0
+    else:
+        assert result.clipped is True
+        assert result.clipped_fraction > 0.0
+
+
+def test_exact_boundary_is_not_clipping() -> None:
+    """반개방 ROI 끝이 frame width와 정확히 같아도 손실은 없다."""
+
+    result = expand_landmark_roi(BoundingBox(0, 100, 640, 300), 0.0, 640, 480)
+    assert result.bbox == BoundingBox(0, 100, 640, 300)
+    assert result.clipped is False
+    assert result.clipped_fraction == 0.0
+
+
+def test_fractional_rounding_is_not_frame_clipping() -> None:
+    """float expansion의 floor/ceil 차이만으로 clipping flag가 켜지지 않는다."""
+
+    result = expand_landmark_roi(BoundingBox(100, 100, 109, 201), 0.05, 640, 480)
+    assert result.bbox == BoundingBox(99, 94, 110, 207)
+    assert result.clipped is False
+    assert result.clipped_fraction == 0.0
+
+
+def test_clipped_fraction_matches_integer_area_loss() -> None:
+    """의도한 반개방 ROI 면적 중 frame 밖으로 제거된 비율을 검증한다."""
+
+    result = expand_landmark_roi(BoundingBox(0, 50, 100, 150), 0.10, 200, 200)
+    assert result.bbox == BoundingBox(0, 40, 110, 160)
+    assert result.clipped is True
+    assert result.clipped_fraction == pytest.approx(1.0 - (110 * 120) / (120 * 120))
+
+
 def test_dlib_predictor_uses_inclusive_rectangle_endpoints() -> None:
     """반개방 bbox의 x2/y2를 dlib inclusive 끝점으로 변환한다."""
 

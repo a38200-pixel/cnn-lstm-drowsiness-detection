@@ -256,7 +256,7 @@ Head Pose는 raw Euler angle의 ±180° wrap 문제 때문에 circular angular d
 
 ### STEP 2-C — YuNet Landmark ROI Margin Audit
 
-Status: **AUDIT COMPLETE — VISUAL REVIEW PACK COMPLETE — WAITING FOR MANUAL LANDMARK ROI REVIEW**
+Status: **VISUAL REVIEW COMPLETE — CLIPPING METADATA BUG CORRECTED — LANDMARK ROI: YUNET RAW BBOX SELECTED**
 
 YuNet detector 선택과 Dlib68 fitting rectangle을 분리해 평가합니다. STEP 2-B의 동일 160개 frame 중 YuNet 성공 157개만 사용하고, 저장된 YuNet raw detection bbox를 변경하거나 detector를 재실행하지 않습니다. HOG 값은 참고값일 뿐 ground truth가 아닙니다.
 
@@ -289,4 +289,23 @@ Visual review pack 준비를 완료했습니다. 기존 18개 contact sheet와 �
 
 산출물은 `outputs/preprocessing_v2/landmark_roi_margin_audit/review_pack/`에 있으며, 배포용 ZIP은 `outputs/preprocessing_v2/landmark_roi_margin_audit/step2c_visual_review_pack.zip`입니다.
 
-기존 결과의 YuNet 성공 157개 행 모두에서 M05/M10/M15 중 하나 이상이 `roi_clipped=True`이지만 `clipped_fraction=0.0`이므로 두 값을 별도로 확인해야 합니다. 후처리 단계에서는 기존 audit 계산값을 수정하지 않았습니다. 현재 Decision은 계속 `WAITING_FOR_MANUAL_LANDMARK_ROI_REVIEW`입니다.
+기존 결과의 clipping flag 불일치는 아래 별도 보정 기록을 참조하십시오. 당시 생성된 audit 및 review pack 원본은 수정하지 않았습니다.
+
+#### STEP 2-C Clipping Metadata Correction
+
+기존 report의 `roi_clipped`는 RAW 0/157, M05 157/157, M10 155/157, M15 157/157인데 세 확장 후보의 `clipped_fraction`은 모두 0.0이었습니다. 원인은 frame clipping 전의 **실수 좌표**와 `floor/ceil`로 정수화된 최종 ROI를 직접 비교한 boolean 계산식입니다. 정수화 차이를 경계 clipping으로 오판했으며, Dlib의 `x2-1, y2-1` 변환은 원인이 아닙니다.
+
+이제 margin 적용 후 반개방 정수 `intended_roi`를 만든 다음 같은 좌표계의 frame-clipped ROI와 비교합니다. 두 ROI가 다를 때만 `roi_clipped=True`이며, `clipped_fraction`은 `1 - clipped_area/intended_area`입니다. 정확히 경계에 닿거나 실수 좌표를 정수화하기만 한 경우는 clipping이 아닙니다.
+
+기존 157개 frame에 대해 train/val metadata의 frame 크기와 저장된 YuNet bbox만으로 재계산했습니다.
+
+| Candidate | 기존 clipped | 보정 clipped | 보정 비율 |
+|---|---:|---:|---:|
+| RAW | 0/157 | 0/157 | 0% |
+| M05 | 157/157 | 0/157 | 0% |
+| M10 | 155/157 | 0/157 | 0% |
+| M15 | 157/157 | 0/157 | 0% |
+
+628개 후보의 보정 ROI 좌표가 기존 CSV에 저장된 ROI 좌표와 모두 일치합니다. 따라서 영향은 **`REPORTING_ONLY_BUG`**입니다. Dlib68 fitting, EAR/MAR, Head Pose, visual review 결과는 변경되지 않았고 ROI audit 재실행도 필요하지 않습니다. 시각 검토에서 선택한 `YuNet RAW bbox → Dlib68` 방향을 유지합니다. 다만 Context CNN crop 정책, Head Pose sign convention, temporal rule threshold는 여전히 별도 미확정 항목입니다.
+
+원본 `roi_margin_report.txt`, `roi_margin_summary.json`, `roi_margin_results.csv`는 그대로 보존하고, 보정 내역은 `outputs/preprocessing_v2/landmark_roi_margin_audit/clipping_metadata_correction/`의 report·summary·CSV에 기록했습니다. 경계 방향별 clipping, 경계 정확히 접촉, 실수 좌표 정수화, 면적 손실 및 기존 157개 결과 교차 검증을 포함한 회귀 테스트 9개를 추가했습니다. 기존 Dlib inclusive 끝점 테스트도 유지했습니다. 전체 검증은 **39 passed, 5 subtests passed**이며 `git diff --check`에서 공백 오류는 없었습니다.
