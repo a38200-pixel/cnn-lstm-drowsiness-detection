@@ -1,3 +1,8 @@
 data/raw/
 data/interim/
 .venv/
+__pycache__/
+.pytest_cache/
+.pytest_step3_*/
+pytest-cache-files-*/
+outputs/preprocessing_v2/canonical_preprocessing/

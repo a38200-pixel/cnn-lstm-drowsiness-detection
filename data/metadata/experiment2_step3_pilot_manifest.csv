@@ -1,0 +1,21 @@
+﻿video_id,split,label,source_path,pilot_order,selection_stratum,selection_method
+d_10,train,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_10.mp4,0,train:drowsy,sorted_evenly_spaced_half_up_v1
+d_315,train,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_315.mp4,1,train:drowsy,sorted_evenly_spaced_half_up_v1
+d_541,train,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_541.mp4,2,train:drowsy,sorted_evenly_spaced_half_up_v1
+d_767,train,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_767.mp4,3,train:drowsy,sorted_evenly_spaced_half_up_v1
+d_99,train,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_99.mp4,4,train:drowsy,sorted_evenly_spaced_half_up_v1
+n_1,train,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_1.mp4,5,train:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_262,train,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_262.mp4,6,train:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_513,train,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_513.mp4,7,train:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_764,train,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_764.mp4,8,train:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_999,train,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_999.mp4,9,train:not_drowsy,sorted_evenly_spaced_half_up_v1
+d_103,val,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_103.mp4,10,val:drowsy,sorted_evenly_spaced_half_up_v1
+d_33,val,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_33.mp4,11,val:drowsy,sorted_evenly_spaced_half_up_v1
+d_533,val,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_533.mp4,12,val:drowsy,sorted_evenly_spaced_half_up_v1
+d_751,val,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_751.mp4,13,val:drowsy,sorted_evenly_spaced_half_up_v1
+d_965,val,drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\drowsiness\d_965.mp4,14,val:drowsy,sorted_evenly_spaced_half_up_v1
+n_1002,val,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_1002.mp4,15,val:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_238,val,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_238.mp4,16,val:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_459,val,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_459.mp4,17,val:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_726,val,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_726.mp4,18,val:not_drowsy,sorted_evenly_spaced_half_up_v1
+n_997,val,not_drowsy,C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\data\raw\SUST Driver Drowsiness Dataset\not drowsiness\n_997.mp4,19,val:not_drowsy,sorted_evenly_spaced_half_up_v1

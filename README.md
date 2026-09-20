@@ -23,7 +23,9 @@
 |---|---|
 | STEP 1 — Source Data Validation | COMPLETE |
 | STEP 2 — Preprocessing Policy Audit & Selection (2-A ~ 2-D) | **COMPLETE** |
-| STEP 3 — Canonical Dataset Preprocessing | **NOT STARTED** |
+| STEP 3-A — Canonical Pipeline Implementation | **IMPLEMENTED** |
+| STEP 3-B — 20-Video Pilot | **AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIEW** |
+| STEP 3-C — Full Train/Val Materialization | **NOT STARTED** |
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 
@@ -388,8 +390,56 @@ python scripts/run_context_crop_audit.py --config configs/context_crop_audit.yam
 
 인접 frame의 얼굴 면적 비율 변화 중앙값은 SQUARE_0 0.0190, M10 0.0133, M20 0.0100이었습니다. 이는 실제 얼굴 움직임을 포함하는 보조 진단이며 margin이 클수록 좋다는 근거는 아닙니다. SQUARE_M10은 crop geometry·배경량·padding·시각적 일관성을 종합해 선택했으며, 모델 정확도 우위는 아직 검증하지 않았습니다.
 
+### Manual Review Closure
+
+STEP 2의 시각 검토는 review pack·contact sheet를 사용한 **사용자 직접 시각 검토와 단계별 전체 정책 결정**으로 완료됐습니다. 초기 per-sample CSV 입력 계획과 실제 검토 방식이 달라, 생성된 CSV의 수동 판단 필드는 채워지지 않았습니다. 수행하지 않은 표본별 `PASS`/`FAIL`·후보 선택을 사후 생성하지 않기 위해 원본 CSV는 그대로 보존합니다. 자동 report의 `WAITING_FOR_MANUAL_*`도 생성 당시 상태입니다. 자세한 범위·관찰·결정·CSV 채움 상태는 [manual review closure 기록](outputs/preprocessing_v2/manual_review_closure/step2_manual_review_closure.md)과 [STEP 2 상세 정책 문서](docs/experiment2_step2_preprocessing_policy.md)를 참고하세요.
+
+| 단계 | Manual review 상태 | 전체 결정 | 원본 CSV 수동 판단 입력 |
+|---|---|---|---:|
+| STEP 2-A | STEP 2-B decision audit로 대체 | 없음 | 0/90행 |
+| STEP 2-B | 단계 수준 시각 검토 완료 | YuNet primary | 0/126행 |
+| STEP 2-C | 단계 수준 시각 검토 완료 | YuNet RAW bbox → Dlib68 | 0/35행 |
+| STEP 2-D | 단계 수준 시각 검토 완료 | SQUARE_M10 | 0/42행 |
+
+이 closure는 STEP 2 frozen policy를 바꾸지 않습니다. STEP 2 수동 검토에도 test sample은 사용하지 않았고 **TEST SPLIT SEALED**를 유지합니다. 이후 STEP 3-B pilot의 실행 상태는 아래에 별도로 기록합니다.
+
 ### STEP 3 — Canonical Dataset Preprocessing
 
-Status: **NOT STARTED**
+STEP 2 frozen policy는 그대로 유지하며 [STEP 3 상세 설계 및 pilot 기록](docs/experiment2_step3_canonical_preprocessing.md)에 schema·결측·provenance·resume 규칙과 실제 pilot 결과를 정리했습니다. STEP 3-A 구현 후 STEP 3-B에서 지정된 20개 영상만 전처리했습니다.
 
-다음 작업에서 frozen YuNet 정책 적용, canonical frame sampling, Context crop·Behavior feature 생성, missing detection 처리 및 train/validation/test provenance 유지를 설계합니다. 이번 문서화 작업에서는 데이터 처리나 STEP 3 구현을 수행하지 않았습니다.
+#### STEP 3-A — Pipeline Implementation
+
+Status: **IMPLEMENTED**
+
+10 Hz × 10초 고정 100 slot, 검출 독립적인 32개 Context slot, 영상당 순차 decode, 동일 YuNet 검출의 Behavior/Context 공유, Dlib68 RAW bbox·EAR/MAR/Head Pose, SQUARE_M10 RGB crop을 구현했습니다. 실패 slot은 대체하지 않고 NaN 및 단계별 status로 기록합니다. 영상별 bundle은 임시 경로에서 검증한 뒤 발행하며 policy hash·모델 SHA256·source fingerprint가 같은 완료 bundle만 `--resume`에서 건너뜁니다. Test split은 코드 수준에서 제외합니다.
+
+```powershell
+.venv/Scripts/python.exe scripts/run_canonical_preprocessing.py --config configs/canonical_preprocessing.yaml --dry-run
+.venv/Scripts/python.exe scripts/prepare_canonical_pilot_manifest.py --dry-run
+```
+
+Metadata-only dry-run 결과는 train 1,452개와 val 311개, 총 1,763개 영상·176,300개 예상 frame row·56,416개 예상 Context slot입니다. 이는 계획 수치이며 처리 완료 수치가 아닙니다. Test 311개는 **SEALED**입니다. Pilot 후보는 train/val × drowsy/not_drowsy 각 5개, 총 20개로 고정 선택합니다.
+
+#### STEP 3-B — 20-Video Pilot
+
+Status: **AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIEW**.
+
+결정적 [20개 영상 manifest](data/metadata/experiment2_step3_pilot_manifest.csv)는 train/val × drowsy/not_drowsy 각 5개로 구성했고 test는 0개입니다. 별도 `data/interim/preprocessing_v2/canonical_pilot/`에서 실제 YuNet·Dlib68 전처리를 한 번 실행했습니다. 단계별 [pilot 보고서](outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [구현 시각 검토 pack](outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)을 남겼습니다.
+
+| 항목 | 실제 pilot 결과 |
+|---|---:|
+| 완료 / 처리 실패 영상 | 20 / 0 |
+| Canonical row / 정상 decode | 2,000 / 2,000 |
+| YuNet 성공 / 미검출 | 1,916 / 84 |
+| Dlib68 성공 / 검출 후 실패 | 1,916 / 0 |
+| EAR·MAR 유효 / Pose 성공 | 각 1,916 / 1,916 |
+| Context 선택 / crop 가용 / 결측 | 640 / 613 / 27 |
+| 저장 JPEG 무결성 / NPZ·cross-artifact 오류 | 613/613 / 0 |
+| Orphan 임시 bundle / test row | 0 / 0 |
+| 동일 manifest `--resume` | 신규 처리 0, 건너뜀 20, 충돌 0, detector 추론 0 |
+
+검출 누락과 Context crop 결측은 구조 오류와 분리한 data-quality 수치입니다. Review pack은 split×label을 균형 있게 포함한 12개 영상·36개 표본·6장 sheet입니다. 원본과 저장 JPEG의 동일 frame·bbox·RGB/BGR·padding을 **사용자가 직접 확인하기 전까지 STEP 3-B를 COMPLETE로 닫지 않습니다.** 이번 pilot에서 threshold·crop·detector 정책은 변경하지 않았습니다.
+
+#### STEP 3-C — Full Train/Val Materialization
+
+Status: **NOT STARTED**. 수동 pilot 시각 검토가 끝난 뒤에만 `canonical/`의 전체 train/val 처리 여부를 결정합니다. 이번 작업에서 full root는 생성하지 않았습니다. Test는 최종 평가 전까지 정책 선택이나 모델 선택에 사용하지 않습니다.

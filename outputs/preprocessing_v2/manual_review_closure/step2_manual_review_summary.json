@@ -1,0 +1,88 @@
+{
+  "review_closure_version": "1.0",
+  "record_type": "stage_level_manual_review_provenance",
+  "evidence_boundary": {
+    "automatic_numbers": "existing STEP 2 audit artifacts",
+    "manual_observations_and_overall_decisions": "user-provided account of direct visual review with chat-assisted analysis",
+    "per_sample_verdicts_inferred_or_backfilled": false,
+    "original_audit_artifacts_modified": false,
+    "test_split_used": false
+  },
+  "step2a": {
+    "automatic_audit_status": "COMPLETE",
+    "manual_review_status": "SUPERSEDED_BY_STEP_2B",
+    "manual_review_method": "not_closed_at_step2a_per_sample_level",
+    "per_sample_review_fully_recorded": false,
+    "manual_csv": "outputs/preprocessing_v2/detector_landmark_audit/manual_review.csv",
+    "manual_csv_row_count": 90,
+    "manual_decision_filled_count": 0,
+    "automatic_artifacts": ["outputs/preprocessing_v2/detector_landmark_audit/audit_report.txt", "outputs/preprocessing_v2/detector_landmark_audit/audit_summary.json"],
+    "visual_artifacts": ["outputs/preprocessing_v2/detector_landmark_audit/visual_samples/", "outputs/preprocessing_v2/detector_landmark_audit/contact_sheets/"],
+    "overall_manual_decision": null,
+    "decision_basis": "HOG-primary/YuNet-fallback compatibility audit identified angle convention and comparison limitations; controlled same-frame detector decision moved to STEP 2-B.",
+    "superseded_by": "STEP_2B"
+  },
+  "step2b": {
+    "automatic_audit_status": "COMPLETE",
+    "manual_review_status": "MANUAL_VISUAL_REVIEW_COMPLETE",
+    "manual_review_method": "user_visual_review_with_chat_assisted_analysis",
+    "per_sample_review_fully_recorded": false,
+    "manual_csv": "outputs/preprocessing_v2/detector_primary_comparison/manual_review.csv",
+    "manual_csv_row_count": 126,
+    "manual_decision_filled_count": 0,
+    "automatic_artifacts": ["outputs/preprocessing_v2/detector_primary_comparison/comparison_report.txt", "outputs/preprocessing_v2/detector_primary_comparison/comparison_summary.json", "outputs/preprocessing_v2/detector_primary_comparison/paired_primary_results.csv"],
+    "visual_artifacts": ["outputs/preprocessing_v2/detector_primary_comparison/review_pack/", "outputs/preprocessing_v2/detector_primary_comparison/contact_sheets/", "outputs/preprocessing_v2/detector_primary_comparison/visual_samples/"],
+    "review_pack_sample_count": 45,
+    "review_pack_sheet_count": 5,
+    "overall_manual_decision": "YUNET",
+    "decision_basis": ["YuNet bbox was reported to include hairline, chin and lateral face more naturally in many reviewed samples; HOG showed more lateral background padding in several cases.", "Same-frame HOG and YuNet comparison used Dlib68 for both; HOG 152/160 and YuNet 157/160 detections; detector mean latency 372.15 ms versus 39.44 ms.", "HOG bbox was not treated as ground truth; EAR/MAR shifts were interpreted as ROI-geometry sensitivity rather than proof of YuNet failure."],
+    "source_of_visual_observations": "user-provided manual review conclusion"
+  },
+  "step2c": {
+    "automatic_audit_status": "COMPLETE",
+    "manual_review_status": "MANUAL_VISUAL_REVIEW_COMPLETE",
+    "manual_review_method": "user_visual_review_with_chat_assisted_analysis",
+    "per_sample_review_fully_recorded": false,
+    "manual_csv": "outputs/preprocessing_v2/landmark_roi_margin_audit/roi_margin_manual_review.csv",
+    "manual_csv_row_count": 35,
+    "review_decision_filled_count": 0,
+    "automatic_artifacts": ["outputs/preprocessing_v2/landmark_roi_margin_audit/roi_margin_report.txt", "outputs/preprocessing_v2/landmark_roi_margin_audit/roi_margin_summary.json", "outputs/preprocessing_v2/landmark_roi_margin_audit/roi_margin_results.csv", "outputs/preprocessing_v2/landmark_roi_margin_audit/clipping_metadata_correction/clipping_correction_summary.json"],
+    "visual_artifacts": ["outputs/preprocessing_v2/landmark_roi_margin_audit/review_pack/", "outputs/preprocessing_v2/landmark_roi_margin_audit/contact_sheets/", "outputs/preprocessing_v2/landmark_roi_margin_audit/visual_samples/"],
+    "review_sample_count": 35,
+    "compact_sheet_count": 5,
+    "original_contact_sheet_count": 18,
+    "overall_manual_decision": "YUNET_RAW_BBOX",
+    "decision_basis": ["RAW landmark fitting was reported to follow eyes, mouth, nose and chin in many reviewed samples; M05 had no consistent improvement and some M10/M15 samples showed more contour, mouth and pose shift.", "All ROI candidates had Dlib68 success 157/157; increased margin changed normalized landmarks and EAR/MAR distributions.", "Clipping metadata correction matched saved ROI coordinates 628/628 and was REPORTING_ONLY_BUG; visual images and Dlib inputs were unaffected."],
+    "source_of_visual_observations": "user-provided manual review conclusion"
+  },
+  "step2d": {
+    "automatic_audit_status": "COMPLETE",
+    "manual_review_status": "MANUAL_VISUAL_REVIEW_COMPLETE",
+    "manual_review_method": "user_visual_review_with_chat_assisted_analysis",
+    "per_sample_review_fully_recorded": false,
+    "manual_csv": "outputs/preprocessing_v2/context_crop_audit/context_crop_manual_review.csv",
+    "manual_csv_row_count": 42,
+    "review_decision_filled_count": 0,
+    "automatic_artifacts": ["outputs/preprocessing_v2/context_crop_audit/context_crop_report.txt", "outputs/preprocessing_v2/context_crop_audit/context_crop_summary.json", "outputs/preprocessing_v2/context_crop_audit/context_crop_results.csv"],
+    "visual_artifacts": ["outputs/preprocessing_v2/context_crop_audit/contact_sheets/", "outputs/preprocessing_v2/context_crop_audit/visual_samples/"],
+    "visual_sample_count": 42,
+    "contact_sheet_count": 11,
+    "overall_manual_decision": "SQUARE_M10",
+    "decision_basis": ["User reported recurrent aspect distortion for RAW_RESIZE, insufficient spatial buffer in some SQUARE_0 examples, balanced face/context for SQUARE_M10, and excess background with SQUARE_M20.", "Automatic diagnostics: RAW_RESIZE distortion median 1.4258; face-area medians SQUARE_0 0.7014, M10 0.4850, M20 0.3568; padding required M10 3/157 and M20 6/157.", "This is a preprocessing geometry choice, not a measured CNN accuracy ranking."],
+    "source_of_visual_observations": "user-provided manual review conclusion"
+  },
+  "final_frozen_policy": {
+    "face_detector": "YUNET",
+    "landmark": "DLIB68",
+    "landmark_roi": "YUNET_RAW_BBOX",
+    "context_crop": "SQUARE_M10",
+    "context_margin_ratio": 0.1,
+    "context_size": "RGB_224x224",
+    "context_padding": "IMAGENET_MEAN"
+  },
+  "step3_status_unchanged": {
+    "step3a": "IMPLEMENTED",
+    "step3b": "WAITING_FOR_20_VIDEO_PILOT_RUN",
+    "step3c": "NOT_STARTED"
+  }
+}

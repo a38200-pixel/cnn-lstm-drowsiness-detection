@@ -141,3 +141,18 @@ Frame → YuNet → YuNet RAW bbox
 - Frozen split은 **video-level stratified split**이다. 신뢰할 만한 per-video subject mapping이 없어 subject-wise independence를 보장할 수 없고 unseen-subject generalization을 주장하지 않는다.
 - 시각 검토 결론은 사용자 제공 내용이며 manual review CSV 판정 칸은 미입력이다. 원본 자동 report의 대기 상태도 그대로 남아 있다.
 - 행동 threshold, temporal rule, downstream 모델 정확도는 STEP 2에서 검증하거나 확정하지 않았다.
+
+## Manual Review Provenance
+
+초기 `자동 audit → 표본별 manual CSV → 최종 결정` 계획과 달리, 실제 검토는 일부 단계에서 `자동 audit → review pack/contact sheet → 사용자 직접 시각 검토와 대화형 분석 → 단계별 전체 정책 결정`으로 진행됐다. **시각 검토와 전체 결정은 수행됐지만, 생성된 per-sample CSV의 수동 판단 칸은 모두 비어 있다.** 원본 자동 report의 `WAITING_FOR_MANUAL_*`은 생성 당시 상태로 보존한다. 지금 표본별 `PASS`/`YUNET`/`RAW`/`SQUARE_M10`을 자동 기입하면 실제로 수행하지 않은 표본별 판정을 조작하므로 그렇게 하지 않았다. 아래 시각 관찰은 사용자 제공 검토 기록이며 Codex가 이번 closure에서 이미지를 새로 판정한 결과가 아니다.
+
+| 단계 | Manual review 상태 | 시각 증거와 전체 결정 | 원본 CSV 수동 판단 입력 |
+|---|---|---|---:|
+| 2-A | `SUPERSEDED_BY_STEP_2B` | HOG primary·YuNet fallback 호환성 탐색. Head Pose 표현·비교 설계를 보완해 2-B decision audit로 이관. 별도 manual detector 결정 없음. | 0/90행 |
+| 2-B | `MANUAL_VISUAL_REVIEW_COMPLETE` | 45개 review-pack 표본·5개 sheet 및 원본 비교 자료. YuNet의 자연스러운 얼굴 포함, HOG의 좌우 배경 여유, YuNet-only 검출을 관찰. **YuNet primary** 선택. | 0/126행 |
+| 2-C | `MANUAL_VISUAL_REVIEW_COMPLETE` | 35개 표본·5개 compact sheet(원본 contact sheet 18장). RAW의 눈·입·코·턱 fitting, M05 개선 부재, M10/M15 일부 변화 증가를 관찰. **YuNet RAW bbox → Dlib68** 선택. | 0/35행 |
+| 2-D | `MANUAL_VISUAL_REVIEW_COMPLETE` | 42개 표본·11개 contact sheet. RAW_RESIZE 왜곡, SQUARE_0 여유 부족 사례, M20 배경 증가와 M10의 균형을 관찰. **SQUARE_M10** 선택. | 0/42행 |
+
+2-B의 HOG bbox는 ground truth가 아니며 detector 간 EAR/MAR 차이를 YuNet 실패로 단정하지 않는다. 2-C clipping flag 오류는 저장 ROI 628/628개 일치로 `REPORTING_ONLY_BUG`였고 manual 이미지·결정에 영향이 없었다. 2-D의 SQUARE_M10은 geometry·padding·배경·시각적 일관성에 근거한 preprocessing 선택이지 CNN 정확도 비교 결과가 아니다. STEP 2 전체 audit과 manual review에서 test split은 사용하지 않았으며 **TEST SPLIT SEALED**다.
+
+원본 파일은 그대로 두고 별도 `outputs/preprocessing_v2/manual_review_closure/`에 [closure 문서](../outputs/preprocessing_v2/manual_review_closure/step2_manual_review_closure.md), `step2_manual_review_summary.json`, `step2_manual_review_stage_summary.csv`를 기록했다. 이 경로는 기존 audit output 디렉터리와 분리된다.

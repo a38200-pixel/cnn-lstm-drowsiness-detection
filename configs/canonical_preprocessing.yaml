@@ -1,0 +1,33 @@
+# STEP 2에서 고정한 정책. 실제 영상 처리는 명시적 pilot/full 실행에서만 수행한다.
+sampling:
+  hz: 10.0
+  clip_duration_sec: 10.0
+  canonical_slots: 100
+context:
+  frame_count: 32
+  crop_policy: square_m10
+  margin_ratio: 0.10
+  output_size: 224
+  jpeg_quality: 95
+  padding_mode: imagenet_mean
+  rgb_mean: [0.485, 0.456, 0.406]
+detector:
+  model_path: assets/yunet/face_detection_yunet_2023mar.onnx
+  score_threshold: 0.9
+  nms_threshold: 0.3
+  top_k: 5000
+  face_selection_policy: largest_valid_bbox
+  fallback: none
+landmark:
+  predictor_path: assets/dlib/shape_predictor_68_face_landmarks.dat
+  roi_policy: raw_yunet_bbox
+metadata:
+  train: data/metadata/train.csv
+  val: data/metadata/val.csv
+raw_root: data/raw/SUST Driver Drowsiness Dataset
+outputs:
+  pilot_root: data/interim/preprocessing_v2/canonical_pilot
+  full_root: data/interim/preprocessing_v2/canonical
+  report_root: outputs/preprocessing_v2/canonical_preprocessing
+validation:
+  strict_pilot_crop_decode: true

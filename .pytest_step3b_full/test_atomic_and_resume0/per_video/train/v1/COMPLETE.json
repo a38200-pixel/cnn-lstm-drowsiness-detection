@@ -1,0 +1,9 @@
+{
+  "video_id": "v1",
+  "policy_hash": "p",
+  "run_config_hash": "r",
+  "source_path": "source",
+  "source_file_size": 1,
+  "source_mtime_ns": 2,
+  "canonical_row_count": 100
+}
