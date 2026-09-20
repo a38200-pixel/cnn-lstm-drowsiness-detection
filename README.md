@@ -22,14 +22,19 @@
 | 단계 | 현재 상태 |
 |---|---|
 | STEP 1 — Source Data Validation | COMPLETE |
-| STEP 2 — Preprocessing Policy Audit & Selection (2-A ~ 2-D) | **COMPLETE** |
+| STEP 2 — Preprocessing Policy Audit & Selection (2-A ~ 2-D) | **FULLY CLOSED** |
 | STEP 3-A — Canonical Pipeline Implementation | **IMPLEMENTED** |
-| STEP 3-B — 20-Video Pilot | **AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIEW** |
+| STEP 3-B — 20-Video Pilot | **COMPLETE** |
 | STEP 3-C — Full Train/Val Materialization | **NOT STARTED** |
+| STEP 4 — Full Train/Val Quality Audit | **NOT STARTED** |
+
+현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
+
+STEP 3-A는 영상당 10 Hz × 10초의 100개 canonical slot과 검출 독립적인 32개 Context slot, 결측 무대체, atomic bundle·resume·policy/run hash·모델 SHA-256·source fingerprint·integrity 검사를 구현했다. STEP 3-B의 20개 pilot은 2,000/2,000 decode, YuNet 1,916/2,000(95.8%), 검출 후 Dlib68 1,916/1,916, Context 613/640(95.78%) 가용 및 27개 결측이었다. 자동·사용자 시각 검토를 거쳐 STEP 3-B는 완료됐지만 20개 pilot의 품질 분포를 전체 영상에 일반화하지 않는다.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 
-시각 검토 결론은 이번 문서화 요청에서 사용자가 제공한 내용입니다. 원본 자동 report의 `WAITING_FOR_MANUAL_*` 상태와 비어 있는 수동 검토 CSV 판정 칸은 그대로 보존하며, CSV에 검토 결과가 입력됐다고 주장하지 않습니다.
+STEP 2 시각 검토 결론은 당시 사용자가 제공한 내용입니다. STEP 2 원본 자동 report의 `WAITING_FOR_MANUAL_*` 상태와 비어 있는 해당 단계의 수동 검토 CSV 판정 칸은 그대로 보존하며, CSV에 검토 결과가 입력됐다고 주장하지 않습니다. STEP 3-B의 별도 missing Context CSV에는 이번 사용자 제공 판정을 기록했습니다.
 
 ### Experiment 2 — Frozen Preprocessing Policy after STEP 2
 
@@ -422,7 +427,7 @@ Metadata-only dry-run 결과는 train 1,452개와 val 311개, 총 1,763개 영�
 
 #### STEP 3-B — 20-Video Pilot
 
-Status: **AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIEW**.
+Status: **COMPLETE**. 20-video 자동 integrity 검사와 사용자 제공 수동 시각 검토가 완료됐다.
 
 결정적 [20개 영상 manifest](data/metadata/experiment2_step3_pilot_manifest.csv)는 train/val × drowsy/not_drowsy 각 5개로 구성했고 test는 0개입니다. 별도 `data/interim/preprocessing_v2/canonical_pilot/`에서 실제 YuNet·Dlib68 전처리를 한 번 실행했습니다. 단계별 [pilot 보고서](outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [구현 시각 검토 pack](outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)을 남겼습니다.
 
@@ -438,8 +443,14 @@ Status: **AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIE
 | Orphan 임시 bundle / test row | 0 / 0 |
 | 동일 manifest `--resume` | 신규 처리 0, 건너뜀 20, 충돌 0, detector 추론 0 |
 
-검출 누락과 Context crop 결측은 구조 오류와 분리한 data-quality 수치입니다. Review pack은 split×label을 균형 있게 포함한 12개 영상·36개 표본·6장 sheet입니다. 원본과 저장 JPEG의 동일 frame·bbox·RGB/BGR·padding을 **사용자가 직접 확인하기 전까지 STEP 3-B를 COMPLETE로 닫지 않습니다.** 이번 pilot에서 threshold·crop·detector 정책은 변경하지 않았습니다.
+검출 누락과 Context crop 결측은 구조 오류와 분리한 data-quality 수치입니다. 구현 시각 검토 pack은 split×label을 균형 있게 포함한 12개 영상·36개 표본·6장 sheet입니다. 사용자가 기존 6장 sheet를 검토해 frame/person alignment, RGB/BGR, JPEG corruption, SQUARE_M10 구현에 이상이 없다고 확인했습니다. 이번 pilot에서 threshold·crop·detector 정책은 변경하지 않았습니다.
+
+Context crop 결측 27건만 따로 확인할 수 있도록 [missing-only review pack](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/)을 생성했습니다. 대상은 train/val에서 `context_selected=True`이고 `context_crop_available=False`인 row입니다. 자동 상태는 27건 모두 정상 decode 후 `YUNET_FACE_NOT_FOUND`와 `CONTEXT_NO_FACE`였고, 검출 성공인데 crop만 없는 사례는 0건입니다. 기존 자동 [분석 보고서](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_report.txt)는 생성 당시 상태로 보존했습니다.
+
+사용자가 27개 이미지를 직접 판독한 결과를 [수동 판정 CSV](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review.csv)에 기록했습니다. `review_id` 12~23의 12건은 강한 측면/profile, frame edge 방향 근접, 일부 코 끝 clipping으로 미검출이 비교적 납득 가능한 `EXPECTED_DETECTOR_MISS/PASS`입니다. 나머지 15건에도 상당수 yaw/profile 난이도가 있지만 얼굴 주요 구조는 육안으로 충분히 보여 `LIKELY_FALSE_NEGATIVE/CHECK_NEEDED`를 유지합니다. 이 15건의 `extreme_pose` 빈 값은 개별 미평가이며 정면 판정을 뜻하지 않습니다. Pipeline/storage issue 의심은 0건입니다. [수동 검토 summary](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_summary.json)와 [별도 보고서](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_report.txt)에 해석 revision 2를 반영하고, [정정 provenance](outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/manual_review_interpretation_correction.md)에 수정 전후 CSV SHA-256·사용자 후속 판독 근거를 남겼습니다. 이는 Codex의 이미지 재판독이 아니며 YuNet 교체·fallback·threshold 변경·missing frame 대체를 정당화하지 않습니다. 전체 train/val 결측 분포는 STEP 4에서 정량화합니다.
 
 #### STEP 3-C — Full Train/Val Materialization
 
-Status: **NOT STARTED**. 수동 pilot 시각 검토가 끝난 뒤에만 `canonical/`의 전체 train/val 처리 여부를 결정합니다. 이번 작업에서 full root는 생성하지 않았습니다. Test는 최종 평가 전까지 정책 선택이나 모델 선택에 사용하지 않습니다.
+Status: **NOT STARTED**. STEP 3-B 수동 검토는 완료됐지만 이번 작업에서 `canonical/`의 전체 train/val 처리는 시작하지 않았습니다. Test는 최종 평가 전까지 정책 선택이나 모델 선택에 사용하지 않습니다.
+
+다음은 STEP 3-C의 train 1,452개·val 311개, 총 1,763개 영상 materialization이며 test 처리 대상은 0개입니다. STEP 4의 전체 train/val 결측·pose·영상별 집중도 분석은 그 이후입니다. Head Pose 물리적 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 규칙, 결측 처리 정책은 아직 미확정입니다. CNN(ResNet18/VGG16)과 LSTM은 학습하지 않았고 fallback·interpolation도 도입하지 않았습니다.

@@ -1,0 +1,36 @@
+STEP 3-B Missing Context 수동 검토 보고서
+
+[Scope]
+Total missing context cases: 27
+Review source: USER_PROVIDED_VISUAL_REVIEW
+Review method: DIRECT_VISUAL_INSPECTION
+Review date: 2026-09-20
+Original manual CSV SHA256: 2e00cf285d46a8db505b8a5679e125be16e8f912a61608ece0a9b8d99d31466b
+기존 자동 열과 자동 summary는 변경하지 않았다.
+
+[Manual Review Result]
+EXPECTED_DETECTOR_MISS: 12 / 27
+LIKELY_FALSE_NEGATIVE: 15 / 27
+POSSIBLE_STORAGE_OR_PIPELINE_ISSUE: 0 / 27
+UNCERTAIN: 0 / 27
+PASS: 12 / CHECK_NEEDED: 15 / INVESTIGATE: 0
+
+[Expected Detector Miss Pattern]
+review_id: 12-23 (CSV의 실제 ID, 행 위치 아님)
+사용자 관찰: 측면/profile 얼굴, 코 끝 일부가 잘려 보임. YuNet 미검출이 납득 가능함.
+face_near_edge=FALSE는 frame edge 근거가 없다는 뜻이며 코 끝 관찰을 frame edge로 해석하지 않는다.
+
+[Likely False Negative Pattern]
+나머지 review_id 15건. 사용자는 얼굴이 뚜렷하고 큰 pose·가림·저조도·blur 문제 없이 YuNet이 놓친 것으로 판정했다.
+
+[Pipeline Integrity]
+사용자 검토에서 storage corruption, frame mapping, wrong-person crop, JPEG corruption, context storage failure의 증거가 보고되지 않았다.
+Pipeline/storage issue suspected: 0 / 27
+
+[Interpretation]
+Pilot Context 결측은 기록상 detector 단계에서 발생했다. 12건은 납득 가능한 miss, 15건은 likely YuNet false negative다.
+이는 사용자 제공 시각 판정이며 Codex의 이미지 재판독 결과가 아니다.
+기존 6장 pilot 구현 시각 검토에 대한 사용자 제공 결론도 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 이상 없음이다.
+STEP 3-B 수동 시각 검토 완료. STEP 2 frozen policy 변경 없음.
+YuNet 교체·fallback·threshold 변경·frame 대체는 하지 않는다.
+전체 train/val missing pattern은 STEP 4에서 별도로 정량화한다. STEP 3-C 및 test 처리는 시작하지 않았다.

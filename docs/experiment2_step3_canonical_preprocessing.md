@@ -1,6 +1,8 @@
 # Experiment 2 STEP 3 — Canonical Preprocessing
 
-이 문서는 STEP 3-A 구현 설계·출력 계약과 STEP 3-B의 **실제 20-video pilot 결과**를 기록한다. STEP 3-A는 `IMPLEMENTED`, STEP 3-B는 `AUTOMATIC PILOT RUN COMPLETE — WAITING FOR MANUAL PILOT VISUAL REVIEW`, STEP 3-C는 `NOT STARTED`다.
+이 문서는 STEP 3-A 구현 설계·출력 계약과 STEP 3-B의 **실제 20-video pilot 결과**를 기록한다. STEP 3-A는 `IMPLEMENTED`, STEP 3-B는 사용자 제공 수동 검토까지 `COMPLETE`, STEP 3-C는 `NOT STARTED`다. Test split은 `SEALED`다.
+
+현재 milestone: STEP 1에서 2,074개 source 영상과 중복 없는 video-level train/val/test 1,452/311/311개를 확정했다. Subject-wise unseen-driver 독립성은 매핑 부재로 보장하지 않는다. STEP 2는 HOG 152/160(95.0%, 약 372 ms) 대 YuNet 157/160(98.125%, 약 39 ms)의 통제 비교를 거쳐 `FULLY CLOSED`됐다. RAW/M05/M10/M15 ROI의 Dlib68 성공은 각각 157/157이며 clipping metadata 오류는 저장 ROI 628/628개가 일치한 `REPORTING_ONLY_BUG`였다. 최종 frozen 정책은 YuNet, RAW bbox Dlib68, EAR/MAR/Head Pose, SQUARE_M10 RGB 224×224 및 ImageNet mean padding이다. Context geometry 선택은 모델 정확도 우위 판정이 아니다.
 
 ## 1. Objective
 
@@ -93,6 +95,35 @@ YuNet 성공률은 1,916/2,000(95.8%)이며, 84개 미검출은 bundle 실패가
 
 첫 실행 후 동일 manifest에서 `--resume`을 한 번 실행해 신규 처리 0, 건너뜀 20, 실패·충돌 0, inference용 영상 open 0, detector frame 0을 확인했다. Resume가 첫 실행의 report와 생성 시각을 덮어쓰지 않도록 구현상 provenance 문제를 최소 수정하고 synthetic 회귀 테스트를 추가했다. 영상 20개를 재처리하지 않았다.
 
-Pilot wall time은 run metadata 생성부터 마지막 bundle 완료까지 약 107.21초다. 영상별 처리 시간은 평균 5.045초, 중앙값 4.931초였다. 이를 1,763개 영상에 단순 선형 적용하면 평균 기준 약 2.47시간, 중앙값 기준 약 2.42시간이다. JPEG·집계 등 모든 overhead를 보장하는 full runtime 추정치는 아니다.
+Pilot wall time은 run metadata 생성부터 마지막 bundle 완료까지 약 107.21초다. 영상별 처리 시간은 평균 5.045초, 중앙값 4.931초였다. 이를 1,763개 영상에 단순 선형 적용한 **simple projected runtime**은 평균 기준 약 2.47시간, 중앙값 기준 약 2.42시간이다. JPEG·집계 등 모든 overhead를 보장하는 full runtime 추정치는 아니다.
 
-자동 [pilot 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [integrity 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_integrity_report.txt)는 오류 0개로 기록됐다. [시각 구현 검토 pack](../outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)은 train/val × drowsy/not_drowsy를 균형 있게 포함한 12개 영상, 36개 원본-bbox/저장-JPEG 비교 표본, 6장 sheet다. 자동 검사만으로 색상·인물·bbox mapping의 시각적 정합성을 최종 승인하지 않는다. **Manual pilot visual review는 WAITING**이며 STEP 3-B는 아직 COMPLETE가 아니다. STEP 3-C full 처리는 시작하지 않았다.
+자동 [pilot 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [integrity 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_integrity_report.txt)는 오류 0개로 기록됐다. [시각 구현 검토 pack](../outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)은 train/val × drowsy/not_drowsy를 균형 있게 포함한 12개 영상, 36개 원본-bbox/저장-JPEG 비교 표본, 6장 sheet다. 사용자가 기존 6장 sheet의 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 구현 이상이 없다고 확인했다. 이 결론은 사용자 제공 시각 검토 결과이며 자동 검사 결과로 위장하지 않는다. STEP 3-C full 처리는 시작하지 않았다.
+
+### STEP 3-B Missing-Only Context Review Pack
+
+640개 Context 선택 slot 중 저장 crop이 없는 27개 row만 분리했다. 실제 필드명은 `context_selected=True`, `context_crop_available=False`, `context_slot`, `canonical_index`, `source_frame_index`다. Global `canonical_frames.csv`와 완료 bundle의 `frames.csv`를 대조하고, 저장된 source index의 원본 frame만 순차 decode하여 **기존 crop·feature·검출을 재생성하지 않았다**. 결과는 [별도 missing-only 디렉터리](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/)에 생성했고 기존 pilot 산출물은 수정하지 않았다.
+
+| 결측 범위 | 실제 결과 |
+|---|---:|
+| 전체 Context 선택 / crop 결측 | 640 / 27 (4.21875%) |
+| Train / validation | 12 / 15 |
+| Drowsy / not_drowsy | 0 / 27 |
+| 영상별 | `n_726` 12, `n_262` 7, `n_999` 5, `n_997` 3 |
+| 정상 decode 후 YuNet 미검출 | 27/27 |
+| YuNet 성공인데 crop만 없는 행 | 0 |
+| Dlib68 / Head Pose 성공 | 각 0/27 (YuNet bbox 없음) |
+| 개별 이미지 / contact sheet / 원본 frame decode 누락 | 27 / 7 / 0 |
+
+모든 행의 자동 원인 후보는 저장 상태에 근거한 `DETECTOR_MISS`다. 자동 판정만으로 실제 얼굴이 보이는 false negative인지, 큰 profile 등으로 검출이 어려운 상황인지 알 수 없다. 근처 검출 성공 frame의 yaw/edge 값은 보조 힌트로만 표기했다. 기존 자동 summary와 report는 생성 당시 기록으로 보존했다.
+
+### STEP 3-B Manual Missing-Context Review
+
+사용자가 27개 결측 이미지를 직접 검토한 판정을 [수동 CSV](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review.csv)의 수동 열에 기록했다. `review_id`는 행 순서가 아니라 실제 CSV ID이며, 12~23의 12건은 강한 측면/profile, frame edge 방향에 가까운 얼굴, 일부 코 끝 clipping으로 YuNet miss가 비교적 납득 가능한 `EXPECTED_DETECTOR_MISS/PASS`다. 후속 사용자 판독에 따라 이 그룹의 `face_near_edge=TRUE`로 정정했다. 나머지 15건에도 상당수 yaw/profile pose가 있지만 얼굴과 주요 특징은 육안으로 충분히 보여 `LIKELY_FALSE_NEGATIVE/CHECK_NEEDED`를 유지했다. 개별 extreme pose 여부는 확정하지 않아 `extreme_pose`를 빈 값으로 두었으며, 이는 frontal pose 판정이 아니다. Storage/pipeline issue와 uncertain은 각 0건이다.
+
+[수동 검토 summary](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_summary.json)에는 `USER_PROVIDED_VISUAL_REVIEW`, `DIRECT_VISUAL_INSPECTION`, revision 2, pose-related 관찰, 정책 불변, 수정 전후 CSV SHA-256 및 자동 열 보존 여부를 기록했다. [별도 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_report.txt)의 correction section은 기존 12/15 판정을 유지하면서 과도하게 단순했던 pose 설명을 대체한다. [정정 provenance](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/manual_review_interpretation_correction.md)는 정정 이유와 해시를 별도로 남긴다. 기존 자동 summary/report는 덮어쓰지 않았다. 이는 사용자 판정을 전사한 것이며 Codex가 이미지를 다시 판독하거나 detector를 재실행한 결과가 아니다.
+
+20-video automatic pilot integrity와 사용자 제공 구현 시각 검토 및 27건 missing-only 검토가 완료되어 **STEP 3-B는 COMPLETE**다. Canonical preprocessing 구현의 검사 범위에서 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 오류 증거는 없었다. 27건 전반에서 yaw/profile 관련 결측 패턴이 관찰됐지만 20-video pilot을 전체 데이터셋에 일반화하지 않는다. 15건의 likely YuNet false negative는 data-quality 문제로 남으며 STEP 4에서 전체 train/val missing rate, 영상별 집중도·연속 결측·pose 관련 패턴·label 간 격차를 정량화한다. YuNet 교체, HOG fallback, threshold 조정, Context 대체는 하지 않고 STEP 2의 YuNet·Dlib68 RAW bbox·SQUARE_M10 정책을 유지한다. STEP 3-C는 `NOT STARTED`, test split은 `SEALED`다.
+
+### Remaining Open Items and Next Step
+
+Head Pose의 물리적 up/down 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 행동 규칙, detector/Context 결측 처리 정책은 아직 확정하지 않았다. ResNet18/VGG16 CNN과 LSTM도 학습하지 않았다. 다음 단계 STEP 3-C는 train 1,452개와 val 311개, 총 1,763개 영상의 canonical materialization이며 test는 0개다. 이번 정정 작업에서는 STEP 3-C와 STEP 4를 시작하지 않았다.
