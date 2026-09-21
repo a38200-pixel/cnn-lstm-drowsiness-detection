@@ -75,15 +75,44 @@ Context-only는 train/val 126/31, drowsy/not_drowsy 64/93이고 neither는 train
 
 Head Pose의 `pitch_raw`와 `pitch_centered_candidate`는 저장된 연속값일 뿐이며 physical sign은 **UNRESOLVED**, head-down/head-up rule은 **NOT DEFINED** 상태다. CNN·ImageNet normalization·feature extraction·LSTM은 실행하지 않았다.
 
-## 12. Limitations
+## 12. STEP 5-D CNN Feature Extraction
+
+### STEP 5-D1 Preflight & Pilot
+
+Context sequence loader와 16-video controlled pilot 경로를 구현했다. Pilot manifest는 `data/metadata/experiment2_step5d_cnn_feature_pilot_manifest.csv`, preflight report는 `outputs/features_v2/context_cnn/pilot/`에 있다. Context eligible 1,677개에서 deterministic하게 train/val 12/4, drowsy/not_drowsy 9/7, no-imputation/imputation-required 8/8을 선택했다. 각 backbone의 target은 16×32=512행이고 실제 unique source JPEG는 454개다. Behavior eligibility는 selection에 사용하지 않았다.
+
+입력 transform은 canonical RGB uint8 224×224를 geometry 변경 없이 CHW float32, `/255`, ImageNet mean `[0.485, 0.456, 0.406]`과 std `[0.229, 0.224, 0.225]`로 normalize한다. Resize, center/random crop, augmentation, AMP, label-dependent transform은 없다.
+
+ResNet18은 `torchvision.models.resnet18`의 `DEFAULT` pretrained ImageNet weight를 요구하고 `fc`를 제거한 뒤 native global average pooling 결과를 flatten하여 512D/frame으로 만든다. VGG16은 `torchvision.models.vgg16`의 `DEFAULT` pretrained weight를 요구하고 `model.features` 뒤 `AdaptiveAvgPool2d((1,1))`를 적용해 512D/frame으로 만든다. VGG classifier의 25,088D flatten, 4,096D FC, 1,000-class logits는 사용하지 않는다. 두 backbone은 alternative experiment이며 concat/average/ensemble/fusion하지 않는다.
+
+Source JPEG path를 backbone별로 deduplicate하여 같은 source는 한 번만 inference하고 target 위치에서 같은 feature를 재사용하도록 구현했다. Original/imputed mask, target/source index와 source mapping fingerprint를 보존한다. Backbone마다 별도 semantic policy hash와 artifact root를 사용하며 device와 batch size는 hash에 포함하지 않는다. Random initialization fallback은 금지된다.
+
+실제 `.venv` preflight 결과 Python 3.12.14에서 `torch`와 `torchvision` 모두 `ModuleNotFoundError`였다. 지침에 따라 버전을 추측해 설치하지 않았다. CUDA availability/runtime, GPU name, cuDNN, resolved weights enum, feature policy hash, 실제 `[32,512]` feature, runtime과 VRAM은 dependency가 없어 확인할 수 없다. Pilot manifest와 blocker report만 생성했고 CNN inference, JPEG decode, feature artifact 및 full extraction은 수행하지 않았다.
+
+현재 상태는 **STEP 5-D1: IMPLEMENTED / BLOCKED BY ENVIRONMENT**이며 `STEP_5D1_BLOCKED_DEPENDENCY: torch, torchvision`이다. STEP 5-D1 COMPLETE 조건은 충족되지 않았고 STEP 5-D2 full extraction은 **NOT STARTED**다.
+
+### STEP 5-D2 Full Extraction
+
+향후 dependency와 pretrained weight load가 검증된 뒤 Context eligible 1,677개 전체를 대상으로 실행한다. ResNet18과 VGG16은 독립 artifact를 만들며 1,520개 BOTH set으로 축소하지 않는다. 현재 full extraction은 실행하지 않았다.
+
+### Context Sequence Classifier Baseline
+
+STEP 5-D feature extraction 이후의 초기 Context baseline은 backbone별 `[B,32,512]` feature를 동일한 temporal/classifier 구조에 입력한다. LSTM은 `input_size=512`, `hidden_size=128`, `num_layers=1`, `batch_first=true`, `bidirectional=false`, internal dropout `0.0`이다. 마지막 hidden state `[B,128]`에 `Linear(128→64) → ReLU → Linear(64→2)`를 적용하며 classifier dropout도 `0.0`이다. `CrossEntropyLoss`에는 raw logits를 전달하므로 model 내부에 필수 softmax layer를 넣지 않는다.
+
+Experiment 2의 초기 Context baseline은 1-layer unidirectional LSTM(hidden=128)과 128→64→2 classifier를 사용하며, LSTM 내부 및 classifier Dropout은 모두 0.0으로 시작한다. Dropout은 baseline 학습 결과에서 과적합 또는 일반화 문제가 확인될 경우 별도 ablation 대상으로 검토한다. 이는 base paper의 완전 재현을 의미하지 않으며, Dropout 0.3의 성능 이점을 가정하지 않는다. 향후 후보 0.1/0.3/0.5와 실험 범위는 아직 동결하지 않았다.
+
+첫 ResNet18/VGG16 비교에서는 frozen split, target timestamps, missing policy, LSTM/classifier, dropout 0.0, loss, training protocol과 checkpoint criterion을 동일하게 유지하고 backbone만 바꾼다. 이 결정은 CNN→512D feature를 만드는 STEP 5-D 자체의 semantic config에는 영향을 주지 않는다. 기존 model YAML은 초기 scaffold이며 이번 documentation-only 작업에서는 수정하지 않았고, 실제 LSTM training 구현 전에 baseline과 일치하도록 별도 정정·검증해야 한다.
+
+## 13. Limitations
 
 이 단계는 sequence packaging의 구조·출처 무결성을 검증한다. Context 대체나 B2 mask가 모델 성능을 향상한다는 주장이 아니며, subject-wise 독립성도 보장하지 않는다. Behavior threshold/event와 CNN feature는 생성하지 않았다.
 
-## 13. STEP 5 Roadmap and Next Steps
+## 14. STEP 5 Roadmap and Next Steps
 
 - STEP 5-A — Context 32-Slot Sequence Construction: **COMPLETE**
 - STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
 - STEP 5-C — Cross-Branch Sequence Integrity Audit: **COMPLETE**
-- STEP 5-D — CNN Feature Extraction: **NOT STARTED**
+- STEP 5-D1 — CNN Feature Extraction Preflight & Pilot: **IMPLEMENTED / BLOCKED BY ENVIRONMENT**
+- STEP 5-D2 — Full Context CNN Feature Extraction: **NOT STARTED**
 
-다음 단계는 STEP 5-D CNN Feature Extraction이다. Pretrained ResNet18과 VGG16은 서로 독립된 backbone experiment로 준비하며 두 feature를 결합하는 설계가 아니다. STEP 5-C에서는 torch tensor cache, ImageNet normalization, CNN embedding을 만들지 않았다.
+다음 진행 조건은 `.venv`에 프로젝트와 장비에 맞는 torch/torchvision 조합을 사용자가 명시적으로 준비하고 `DEFAULT` pretrained ImageNet weights를 정상 load하는 것이다. 그 전에는 STEP 5-D1 actual pilot이나 STEP 5-D2를 실행하지 않는다.

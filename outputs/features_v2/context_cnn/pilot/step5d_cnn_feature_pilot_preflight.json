@@ -1,0 +1,206 @@
+{
+  "status": "STEP_5D1_IMPLEMENTED_BLOCKED_DEPENDENCY",
+  "environment": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "torch_import": false,
+    "torch_error": "ModuleNotFoundError: No module named 'torch'",
+    "cuda_available": false,
+    "torch_cuda_runtime": null,
+    "gpu_device_count": 0,
+    "gpu_device_name": null,
+    "cudnn_version": null,
+    "float32_inference_supported": false,
+    "torchvision_import": false,
+    "torchvision_error": "ModuleNotFoundError: No module named 'torchvision'",
+    "status": "STEP_5D1_BLOCKED_DEPENDENCY"
+  },
+  "context_eligible_universe": 1677,
+  "pilot": {
+    "videos": 16,
+    "train": 12,
+    "val": 4,
+    "drowsy": 9,
+    "not_drowsy": 7,
+    "no_imputation": 8,
+    "imputation_required": 8,
+    "target_rows_per_backbone": 512,
+    "test_rows": 0
+  },
+  "pilot_rows": [
+    {
+      "pilot_order": 0,
+      "video_id": "d_10",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_10/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 1,
+      "video_id": "n_1",
+      "split": "train",
+      "label": "not_drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/n_1/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 2,
+      "video_id": "d_103",
+      "split": "val",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/val/d_103/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 3,
+      "video_id": "n_1002",
+      "split": "val",
+      "label": "not_drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/val/n_1002/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 4,
+      "video_id": "d_100",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_100/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 5,
+      "video_id": "d_101",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_101/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 6,
+      "video_id": "d_102",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_102/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 7,
+      "video_id": "d_104",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 0,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_104/sequence.csv",
+      "selection_reason": "deterministic_no_imputation_stratified"
+    },
+    {
+      "pilot_order": 8,
+      "video_id": "d_266",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 7,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_266/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 9,
+      "video_id": "n_265",
+      "split": "train",
+      "label": "not_drowsy",
+      "imputed_count": 8,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/n_265/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 10,
+      "video_id": "d_843",
+      "split": "val",
+      "label": "drowsy",
+      "imputed_count": 5,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/val/d_843/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 11,
+      "video_id": "n_311",
+      "split": "val",
+      "label": "not_drowsy",
+      "imputed_count": 7,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/val/n_311/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 12,
+      "video_id": "n_320",
+      "split": "train",
+      "label": "not_drowsy",
+      "imputed_count": 8,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/n_320/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 13,
+      "video_id": "n_321",
+      "split": "train",
+      "label": "not_drowsy",
+      "imputed_count": 8,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/n_321/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 14,
+      "video_id": "n_861",
+      "split": "train",
+      "label": "not_drowsy",
+      "imputed_count": 8,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/n_861/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    },
+    {
+      "pilot_order": 15,
+      "video_id": "d_344",
+      "split": "train",
+      "label": "drowsy",
+      "imputed_count": 7,
+      "context_sequence_path": "data/interim/sequences_v2/context/per_video/train/d_344/sequence.csv",
+      "selection_reason": "deterministic_high_imputation_stratified"
+    }
+  ],
+  "backbones": [
+    "resnet18",
+    "vgg16"
+  ],
+  "weights_requested": "DEFAULT ImageNet pretrained",
+  "resolved_weights": "UNRESOLVED_DEPENDENCY",
+  "unique_source_images": 454,
+  "output_dimension": 512,
+  "normalization": {
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "geometry_transform": "none",
+  "cnn_execution": false,
+  "full_extraction": false,
+  "test_access": 0,
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+  "decision": "STEP_5D1_IMPLEMENTED_BLOCKED_BY_ENVIRONMENT",
+  "feature_artifacts_created": false,
+  "random_weight_fallback": false,
+  "full_extraction_started": false
+}

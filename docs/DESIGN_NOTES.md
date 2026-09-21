@@ -46,7 +46,13 @@
 - Input: Full Face RGB 224x224x3
 - Backbone: ResNet18 또는 VGG16 (별도 실험)
 - Output per frame: GAP 512-D
-- Temporal encoder: LSTM hidden 128
+- Backbone output sequence: `[B, 32, 512]`
+- Temporal encoder: 1-layer unidirectional LSTM, input 512, hidden 128, `batch_first=true`, internal dropout 0.0
+- Temporal output: last hidden state `[B, 128]`
+- Classifier: `Linear(128→64) → ReLU → Linear(64→2)`, classifier dropout 0.0
+- Loss: raw logits를 사용하는 `CrossEntropyLoss`; model 내부 필수 softmax 없음
+
+ResNet18과 VGG16의 첫 비교에서는 split, 32 target timestamps, missing policy, LSTM/classifier, dropout, loss, training protocol과 checkpoint criterion을 동일하게 유지하고 backbone만 바꾼다. Dropout 0.0은 base paper의 완전 재현이 아니라 추가 regularization 변수를 줄이기 위한 Experiment 2 초기 baseline 결정이다. Baseline 결과에서 과적합 또는 일반화 문제가 확인될 경우에만 0.1/0.3/0.5 등을 별도 controlled ablation 후보로 검토하며 아직 범위를 동결하지 않는다. 1-layer LSTM에는 internal dropout을 적용하지 않는다.
 
 ### Behavior Sequence
 - Window: 동일한 10초 clip

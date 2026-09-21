@@ -11,9 +11,13 @@
 - Context branch와 Behavior Rule branch는 서로 다른 시간 해상도를 사용합니다.
 
 ## 현재 2차 실험 기준 설계
-- Context: 원본 10초 clip -> 32개 균등 sampling -> Full Face RGB 224x224x3 -> pretrained ResNet18 또는 VGG16 -> classifier 제거 -> GAP -> 512-D/frame -> LSTM(hidden=128) -> clip-level drowsy probability.
+- Context: 원본 10초 clip -> 32개 균등 sampling -> Full Face RGB 224x224x3 -> pretrained ResNet18 또는 VGG16 -> classifier 제거 -> GAP -> 512-D/frame -> 1-layer unidirectional LSTM(hidden=128) -> Linear(128→64) -> ReLU -> Linear(64→2).
 - Behavior: 같은 10초 clip -> 10 FPS(약 100 points) -> 동일 landmark source(Dlib68) -> EAR/MAR/Head Pose -> rule event.
 - Fusion: Context probability + eye/yawn/head events를 후단 Decision Fusion에서 결합.
+
+Context 초기 baseline은 `input_size=512`, `hidden_size=128`, `num_layers=1`, `batch_first=true`, `bidirectional=false`, LSTM internal dropout `0.0`을 사용한다. 마지막 hidden state `[B,128]`을 `Linear(128→64) → ReLU → Linear(64→2)`에 입력하며 classifier dropout도 `0.0`이다. 학습 시 `CrossEntropyLoss`에 raw logits를 전달하므로 model 내부에 필수 softmax layer를 두지 않는다. ResNet18과 VGG16은 동일한 LSTM/classifier/training protocol을 사용하는 별도 backbone 실험이며 feature를 합치지 않는다.
+
+Dropout `0.0`은 base paper의 완전 재현을 뜻하지 않는 Experiment 2 초기 baseline 결정이다. 최초 backbone 비교에서 추가 regularization 변수를 줄이고 동일한 temporal/classifier 조건을 유지하기 위한 설정이며, baseline 결과에서 과적합 또는 일반화 문제가 확인될 때만 `0.1/0.3/0.5` 등을 별도 controlled ablation 후보로 검토한다. 값과 범위는 아직 동결하지 않았다. 현재 `configs/model_resnet18_lstm.yaml`과 `configs/model_vgg16_lstm.yaml`은 초기 scaffold이므로 향후 학습 구현 단계에서 이 문서의 baseline과 명시적으로 일치시켜야 하며, 현재 training protocol로 간주하지 않는다.
 
 자세한 파일 이전 정책은 COPY_MANIFEST.md, 실험 설계 근거는 docs/DESIGN_NOTES.md를 참고하세요.
 
@@ -34,7 +38,8 @@
 | STEP 5-A — Context 32-Slot Sequence Construction | **COMPLETE** |
 | STEP 5-B — Behavior 100-Slot Sequence Construction | **COMPLETE** |
 | STEP 5-C — Cross-Branch Sequence Integrity Audit | **COMPLETE** |
-| STEP 5-D — CNN Feature Extraction | **NOT STARTED** |
+| STEP 5-D1 — CNN Feature Extraction Preflight & Pilot | **IMPLEMENTED / BLOCKED BY ENVIRONMENT** |
+| STEP 5-D2 — Full Context CNN Feature Extraction | **NOT STARTED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
 
@@ -45,6 +50,8 @@ STEP 5-A는 동결된 `CONTEXT_C3_SHORT_GAP` 정책(`f382c790...`)으로 Context
 STEP 5-B는 동결된 `BEHAVIOR_B2_COVERAGE_95` 정책으로 Behavior 적격 1,520개 영상을 각각 100-slot sequence로 구성했다. 총 152,000행에서 EAR, MAR, `pitch_raw`, `pitch_centered_candidate`, yaw, roll을 canonical 값 그대로 보존하고 결측은 NaN과 feature/detector/landmark/pose/behavior mask로 표현했다. 제외 243개에는 bundle을 만들지 않았으며 interpolation·threshold·행동 event·CNN 처리는 0건이다. Head Pose의 physical sign convention은 미확정이고 CNN feature extraction은 STEP 5-D이다. **TEST SPLIT SEALED**.
 
 STEP 5-C는 실제 canonical·frozen eligibility·Context·Behavior artifact를 전수 교차 감사했다. 1,763개 영상은 BOTH 1,520, Context-only 157, Behavior-only 0, neither 86으로 재확인됐고 frozen eligibility, split/label, target timeline, mask/NaN, canonical numeric lineage 및 artifact 불변성 mismatch/anomaly는 모두 0건이었다. Context target timeline과 대체 image-source provenance는 의도적으로 분리되어 있다. **INTEGRITY PASS · TEST SPLIT SEALED**.
+
+STEP 5-D1의 Context loader, ImageNet normalization, pretrained ResNet18/VGG16 512D extractor, source-image deduplication, feature provenance와 deterministic 16-video pilot 계획을 구현했다. Pilot은 train/val 12/4, drowsy/not-drowsy 9/7, no-imputation/imputation 8/8이며 512 target이 454개 unique source를 참조한다. 현재 `.venv`에 `torch`와 `torchvision`이 없어 임의 설치나 random-weight fallback 없이 `STEP_5D1_BLOCKED_DEPENDENCY`로 중단했다. 따라서 실제 pretrained inference와 feature artifact는 생성하지 않았고 STEP 5-D1은 COMPLETE가 아니다. STEP 5-D2 full extraction도 시작하지 않았다. **TEST SPLIT SEALED**.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 

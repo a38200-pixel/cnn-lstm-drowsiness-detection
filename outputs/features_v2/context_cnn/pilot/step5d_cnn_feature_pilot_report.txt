@@ -1,0 +1,35 @@
+STEP 5-D1 CNN Feature Extraction Preflight & Controlled Pilot
+
+[Scope]
+16-video deterministic pilot only; full extraction is forbidden.
+
+[Environment]
+Python: 3.12.14
+torch: ModuleNotFoundError: No module named 'torch'
+torchvision: ModuleNotFoundError: No module named 'torchvision'
+
+[Pilot Selection]
+16 videos: 8 no-imputation + 8 imputation-required; train/val and labels included.
+
+[ImageNet Preprocessing]
+Implemented: RGB uint8 224x224, /255, ImageNet mean/std; no resize/crop/augmentation.
+
+[ResNet18 Extractor]
+Implemented; pretrained DEFAULT required; fc removed; native GAP; 512D.
+
+[VGG16 Extractor]
+Implemented; pretrained DEFAULT required; features + adaptive GAP 1x1; 512D; classifier unused.
+
+[Feature Shape]
+Not executed because torch/torchvision are unavailable.
+
+[Provenance]
+Random-weight fallback is forbidden. Backbones remain separate.
+
+[Test Protection]
+Test access 0; SEALED.
+
+[Decision]
+STEP 5-D1: IMPLEMENTED / BLOCKED BY ENVIRONMENT
+STEP_5D1_BLOCKED_DEPENDENCY: torch, torchvision
+STEP 5-D2: NOT STARTED

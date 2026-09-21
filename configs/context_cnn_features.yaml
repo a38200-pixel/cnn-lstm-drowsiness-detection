@@ -1,0 +1,34 @@
+# STEP 5-D Context CNN feature 의미만 정의한다. C3 결측 정책은 STEP 5-A 결과를 그대로 소비한다.
+version: 1
+input:
+  image_size: 224
+  sequence_length: 32
+  channel_order: RGB
+  input_scale: uint8_to_float32_div_255
+normalization:
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+geometry_transform: none
+augmentation: none
+backbones:
+  resnet18:
+    torchvision_model: resnet18
+    weights: DEFAULT
+    classifier_removed: fc
+    pooling: native_avgpool_1x1
+    output_dim: 512
+  vgg16:
+    torchvision_model: vgg16
+    weights: DEFAULT
+    classifier_removed: classifier
+    pooling: adaptive_avgpool_1x1_after_features
+    output_dim: 512
+inference:
+  dtype: float32
+  amp: false
+  gradient: false
+  model_mode: eval
+pilot:
+  videos: 16
+  no_imputation: 8
+  imputation_required: 8

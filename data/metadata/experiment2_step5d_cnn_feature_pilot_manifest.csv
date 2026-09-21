@@ -1,0 +1,17 @@
+﻿pilot_order,video_id,split,label,imputed_count,context_sequence_path,selection_reason
+0,d_10,train,drowsy,0,data/interim/sequences_v2/context/per_video/train/d_10/sequence.csv,deterministic_no_imputation_stratified
+1,n_1,train,not_drowsy,0,data/interim/sequences_v2/context/per_video/train/n_1/sequence.csv,deterministic_no_imputation_stratified
+2,d_103,val,drowsy,0,data/interim/sequences_v2/context/per_video/val/d_103/sequence.csv,deterministic_no_imputation_stratified
+3,n_1002,val,not_drowsy,0,data/interim/sequences_v2/context/per_video/val/n_1002/sequence.csv,deterministic_no_imputation_stratified
+4,d_100,train,drowsy,0,data/interim/sequences_v2/context/per_video/train/d_100/sequence.csv,deterministic_no_imputation_stratified
+5,d_101,train,drowsy,0,data/interim/sequences_v2/context/per_video/train/d_101/sequence.csv,deterministic_no_imputation_stratified
+6,d_102,train,drowsy,0,data/interim/sequences_v2/context/per_video/train/d_102/sequence.csv,deterministic_no_imputation_stratified
+7,d_104,train,drowsy,0,data/interim/sequences_v2/context/per_video/train/d_104/sequence.csv,deterministic_no_imputation_stratified
+8,d_266,train,drowsy,7,data/interim/sequences_v2/context/per_video/train/d_266/sequence.csv,deterministic_high_imputation_stratified
+9,n_265,train,not_drowsy,8,data/interim/sequences_v2/context/per_video/train/n_265/sequence.csv,deterministic_high_imputation_stratified
+10,d_843,val,drowsy,5,data/interim/sequences_v2/context/per_video/val/d_843/sequence.csv,deterministic_high_imputation_stratified
+11,n_311,val,not_drowsy,7,data/interim/sequences_v2/context/per_video/val/n_311/sequence.csv,deterministic_high_imputation_stratified
+12,n_320,train,not_drowsy,8,data/interim/sequences_v2/context/per_video/train/n_320/sequence.csv,deterministic_high_imputation_stratified
+13,n_321,train,not_drowsy,8,data/interim/sequences_v2/context/per_video/train/n_321/sequence.csv,deterministic_high_imputation_stratified
+14,n_861,train,not_drowsy,8,data/interim/sequences_v2/context/per_video/train/n_861/sequence.csv,deterministic_high_imputation_stratified
+15,d_344,train,drowsy,7,data/interim/sequences_v2/context/per_video/train/d_344/sequence.csv,deterministic_high_imputation_stratified
