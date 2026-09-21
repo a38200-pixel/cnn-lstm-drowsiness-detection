@@ -25,6 +25,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", required=True, type=int)
     parser.add_argument("--epochs", type=int)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--train-batch-size", type=int,
+                        help="config의 train batch size를 이 run에서만 변경")
+    parser.add_argument("--classifier-dropout", type=float,
+                        help="config의 classifier dropout을 이 run에서만 변경")
+    parser.add_argument("--run-tag",
+                        help="분리된 local output과 MLflow run 이름에 붙일 안전한 tag")
     mlflow_group = parser.add_mutually_exclusive_group()
     mlflow_group.add_argument("--mlflow", dest="mlflow", action="store_true")
     mlflow_group.add_argument("--no-mlflow", dest="mlflow", action="store_false")
@@ -43,6 +49,9 @@ def main() -> int:
         epochs_override=args.epochs,
         mlflow_enabled_override=args.mlflow,
         device_name=args.device,
+        train_batch_size_override=args.train_batch_size,
+        classifier_dropout_override=args.classifier_dropout,
+        run_tag=args.run_tag,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0

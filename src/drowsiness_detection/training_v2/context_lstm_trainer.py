@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import copy
 import csv
 import json
 import math
 import random
+import re
 import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -40,6 +42,53 @@ HISTORY_COLUMNS = (
 
 class TrainingPipelineError(RuntimeError):
     """학습 정책 또는 numeric integrity 위반."""
+
+
+def resolve_train_batch_size(
+    configured_batch_size: int,
+    override: int | None,
+    run_tag: str | None,
+) -> int:
+    """Run별 batch override를 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if override is None:
+        return configured_batch_size
+    if override <= 0:
+        raise TrainingPipelineError("train batch size override는 양수여야 합니다")
+    if override != configured_batch_size and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 train batch size에는 --run-tag가 필요합니다")
+    return override
+
+
+def resolve_classifier_dropout(
+    configured_dropout: float,
+    override: float | None,
+    run_tag: str | None,
+) -> float:
+    """Classifier dropout override를 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if override is None:
+        return configured_dropout
+    if not 0.0 <= override < 1.0:
+        raise TrainingPipelineError("classifier dropout은 0 이상 1 미만이어야 합니다")
+    if override != configured_dropout and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 classifier dropout에는 --run-tag가 필요합니다")
+    return override
+
+
+def resolve_run_names(backbone: str, seed: int, run_tag: str | None) -> tuple[str, str]:
+    """안전한 local output directory와 MLflow run 이름을 만든다."""
+
+    if run_tag is not None:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", run_tag):
+            raise TrainingPipelineError(
+                "run tag는 영문자/숫자로 시작하고 영문자, 숫자, _, -만 사용할 수 있습니다")
+        suffix = f"_{run_tag}"
+    else:
+        suffix = ""
+    return f"seed_{seed}{suffix}", f"{backbone}_seed{seed}{suffix}"
 
 
 class ContextTrainingConfig:
@@ -524,6 +573,9 @@ def train_context_lstm(
     mlflow_enabled_override: bool | None = None,
     device_name: str = "auto",
     output_root_override: Path | None = None,
+    train_batch_size_override: int | None = None,
+    classifier_dropout_override: float | None = None,
+    run_tag: str | None = None,
 ) -> dict[str, Any]:
     training_config = training_config_from_mapping(config)
     if seed not in training_config.seeds:
@@ -531,6 +583,16 @@ def train_context_lstm(
     max_epochs = epochs_override if epochs_override is not None else training_config.max_epochs
     if max_epochs <= 0:
         raise TrainingPipelineError("epochs는 양수여야 합니다")
+    resolved_train_batch_size = resolve_train_batch_size(
+        training_config.train_batch_size, train_batch_size_override, run_tag)
+    configured_classifier_dropout = float(
+        config["model_baseline_future"]["classifier_dropout"])
+    resolved_classifier_dropout = resolve_classifier_dropout(
+        configured_classifier_dropout, classifier_dropout_override, run_tag)
+    output_name, mlflow_run_name = resolve_run_names(backbone, seed, run_tag)
+    resolved_config = copy.deepcopy(config)
+    resolved_config["model_baseline_future"]["classifier_dropout"] = (
+        resolved_classifier_dropout)
     if device_name == "auto":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     elif device_name in ("cpu", "cuda"):
@@ -545,16 +607,16 @@ def train_context_lstm(
     val_dataset = ContextFeatureDataset(project_root, backbone, "val")
     generator = torch.Generator().manual_seed(seed)
     train_loader = build_context_feature_dataloader(
-        train_dataset, training_config.train_batch_size,
+        train_dataset, resolved_train_batch_size,
         num_workers=training_config.num_workers, generator=generator)
     val_loader = build_context_feature_dataloader(
         val_dataset, training_config.val_batch_size,
         num_workers=training_config.num_workers)
-    model = build_context_lstm(config)
+    model = build_context_lstm(resolved_config)
 
     base_output = (output_root_override if output_root_override is not None else
                    project_root / training_config.output_root)
-    output_dir = base_output / backbone / f"seed_{seed}"
+    output_dir = base_output / backbone / output_name
     enabled = (training_config.mlflow_enabled if mlflow_enabled_override is None
                else mlflow_enabled_override)
     logger = OptionalMLflowLogger(
@@ -565,17 +627,20 @@ def train_context_lstm(
         "seed": seed,
         "train_samples": len(train_dataset),
         "val_samples": len(val_dataset),
+        "train_batch_size": resolved_train_batch_size,
+        "val_batch_size": training_config.val_batch_size,
+        "classifier_dropout": resolved_classifier_dropout,
+        "lstm_dropout": float(config["model_baseline_future"]["lstm_dropout"]),
+        "run_tag": run_tag,
     }
-    model_config = config["model_baseline_future"]
-    logger.start(f"{backbone}_seed{seed}", {
+    model_config = resolved_config["model_baseline_future"]
+    logger.start(mlflow_run_name, {
         **metadata,
         "max_epochs": max_epochs,
         "optimizer": "AdamW",
         "loss": "CrossEntropyLoss",
         "learning_rate": training_config.learning_rate,
         "weight_decay": training_config.weight_decay,
-        "train_batch_size": training_config.train_batch_size,
-        "val_batch_size": training_config.val_batch_size,
         "hidden_size": model_config["hidden_size"],
         "num_layers": model_config["num_layers"],
         "bidirectional": model_config["bidirectional"],
@@ -584,7 +649,7 @@ def train_context_lstm(
     try:
         result = fit_context_lstm(
             model, train_loader, val_loader, training_config, device,
-            output_dir, max_epochs, metadata, config, logger)
+            output_dir, max_epochs, metadata, resolved_config, logger)
     except Exception:
         logger.finish(output_dir, status="FAILED")
         raise

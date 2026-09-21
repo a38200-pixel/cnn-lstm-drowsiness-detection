@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from drowsiness_detection.models_v2 import build_context_lstm
 from drowsiness_detection.training_v2 import context_lstm_trainer as trainer
+from scripts.train_context_lstm import build_parser
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +66,68 @@ def test_training_config_matches_step6c_policy(
     assert training_config.early_stopping_patience == 10
     assert training_config.early_stopping_min_delta == 0.0001
     assert training_config.mlflow_experiment_name == "context_lstm_baseline_v1"
+
+
+def test_batch8_override_and_tag_resolve_without_changing_baseline() -> None:
+    assert trainer.resolve_train_batch_size(16, 8, "batch8") == 8
+    assert trainer.resolve_run_names("resnet18", 42, "batch8") == (
+        "seed_42_batch8", "resnet18_seed42_batch8")
+    assert trainer.resolve_run_names("vgg16", 42, "batch8") == (
+        "seed_42_batch8", "vgg16_seed42_batch8")
+    assert trainer.resolve_train_batch_size(16, None, None) == 16
+    assert trainer.resolve_run_names("resnet18", 42, None) == (
+        "seed_42", "resnet18_seed42")
+
+
+def test_changed_batch_size_requires_run_tag() -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_train_batch_size(16, 8, None)
+
+
+def test_classifier_dropout_override_requires_tag_and_keeps_batch16() -> None:
+    assert trainer.resolve_classifier_dropout(0.0, 0.2, "dropout02") == 0.2
+    assert trainer.resolve_train_batch_size(16, None, "dropout02") == 16
+    assert trainer.resolve_run_names("resnet18", 42, "dropout02") == (
+        "seed_42_dropout02", "resnet18_seed42_dropout02")
+    assert trainer.resolve_run_names("vgg16", 42, "dropout02") == (
+        "seed_42_dropout02", "vgg16_seed42_dropout02")
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_classifier_dropout(0.0, 0.2, None)
+
+
+@pytest.mark.parametrize("dropout", [-0.1, 1.0])
+def test_invalid_classifier_dropout_is_rejected(dropout: float) -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="classifier dropout"):
+        trainer.resolve_classifier_dropout(0.0, dropout, "invalid")
+
+
+@pytest.mark.parametrize("run_tag", ["", "../batch8", "batch 8", "batch/8"])
+def test_unsafe_run_tag_is_rejected(run_tag: str) -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="run tag"):
+        trainer.resolve_run_names("resnet18", 42, run_tag)
+
+
+def test_cli_accepts_batch8_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "vgg16", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--train-batch-size", "8", "--run-tag", "batch8",
+    ])
+    assert args.backbone == "vgg16"
+    assert args.seed == 42
+    assert args.device == "cuda"
+    assert args.mlflow is True
+    assert args.train_batch_size == 8
+    assert args.run_tag == "batch8"
+
+
+def test_cli_accepts_classifier_dropout_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "resnet18", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--classifier-dropout", "0.2", "--run-tag", "dropout02",
+    ])
+    assert args.train_batch_size is None
+    assert args.classifier_dropout == 0.2
+    assert args.run_tag == "dropout02"
 
 
 def test_classification_metrics() -> None:

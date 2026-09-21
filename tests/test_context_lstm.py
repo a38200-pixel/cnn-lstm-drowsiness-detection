@@ -117,6 +117,19 @@ def test_same_model_for_both_backbones(config_mapping: dict) -> None:
     assert all("backbone" not in name for name, _ in resnet_model.named_modules())
 
 
+def test_classifier_dropout_tuning_keeps_lstm_dropout_zero(config_mapping: dict) -> None:
+    changed = {
+        **config_mapping,
+        "model_baseline_future": {
+            **config_mapping["model_baseline_future"],
+            "classifier_dropout": 0.2,
+        },
+    }
+    model = build_context_lstm(changed)
+    assert model.classifier[2].p == 0.2
+    assert model.lstm.dropout == 0.0
+
+
 def test_forward_accepts_features_only() -> None:
     signature = inspect.signature(ContextLSTMBaseline.forward)
     assert tuple(signature.parameters) == ("self", "features")

@@ -48,7 +48,6 @@ class ContextLSTMConfig:
             "bidirectional": False,
             "lstm_dropout": 0.0,
             "classifier_hidden": 64,
-            "classifier_dropout": 0.0,
             "num_classes": 2,
         }
         actual = {
@@ -70,6 +69,9 @@ class ContextLSTMConfig:
         if mismatches:
             raise ContextLSTMConfigError(
                 f"STEP 6-B baseline 구조와 다른 config입니다: {mismatches}")
+        if not 0.0 <= self.classifier_dropout < 1.0:
+            raise ContextLSTMConfigError(
+                "classifier dropout은 0 이상 1 미만이어야 합니다")
 
 
 def context_lstm_config_from_mapping(
