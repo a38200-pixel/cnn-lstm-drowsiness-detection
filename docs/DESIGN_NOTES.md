@@ -54,6 +54,8 @@
 
 ResNet18과 VGG16의 첫 비교에서는 split, 32 target timestamps, missing policy, LSTM/classifier, dropout, loss, training protocol과 checkpoint criterion을 동일하게 유지하고 backbone만 바꾼다. Dropout 0.0은 base paper의 완전 재현이 아니라 추가 regularization 변수를 줄이기 위한 Experiment 2 초기 baseline 결정이다. Baseline 결과에서 과적합 또는 일반화 문제가 확인될 경우에만 0.1/0.3/0.5 등을 별도 controlled ablation 후보로 검토하며 아직 범위를 동결하지 않는다. 1-layer LSTM에는 internal dropout을 적용하지 않는다.
 
+STEP 5-D1 controlled pilot에서는 두 frozen backbone 모두 CNN feature extraction batch size를 16으로 통일했다. 이는 pretrained feature의 의미를 맞추기 위한 요구가 아니라 runtime·VRAM·pipeline 비교의 run setting을 통제하기 위한 결정이다. 향후 LSTM training batch size와는 별개다.
+
 ### Behavior Sequence
 - Window: 동일한 10초 clip
 - Sampling: 10 FPS, 약 100 timestamp

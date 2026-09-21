@@ -1,0 +1,190 @@
+{
+  "status": "STEP_5D1_CNN_FEATURE_EXTRACTION_PREFLIGHT_AND_PILOT_COMPLETE",
+  "environment": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "torch_import": true,
+    "torch_version": "2.11.0+cu130",
+    "cuda_available": true,
+    "torch_cuda_runtime": "13.0",
+    "gpu_device_count": 1,
+    "cudnn_version": 91900,
+    "gpu_device_name": "NVIDIA GeForce RTX 3080",
+    "float32_inference_supported": true,
+    "torchvision_import": true,
+    "torchvision_version": "0.26.0+cu130",
+    "status": "PASS"
+  },
+  "pilot": {
+    "videos": 16,
+    "train": 12,
+    "val": 4,
+    "drowsy": 9,
+    "not_drowsy": 7,
+    "no_imputation": 8,
+    "imputation_required": 8,
+    "target_rows_per_backbone": 512,
+    "test_rows": 0
+  },
+  "pilot_video_ids": [
+    "d_10",
+    "n_1",
+    "d_103",
+    "n_1002",
+    "d_100",
+    "d_101",
+    "d_102",
+    "d_104",
+    "d_266",
+    "n_265",
+    "d_843",
+    "n_311",
+    "n_320",
+    "n_321",
+    "n_861",
+    "d_344"
+  ],
+  "unique_source_images": 454,
+  "backbones": [
+    {
+      "backbone": "resnet18",
+      "feature_policy": {
+        "backbone_name": "resnet18",
+        "torchvision_model": "resnet18",
+        "weights": "DEFAULT",
+        "classifier_removed": "fc",
+        "pooling": "native_avgpool_1x1",
+        "output_dim": 512,
+        "weights_enum": "ResNet18_Weights.IMAGENET1K_V1",
+        "input": {
+          "image_size": 224,
+          "sequence_length": 32,
+          "channel_order": "RGB",
+          "input_scale": "uint8_to_float32_div_255"
+        },
+        "normalization": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "geometry_transform": "none",
+        "augmentation": "none",
+        "dtype": "float32",
+        "amp": false,
+        "frozen_pretrained": true
+      },
+      "cnn_feature_policy_hash": "0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e",
+      "pilot_videos": 16,
+      "target_rows": 512,
+      "unique_source_images": 454,
+      "feature_dimension": 512,
+      "dtype": "float32",
+      "finite_count": 262144,
+      "nan_count": 0,
+      "inf_count": 0,
+      "all_zero_count": 0,
+      "mean": 0.7368493676185608,
+      "std": 0.7159087061882019,
+      "min": 0.0,
+      "max": 6.778213024139404,
+      "l2_mean": 23.177509307861328,
+      "l2_median": 23.38294219970703,
+      "l2_min": 17.69957160949707,
+      "l2_max": 27.700471878051758,
+      "imputed_feature_mismatch": 0,
+      "wrong_source_mapping": 0,
+      "runtime": {
+        "model_load_sec": 1.017954400042072,
+        "feature_extraction_sec": 1.5795977999805473,
+        "total_sec": 2.597552200022619,
+        "source_images_per_sec": 287.4149356282916,
+        "device": "cuda",
+        "batch_size": 16,
+        "amp": false,
+        "peak_gpu_memory_bytes": 159284224
+      },
+      "test_used": false,
+      "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+      "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d"
+    },
+    {
+      "backbone": "vgg16",
+      "feature_policy": {
+        "backbone_name": "vgg16",
+        "torchvision_model": "vgg16",
+        "weights": "DEFAULT",
+        "classifier_removed": "classifier",
+        "pooling": "adaptive_avgpool_1x1_after_features",
+        "output_dim": 512,
+        "weights_enum": "VGG16_Weights.IMAGENET1K_V1",
+        "input": {
+          "image_size": 224,
+          "sequence_length": 32,
+          "channel_order": "RGB",
+          "input_scale": "uint8_to_float32_div_255"
+        },
+        "normalization": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "geometry_transform": "none",
+        "augmentation": "none",
+        "dtype": "float32",
+        "amp": false,
+        "frozen_pretrained": true
+      },
+      "cnn_feature_policy_hash": "1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0",
+      "pilot_videos": 16,
+      "target_rows": 512,
+      "unique_source_images": 454,
+      "feature_dimension": 512,
+      "dtype": "float32",
+      "finite_count": 262144,
+      "nan_count": 0,
+      "inf_count": 0,
+      "all_zero_count": 0,
+      "mean": 0.2008071094751358,
+      "std": 0.35734525322914124,
+      "min": 0.0,
+      "max": 7.101207256317139,
+      "l2_mean": 9.19001579284668,
+      "l2_median": 8.979575157165527,
+      "l2_min": 6.82763147354126,
+      "l2_max": 14.956538200378418,
+      "imputed_feature_mismatch": 0,
+      "wrong_source_mapping": 0,
+      "runtime": {
+        "model_load_sec": 7.72379430005094,
+        "feature_extraction_sec": 1.8996535000042059,
+        "total_sec": 9.623447800055146,
+        "source_images_per_sec": 238.99095282323583,
+        "device": "cuda",
+        "batch_size": 16,
+        "amp": false,
+        "peak_gpu_memory_bytes": 686154240
+      },
+      "test_used": false,
+      "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+      "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d"
+    }
+  ],
+  "backbone_fusion": false,
+  "total_wall_sec": 13.460557900019921,
+  "test_access": 0,
+  "full_extraction_started": false
+}

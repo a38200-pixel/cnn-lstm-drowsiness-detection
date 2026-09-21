@@ -38,7 +38,7 @@ Dropout `0.0`은 base paper의 완전 재현을 뜻하지 않는 Experiment 2 �
 | STEP 5-A — Context 32-Slot Sequence Construction | **COMPLETE** |
 | STEP 5-B — Behavior 100-Slot Sequence Construction | **COMPLETE** |
 | STEP 5-C — Cross-Branch Sequence Integrity Audit | **COMPLETE** |
-| STEP 5-D1 — CNN Feature Extraction Preflight & Pilot | **IMPLEMENTED / BLOCKED BY ENVIRONMENT** |
+| STEP 5-D1 — CNN Feature Extraction Preflight & Controlled Pilot | **COMPLETE** |
 | STEP 5-D2 — Full Context CNN Feature Extraction | **NOT STARTED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
@@ -51,7 +51,7 @@ STEP 5-B는 동결된 `BEHAVIOR_B2_COVERAGE_95` 정책으로 Behavior 적격 1,5
 
 STEP 5-C는 실제 canonical·frozen eligibility·Context·Behavior artifact를 전수 교차 감사했다. 1,763개 영상은 BOTH 1,520, Context-only 157, Behavior-only 0, neither 86으로 재확인됐고 frozen eligibility, split/label, target timeline, mask/NaN, canonical numeric lineage 및 artifact 불변성 mismatch/anomaly는 모두 0건이었다. Context target timeline과 대체 image-source provenance는 의도적으로 분리되어 있다. **INTEGRITY PASS · TEST SPLIT SEALED**.
 
-STEP 5-D1의 Context loader, ImageNet normalization, pretrained ResNet18/VGG16 512D extractor, source-image deduplication, feature provenance와 deterministic 16-video pilot 계획을 구현했다. Pilot은 train/val 12/4, drowsy/not-drowsy 9/7, no-imputation/imputation 8/8이며 512 target이 454개 unique source를 참조한다. 현재 `.venv`에 `torch`와 `torchvision`이 없어 임의 설치나 random-weight fallback 없이 `STEP_5D1_BLOCKED_DEPENDENCY`로 중단했다. 따라서 실제 pretrained inference와 feature artifact는 생성하지 않았고 STEP 5-D1은 COMPLETE가 아니다. STEP 5-D2 full extraction도 시작하지 않았다. **TEST SPLIT SEALED**.
+STEP 5-D1은 Python 3.12.14, torch 2.11.0+cu130, torchvision 0.26.0+cu130, CUDA 13.0, RTX 3080 환경에서 actual controlled pilot을 완료했다. Pilot은 train/val 12/4, drowsy/not-drowsy 9/7, no-imputation/imputation 8/8의 16개 영상이며, backbone별 512 target이 454개 unique source JPEG를 참조한다. ResNet18과 VGG16 모두 ImageNet `IMAGENET1K_V1`, batch size 16, CUDA float32, AMP off, frozen eval/inference mode, 동일 ImageNet normalization과 geometry 변경 없음 조건을 사용했다. 두 backbone 모두 영상별 `[32,512]` float32 feature를 생성했고 NaN/Inf/all-zero, imputed feature mismatch, wrong source mapping은 모두 0이었다. Backbone artifact는 완전히 분리되며 fusion하지 않는다. 이 pilot은 pipeline correctness·feature integrity·runtime feasibility 검증이지 정확도 비교나 backbone 선택이 아니다. STEP 5-D2 full 1,677-video extraction은 시작하지 않았다. **TEST SPLIT SEALED**.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 

@@ -87,9 +87,37 @@ ResNet18은 `torchvision.models.resnet18`의 `DEFAULT` pretrained ImageNet weigh
 
 Source JPEG path를 backbone별로 deduplicate하여 같은 source는 한 번만 inference하고 target 위치에서 같은 feature를 재사용하도록 구현했다. Original/imputed mask, target/source index와 source mapping fingerprint를 보존한다. Backbone마다 별도 semantic policy hash와 artifact root를 사용하며 device와 batch size는 hash에 포함하지 않는다. Random initialization fallback은 금지된다.
 
-실제 `.venv` preflight 결과 Python 3.12.14에서 `torch`와 `torchvision` 모두 `ModuleNotFoundError`였다. 지침에 따라 버전을 추측해 설치하지 않았다. CUDA availability/runtime, GPU name, cuDNN, resolved weights enum, feature policy hash, 실제 `[32,512]` feature, runtime과 VRAM은 dependency가 없어 확인할 수 없다. Pilot manifest와 blocker report만 생성했고 CNN inference, JPEG decode, feature artifact 및 full extraction은 수행하지 않았다.
+#### Environment
 
-현재 상태는 **STEP 5-D1: IMPLEMENTED / BLOCKED BY ENVIRONMENT**이며 `STEP_5D1_BLOCKED_DEPENDENCY: torch, torchvision`이다. STEP 5-D1 COMPLETE 조건은 충족되지 않았고 STEP 5-D2 full extraction은 **NOT STARTED**다.
+Dependency blocker 해결 후 실제 환경은 Python 3.12.14, torch 2.11.0+cu130, torchvision 0.26.0+cu130, torch CUDA runtime 13.0, cuDNN 91900이었다. CUDA device 1개와 NVIDIA GeForce RTX 3080을 확인했고 float32 inference가 정상 동작했다. Random-weight fallback은 없었다.
+
+#### Controlled Pilot Design
+
+Deterministic pilot 16개는 `d_10, n_1, d_103, n_1002, d_100, d_101, d_102, d_104, d_266, n_265, d_843, n_311, n_320, n_321, n_861, d_344`다. Train/val 12/4, drowsy/not_drowsy 9/7, no-imputation/imputation-required 8/8이고 test는 0이다. 16×32=512 target 중 실제 unique source JPEG는 454개이며, 58개 target은 기존 source feature를 재사용한다.
+
+#### Shared Inference Settings
+
+두 backbone 모두 CUDA, batch size 16, float32, AMP off, `model.eval()`, gradient disabled, `torch.inference_mode()`를 사용했다. Batch 16 통일은 feature 의미를 같게 만들기 위한 필수조건이 아니라 controlled runtime·VRAM·pipeline 비교에서 run-condition 차이를 줄이기 위한 것이다. 향후 LSTM training batch size와는 별개다. 입력은 RGB uint8 224×224 → float32 `/255` → ImageNet normalization이며 resize, center/random crop, augmentation은 없다.
+
+실제 명령은 `python scripts/extract_context_cnn_features.py --mode pilot --device cuda --resnet-batch-size 16 --vgg-batch-size 16`이었다. Torchvision 표준 pretrained checkpoint `resnet18-f37072fd.pth`와 `vgg16-397923af.pth`를 사용했으며 resolved enum은 각각 `ResNet18_Weights.IMAGENET1K_V1`, `VGG16_Weights.IMAGENET1K_V1`이다.
+
+#### ResNet18 Results
+
+`ResNet18_Weights.IMAGENET1K_V1`을 사용하고 `fc`를 제거한 native GAP feature를 저장했다. Feature policy hash는 `0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e`이다. 16개 영상 모두 `[32,512]` float32이며 target 512행, unique source 454개다. Feature extraction은 1.5796초, model load를 포함한 total은 2.5976초, 처리량은 287.41 source images/s, peak GPU memory는 159,284,224 bytes였다.
+
+#### VGG16 Results
+
+`VGG16_Weights.IMAGENET1K_V1`을 사용하고 classifier 없이 `model.features → AdaptiveAvgPool2d((1,1)) → flatten` feature를 저장했다. Feature policy hash는 `1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0`이다. 16개 영상 모두 `[32,512]` float32이며 target 512행, unique source 454개다. Feature extraction은 1.8997초, model load를 포함한 total은 9.6234초, 처리량은 238.99 source images/s, peak GPU memory는 686,154,240 bytes였다.
+
+#### Feature Integrity and Imputed Reuse
+
+각 backbone에서 finite element는 262,144개이고 NaN, Inf, all-zero vector, imputed feature mismatch, wrong source mapping은 모두 0이었다. STEP 5-A target/source provenance와 실제 CNN feature reuse가 일치했다. ResNet18과 VGG16 artifact는 서로 독립적이며 backbone fusion은 없다.
+
+#### Interpretation Limitations and Decision
+
+Pilot에서 ResNet18이 더 짧은 extraction time과 더 낮은 peak GPU memory를 기록했지만 이는 pilot runtime observation일 뿐 정확도·feature quality·최종 backbone 우위를 의미하지 않는다. Backbone별 feature mean과 L2 norm 크기는 서로 다른 representation이므로 직접적인 품질 비교 지표가 아니다. 최종 모델 선택은 동일한 LSTM/classifier training protocol의 결과를 함께 검토해야 한다.
+
+**STEP 5-D1: COMPLETE.** Environment, pretrained weights, `[32,512]` shape, numeric integrity, target/source reuse와 test 보호가 모두 통과했다. STEP 5-D2 full extraction은 **NOT STARTED**다.
 
 ### STEP 5-D2 Full Extraction
 
@@ -112,7 +140,7 @@ Experiment 2의 초기 Context baseline은 1-layer unidirectional LSTM(hidden=12
 - STEP 5-A — Context 32-Slot Sequence Construction: **COMPLETE**
 - STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
 - STEP 5-C — Cross-Branch Sequence Integrity Audit: **COMPLETE**
-- STEP 5-D1 — CNN Feature Extraction Preflight & Pilot: **IMPLEMENTED / BLOCKED BY ENVIRONMENT**
+- STEP 5-D1 — CNN Feature Extraction Preflight & Controlled Pilot: **COMPLETE**
 - STEP 5-D2 — Full Context CNN Feature Extraction: **NOT STARTED**
 
-다음 진행 조건은 `.venv`에 프로젝트와 장비에 맞는 torch/torchvision 조합을 사용자가 명시적으로 준비하고 `DEFAULT` pretrained ImageNet weights를 정상 load하는 것이다. 그 전에는 STEP 5-D1 actual pilot이나 STEP 5-D2를 실행하지 않는다.
+다음 단계는 Context eligible 1,677개 전체에 대해 두 backbone을 독립적으로 materialize하는 STEP 5-D2다. Behavior eligible 1,520개로 대상을 축소하지 않으며, 현재 full extraction은 시작하지 않았다.

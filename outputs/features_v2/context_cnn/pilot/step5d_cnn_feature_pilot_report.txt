@@ -1,35 +1,15 @@
 STEP 5-D1 CNN Feature Extraction Preflight & Controlled Pilot
 
-[Scope]
-16-video deterministic pilot only; full extraction is forbidden.
-
-[Environment]
-Python: 3.12.14
-torch: ModuleNotFoundError: No module named 'torch'
-torchvision: ModuleNotFoundError: No module named 'torchvision'
-
-[Pilot Selection]
-16 videos: 8 no-imputation + 8 imputation-required; train/val and labels included.
-
-[ImageNet Preprocessing]
-Implemented: RGB uint8 224x224, /255, ImageNet mean/std; no resize/crop/augmentation.
-
-[ResNet18 Extractor]
-Implemented; pretrained DEFAULT required; fc removed; native GAP; 512D.
-
-[VGG16 Extractor]
-Implemented; pretrained DEFAULT required; features + adaptive GAP 1x1; 512D; classifier unused.
-
-[Feature Shape]
-Not executed because torch/torchvision are unavailable.
-
-[Provenance]
-Random-weight fallback is forbidden. Backbones remain separate.
-
-[Test Protection]
-Test access 0; SEALED.
-
-[Decision]
-STEP 5-D1: IMPLEMENTED / BLOCKED BY ENVIRONMENT
-STEP_5D1_BLOCKED_DEPENDENCY: torch, torchvision
-STEP 5-D2: NOT STARTED
+[Scope] 16-video pilot only; full extraction not started.
+[Environment] torch 2.11.0+cu130; torchvision 0.26.0+cu130; device cuda.
+[Pilot Selection] Deterministic 8 no-imputation + 8 imputation-required.
+[Input Sequence Integrity] 16 x 32 target mappings; test 0.
+[ImageNet Preprocessing] RGB 224x224 /255 + mean/std; no geometry transform.
+[ResNet18 Extractor] DEFAULT pretrained; fc removed; native GAP; 512D.
+[VGG16 Extractor] DEFAULT pretrained; features + adaptive GAP; classifier unused; 512D.
+[Feature Shape] [32,512]/video for each independent backbone.
+[Feature Numeric Sanity] NaN/Inf/all-zero 0.
+[Imputed Feature Consistency] Exact source feature reuse; mismatch 0.
+[Provenance] Separate policy hash and artifact per backbone; no fusion.
+[Test Protection] SEALED.
+[Decision] STEP 5-D1 COMPLETE; STEP 5-D2 NOT STARTED.
