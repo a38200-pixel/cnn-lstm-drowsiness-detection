@@ -25,12 +25,12 @@
 | STEP 2 — Preprocessing Policy Audit & Selection (2-A ~ 2-D) | **FULLY CLOSED** |
 | STEP 3-A — Canonical Pipeline Implementation | **IMPLEMENTED** |
 | STEP 3-B — 20-Video Pilot | **COMPLETE** |
-| STEP 3-C — Full Train/Val Materialization | **NOT STARTED** |
+| STEP 3-C — Full Train/Val Materialization | **COMPLETE** |
 | STEP 4 — Full Train/Val Quality Audit | **NOT STARTED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
 
-STEP 3-A는 영상당 10 Hz × 10초의 100개 canonical slot과 검출 독립적인 32개 Context slot, 결측 무대체, atomic bundle·resume·policy/run hash·모델 SHA-256·source fingerprint·integrity 검사를 구현했다. STEP 3-B의 20개 pilot은 2,000/2,000 decode, YuNet 1,916/2,000(95.8%), 검출 후 Dlib68 1,916/1,916, Context 613/640(95.78%) 가용 및 27개 결측이었다. 자동·사용자 시각 검토를 거쳐 STEP 3-B는 완료됐지만 20개 pilot의 품질 분포를 전체 영상에 일반화하지 않는다.
+STEP 3-A는 영상당 10 Hz × 10초의 100개 canonical slot과 검출 독립적인 32개 Context slot, 결측 무대체, atomic bundle·resume·policy/run hash·모델 SHA-256·source fingerprint·integrity 검사를 구현했다. STEP 3-B의 20개 pilot은 2,000/2,000 decode, YuNet 1,916/2,000(95.8%), 검출 후 Dlib68 1,916/1,916, Context 613/640(95.78%) 가용 및 27개 결측이었다. 자동·사용자 시각 검토를 거쳐 STEP 3-B를 완료했고, STEP 3-C에서 train/val 1,763개 영상·176,300 canonical row·54,672 Context crop을 생성해 무결성·resume 검증을 통과했다. Pilot의 품질 분포를 전체 영상에 일반화하지 않는다. **TEST SPLIT SEALED**.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 
@@ -410,7 +410,7 @@ STEP 2의 시각 검토는 review pack·contact sheet를 사용한 **사용자 �
 
 ### STEP 3 — Canonical Dataset Preprocessing
 
-STEP 2 frozen policy는 그대로 유지하며 [STEP 3 상세 설계 및 pilot 기록](docs/experiment2_step3_canonical_preprocessing.md)에 schema·결측·provenance·resume 규칙과 실제 pilot 결과를 정리했습니다. STEP 3-A 구현 후 STEP 3-B에서 지정된 20개 영상만 전처리했습니다.
+STEP 2 frozen policy는 그대로 유지하며 [STEP 3 상세 설계 및 실행 기록](docs/experiment2_step3_canonical_preprocessing.md)에 schema·결측·provenance·resume 규칙과 실제 pilot/full 결과를 정리했습니다. STEP 3-A 구현, STEP 3-B의 20-video pilot·수동 검토에 이어 STEP 3-C의 전체 train/val materialization까지 완료했습니다.
 
 #### STEP 3-A — Pipeline Implementation
 
@@ -451,6 +451,23 @@ Context crop 결측 27건만 따로 확인할 수 있도록 [missing-only review
 
 #### STEP 3-C — Full Train/Val Materialization
 
-Status: **NOT STARTED**. STEP 3-B 수동 검토는 완료됐지만 이번 작업에서 `canonical/`의 전체 train/val 처리는 시작하지 않았습니다. Test는 최종 평가 전까지 정책 선택이나 모델 선택에 사용하지 않습니다.
+Status: **COMPLETE**. [Full 산출물](data/interim/preprocessing_v2/canonical/)에 train 1,452개·val 311개, 총 1,763개 영상을 STEP 3-B와 같은 policy hash `29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721` 및 동일 YuNet/Dlib 모델 SHA-256으로 처리했습니다. Test 311개는 열거나 처리하지 않았고 full 출력의 test row는 0개입니다. Pilot bundle을 복사·재사용하지 않았으며 frozen YuNet / Dlib68 RAW bbox / SQUARE_M10 정책을 변경하지 않았습니다.
 
-다음은 STEP 3-C의 train 1,452개·val 311개, 총 1,763개 영상 materialization이며 test 처리 대상은 0개입니다. STEP 4의 전체 train/val 결측·pose·영상별 집중도 분석은 그 이후입니다. Head Pose 물리적 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 규칙, 결측 처리 정책은 아직 미확정입니다. CNN(ResNet18/VGG16)과 LSTM은 학습하지 않았고 fallback·interpolation도 도입하지 않았습니다.
+| 항목 | Full train/val 실제 결과 |
+|---|---:|
+| 완료 / 처리 실패 영상 | 1,763 / 0 |
+| Canonical row / 정상 decode | 176,300 / 176,300 |
+| YuNet 성공 / 미검출 | 170,871 / 5,429 (성공률 96.9206%) |
+| YuNet 성공 frame에서 Dlib68 성공 / 실패 | 170,871 / 0 (조건부 성공 100%) |
+| EAR·MAR·Head Pose 유효 | 각 170,871 |
+| Context 선택 / 가용 / 결측 | 56,416 / 54,672 / 1,744 (가용률 96.9087%) |
+| Padding 필요 crop / multiple-face frame | 885 / 0 |
+| Strict bundle·JPEG / cross-artifact 오류 | 1,763 bundle·54,672 JPEG 검사 / 0 |
+| Orphan 임시 bundle / test row | 0 / 0 |
+| 동일 설정 `--resume` | 신규 0, skip 1,763, 충돌 0, detector 추론 0 |
+
+Train의 YuNet 성공/미검출은 140,815/4,385, Context 가용/결측은 45,051/1,413이다. Val은 각각 30,056/1,044와 9,621/331이다. 가용 crop의 padding fraction은 평균 0.000964, 중앙값 0, 최대 0.291262였다. 최초 실행 wall time은 약 2.716시간, 영상별 처리 평균 5.344초·중앙값 5.170초였다. 앞선 2.47시간은 pilot 기반 **simple projected runtime**이지 보장 시간이 아니었다.
+
+[Full 요약](outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_summary.json), [처리 보고서](outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_report.txt), [엄격 무결성 보고서](outputs/preprocessing_v2/canonical_preprocessing/full/full_integrity_report.txt), [실패 목록](outputs/preprocessing_v2/canonical_preprocessing/full/failed_videos.csv), [resume 검증](outputs/preprocessing_v2/canonical_preprocessing/full/full_resume_report.txt)에 결과를 분리했다. 원본 run metadata의 `dlib_version`은 배포판 metadata 조회 실패로 `null`이며 수정하지 않았다. 확인된 `dlib.__version__=20.0.1`은 [provenance addendum](outputs/preprocessing_v2/canonical_preprocessing/full/run_provenance_addendum.json)에 별도로 기록했다. YuNet miss와 Context 결측은 처리 실패가 아닌 data-quality 관찰이다. 이번 train/val 실행에서 YuNet 성공 frame의 Dlib68은 모두 성공했으므로 관찰된 얼굴 검출·landmark 결측의 시작점은 YuNet 미검출이었다. 이는 모든 환경에서의 Dlib 정확도를 뜻하거나 Context 결측의 시각적 원인을 확정하지 않는다. STEP 2 detector 및 결측 정책은 변경하지 않았다.
+
+다음 STEP 4 — Full Preprocessing Quality / Missing Audit는 **NOT STARTED**다. Train/val의 YuNet·Context 결측률, 영상별 집중도와 연속 결측 길이, pose/yaw 관련 패턴, drowsy/not_drowsy 격차, Behavior 유효 frame 비율을 분석해 결측 처리 정책의 근거를 마련할 예정이다. Head Pose 물리적 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 규칙과 결측 처리 정책은 아직 미확정이다. ResNet18/VGG16 CNN과 LSTM은 학습하지 않았으며, test 311개 영상은 열기·decode·YuNet/Dlib 추론·crop 생성 모두 하지 않았다. 최종 평가 전까지 **TEST SPLIT SEALED**를 유지한다.

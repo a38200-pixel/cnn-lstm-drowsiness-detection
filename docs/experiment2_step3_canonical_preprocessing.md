@@ -1,6 +1,6 @@
 # Experiment 2 STEP 3 — Canonical Preprocessing
 
-이 문서는 STEP 3-A 구현 설계·출력 계약과 STEP 3-B의 **실제 20-video pilot 결과**를 기록한다. STEP 3-A는 `IMPLEMENTED`, STEP 3-B는 사용자 제공 수동 검토까지 `COMPLETE`, STEP 3-C는 `NOT STARTED`다. Test split은 `SEALED`다.
+이 문서는 STEP 3-A 구현 설계·출력 계약, STEP 3-B의 **실제 20-video pilot 결과**, STEP 3-C의 **full train/val 실행 결과**를 기록한다. STEP 3-A는 `IMPLEMENTED`, STEP 3-B와 STEP 3-C는 `COMPLETE`, STEP 4는 `NOT STARTED`다. Test split은 `SEALED`다.
 
 현재 milestone: STEP 1에서 2,074개 source 영상과 중복 없는 video-level train/val/test 1,452/311/311개를 확정했다. Subject-wise unseen-driver 독립성은 매핑 부재로 보장하지 않는다. STEP 2는 HOG 152/160(95.0%, 약 372 ms) 대 YuNet 157/160(98.125%, 약 39 ms)의 통제 비교를 거쳐 `FULLY CLOSED`됐다. RAW/M05/M10/M15 ROI의 Dlib68 성공은 각각 157/157이며 clipping metadata 오류는 저장 ROI 628/628개가 일치한 `REPORTING_ONLY_BUG`였다. 최종 frozen 정책은 YuNet, RAW bbox Dlib68, EAR/MAR/Head Pose, SQUARE_M10 RGB 224×224 및 ImageNet mean padding이다. Context geometry 선택은 모델 정확도 우위 판정이 아니다.
 
@@ -66,7 +66,7 @@ Manifest와 metadata는 train/val만 허용한다. Test row는 raw path resoluti
 
 ## 16. Limitations
 
-STEP 3-B의 지정된 20개 영상만 실제 전처리했다. Full train/val과 test는 처리하지 않았다. Video-level split은 subject-wise 독립성을 보장하지 않는다. 20-video pilot의 검출·padding 분포를 전체 1,763개 영상의 품질 분포로 일반화하지 않는다. EAR/MAR·Head Pose의 행동 threshold와 Context model accuracy는 이후 단계에서 검증한다.
+STEP 3-B 당시에는 지정된 20개 영상만 실제 전처리했다. 이후 STEP 3-C에서 full train/val 1,763개를 처리했지만 test는 처리하지 않았다. Video-level split은 subject-wise 독립성을 보장하지 않는다. 20-video pilot의 검출·padding 분포를 전체 1,763개 영상의 품질 분포로 일반화하지 않는다. EAR/MAR·Head Pose의 행동 threshold와 Context model accuracy는 이후 단계에서 검증한다.
 
 ## STEP 3-B Actual Pilot Run
 
@@ -97,7 +97,7 @@ YuNet 성공률은 1,916/2,000(95.8%)이며, 84개 미검출은 bundle 실패가
 
 Pilot wall time은 run metadata 생성부터 마지막 bundle 완료까지 약 107.21초다. 영상별 처리 시간은 평균 5.045초, 중앙값 4.931초였다. 이를 1,763개 영상에 단순 선형 적용한 **simple projected runtime**은 평균 기준 약 2.47시간, 중앙값 기준 약 2.42시간이다. JPEG·집계 등 모든 overhead를 보장하는 full runtime 추정치는 아니다.
 
-자동 [pilot 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [integrity 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_integrity_report.txt)는 오류 0개로 기록됐다. [시각 구현 검토 pack](../outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)은 train/val × drowsy/not_drowsy를 균형 있게 포함한 12개 영상, 36개 원본-bbox/저장-JPEG 비교 표본, 6장 sheet다. 사용자가 기존 6장 sheet의 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 구현 이상이 없다고 확인했다. 이 결론은 사용자 제공 시각 검토 결과이며 자동 검사 결과로 위장하지 않는다. STEP 3-C full 처리는 시작하지 않았다.
+자동 [pilot 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_preprocessing_report.txt)와 [integrity 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/pilot_integrity_report.txt)는 오류 0개로 기록됐다. [시각 구현 검토 pack](../outputs/preprocessing_v2/canonical_preprocessing/pilot/visual_review/)은 train/val × drowsy/not_drowsy를 균형 있게 포함한 12개 영상, 36개 원본-bbox/저장-JPEG 비교 표본, 6장 sheet다. 사용자가 기존 6장 sheet의 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 구현 이상이 없다고 확인했다. 이 결론은 사용자 제공 시각 검토 결과이며 자동 검사 결과로 위장하지 않는다. 이 시각 검토를 완료한 뒤 STEP 3-C full 처리를 별도로 실행했다.
 
 ### STEP 3-B Missing-Only Context Review Pack
 
@@ -122,8 +122,34 @@ Pilot wall time은 run metadata 생성부터 마지막 bundle 완료까지 약 1
 
 [수동 검토 summary](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_summary.json)에는 `USER_PROVIDED_VISUAL_REVIEW`, `DIRECT_VISUAL_INSPECTION`, revision 2, pose-related 관찰, 정책 불변, 수정 전후 CSV SHA-256 및 자동 열 보존 여부를 기록했다. [별도 보고서](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/missing_context_manual_review_report.txt)의 correction section은 기존 12/15 판정을 유지하면서 과도하게 단순했던 pose 설명을 대체한다. [정정 provenance](../outputs/preprocessing_v2/canonical_preprocessing/pilot/missing_context_review/manual_review_interpretation_correction.md)는 정정 이유와 해시를 별도로 남긴다. 기존 자동 summary/report는 덮어쓰지 않았다. 이는 사용자 판정을 전사한 것이며 Codex가 이미지를 다시 판독하거나 detector를 재실행한 결과가 아니다.
 
-20-video automatic pilot integrity와 사용자 제공 구현 시각 검토 및 27건 missing-only 검토가 완료되어 **STEP 3-B는 COMPLETE**다. Canonical preprocessing 구현의 검사 범위에서 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 오류 증거는 없었다. 27건 전반에서 yaw/profile 관련 결측 패턴이 관찰됐지만 20-video pilot을 전체 데이터셋에 일반화하지 않는다. 15건의 likely YuNet false negative는 data-quality 문제로 남으며 STEP 4에서 전체 train/val missing rate, 영상별 집중도·연속 결측·pose 관련 패턴·label 간 격차를 정량화한다. YuNet 교체, HOG fallback, threshold 조정, Context 대체는 하지 않고 STEP 2의 YuNet·Dlib68 RAW bbox·SQUARE_M10 정책을 유지한다. STEP 3-C는 `NOT STARTED`, test split은 `SEALED`다.
+20-video automatic pilot integrity와 사용자 제공 구현 시각 검토 및 27건 missing-only 검토가 완료되어 **STEP 3-B는 COMPLETE**다. Canonical preprocessing 구현의 검사 범위에서 frame/person alignment, RGB/BGR, JPEG, SQUARE_M10 오류 증거는 없었다. 27건 전반에서 yaw/profile 관련 결측 패턴이 관찰됐지만 20-video pilot을 전체 데이터셋에 일반화하지 않는다. 15건의 likely YuNet false negative는 data-quality 문제로 남으며 STEP 4에서 전체 train/val missing rate, 영상별 집중도·연속 결측·pose 관련 패턴·label 간 격차를 정량화한다. YuNet 교체, HOG fallback, threshold 조정, Context 대체는 하지 않고 STEP 2의 YuNet·Dlib68 RAW bbox·SQUARE_M10 정책을 유지한다. 이후 STEP 3-C는 별도 full 실행으로 완료했으며 test split은 `SEALED`다.
 
 ### Remaining Open Items and Next Step
 
-Head Pose의 물리적 up/down 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 행동 규칙, detector/Context 결측 처리 정책은 아직 확정하지 않았다. ResNet18/VGG16 CNN과 LSTM도 학습하지 않았다. 다음 단계 STEP 3-C는 train 1,452개와 val 311개, 총 1,763개 영상의 canonical materialization이며 test는 0개다. 이번 정정 작업에서는 STEP 3-C와 STEP 4를 시작하지 않았다.
+Head Pose의 물리적 up/down 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 행동 규칙, detector/Context 결측 처리 정책은 아직 확정하지 않았다. ResNet18/VGG16 CNN과 LSTM도 학습하지 않았다. STEP 3-C에서 train 1,452개와 val 311개를 처리했으며 test는 0개다. 다음은 STEP 4의 full train/val 품질·결측 분석이다.
+
+## STEP 3-C Full Train/Val Materialization
+
+STEP 3-A/B에서 검증한 `configs/canonical_preprocessing.yaml`을 변경하지 않고 `--mode full`로 실행했다. 실행 전 metadata-only dry-run은 train 1,452개·val 311개, 예상 canonical row 176,300개·Context slot 56,416개, test 0개, 영상 open `false`였다. Full policy hash `29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721` 및 YuNet/Dlib 모델 SHA-256은 pilot과 일치했다. 기존 full root는 없었으며 pilot artifact를 full 출력으로 복사·재사용하지 않았다. Full 산출물은 [canonical root](../data/interim/preprocessing_v2/canonical/)에 있다.
+
+| 항목 | 실제 full train/val 결과 |
+|---|---:|
+| Train / val / test 처리 영상 | 1,452 / 311 / 0 |
+| 완료 bundle / processing failure | 1,763 / 0 |
+| Canonical row / 정상 decode | 176,300 / 176,300 |
+| Out-of-range / decode failure / 중복 source index | 0 / 0 / 0 |
+| YuNet 성공 / 미검출 | 170,871 / 5,429 (96.9206% 성공) |
+| 검출 후 Dlib68 성공 / 실패 | 170,871 / 0 |
+| EAR·MAR·Head Pose 유효 | 각 170,871 |
+| Context 선택 / 가용 / 결측 | 56,416 / 54,672 / 1,744 (96.9087% 가용) |
+| Padding 필요 crop / multiple-face frame | 885 / 0 |
+| JPEG 엄격 decode / 오류 | 54,672 / 0 |
+| CSV–NPZ–JPEG 관계 오류 / orphan 임시 bundle | 0 / 0 |
+
+Train에서 YuNet 성공/미검출은 140,815/4,385, Context 선택/가용/결측은 46,464/45,051/1,413이다. Val은 각각 30,056/1,044와 9,952/9,621/331이다. 가용 crop padding fraction은 평균 0.00096439, 중앙값 0, 최대 0.29126214다. 이 분포에서 detector 정책을 재선택하지 않는다. Full [상세 요약](../outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_summary.json)과 [처리 보고서](../outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_report.txt)에 실제 집계를 남겼다.
+
+기존 global aggregation이 완료 bundle 1,763개를 재검증해 `metadata/canonical_frames.csv`, `canonical_videos.csv`, `input_manifest.csv`, `run_metadata.json`을 생성했다. 추가로 기존 `validate_bundle(strict_crop_decode=True)`를 1,763개 bundle 모두에 적용해 JPEG 54,672장을 전부 decode했으며 오류 0개였다. NPZ shape·validity, 100 row·32 Context slot, 결측 전파, CSV–NPZ–JPEG mapping, split·policy hash, 고아 임시 bundle 및 test row를 대조한 [엄격 무결성 보고서](../outputs/preprocessing_v2/canonical_preprocessing/full/full_integrity_report.txt)를 별도로 남겼다. Test 원본 영상은 열지 않았다.
+
+동일 설정 `--resume` 검증은 신규 처리 0, skip 1,763, 실패·충돌 0, inference 영상 open 0, detector frame 0이며 첫 실행 report를 보존했다. [Resume 보고서](../outputs/preprocessing_v2/canonical_preprocessing/full/full_resume_report.txt)와 [schema만 가진 빈 실패 목록](../outputs/preprocessing_v2/canonical_preprocessing/full/failed_videos.csv)이 있다. 원본 run metadata의 `dlib_version`은 배포판 metadata 조회 실패로 `null`이어서 동일 환경의 `dlib.__version__=20.0.1`을 [provenance addendum](../outputs/preprocessing_v2/canonical_preprocessing/full/run_provenance_addendum.json)에 분리 기록했다. 최초 실행 wall time은 약 9,775.99초(2.716시간), 영상별 처리 평균 5.344초·중앙값 5.170초·p90 5.934초였다. Pilot의 약 2.47시간은 **simple projected runtime**으로 실제보다 약 0.246시간 짧았다.
+
+STEP 3-C는 구조·provenance·resume 조건을 충족해 **COMPLETE**다. YuNet miss와 Context 결측은 영상 처리 실패가 아닌 data-quality 관찰이며, 전체 분포·연속 결측·pose 관련 패턴·label gap 분석은 아직 시작하지 않은 STEP 4의 범위다. CNN/LSTM 학습 및 test 전처리·평가도 하지 않았다. **TEST SPLIT SEALED**.
