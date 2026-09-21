@@ -25,6 +25,10 @@ STEP 5-D2 full extraction도 D1과 동일한 CNN feature policy를 사용한다.
 
 Pilot/full feature regression은 semantic mapping과 input policy를 먼저 확인하고 `np.allclose(rtol=1e-5, atol=1e-6)`를 적용한다. 같은 batch size라도 전체 source count가 달라 마지막 batch composition이 달라질 수 있으며, CUDA 연산은 이에 따른 작은 수치 차이를 만들 수 있다. Regression 실패 시 tolerance를 임의로 완화하거나 artifact를 덮어쓰지 않고, source path 기반 비교와 당시 batch 재현으로 원인을 조사한다. Extraction 완료 상태와 integrity closure 상태는 별도로 기록한다.
 
+STEP 5-D3 최종 무결성 감사가 통과한 뒤 Context 학습 입력은 backbone별로 동결된 per-video `[32,512]` float32 feature artifact다. LSTM 학습 epoch마다 CNN 추론이나 feature 재추출을 수행하지 않으며, ResNet18과 VGG16 artifact를 혼합하거나 fusion하지 않는다. 입력 bundle의 policy hash, source mapping fingerprint와 SHA-256 provenance를 유지한다.
+
+D1/D2의 `n_311` 차이는 D1 partial batch 6장과 D2 full batch 16장에 따른 검증된 benign floating-point/batch numerical difference다. 두 저장 vector가 각각 당시 batch 재현 결과와 exact match하므로 mapping·input 오류나 stochastic training 변동으로 해석하지 않는다. 기존 15/16 exact 기록과 tolerance는 그대로 보존하며 16/16 PASS로 변경하지 않는다.
+
 ## Common input
 - 10-second original clip
 - 32 uniformly sampled Full Face RGB frames

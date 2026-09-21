@@ -1,3 +1,0 @@
-STEP 5-B INTEGRITY: PASS
-100 slots/video; NaN, masks, numeric provenance, hashes: PASS
-TEST: SEALED

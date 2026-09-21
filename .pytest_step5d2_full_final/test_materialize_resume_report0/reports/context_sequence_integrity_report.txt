@@ -1,3 +1,0 @@
-STEP 5-A INTEGRITY: PASS
-32 slots/video; masks, hashes, source paths, nearest-valid, no chained imputation: PASS
-TEST: SEALED

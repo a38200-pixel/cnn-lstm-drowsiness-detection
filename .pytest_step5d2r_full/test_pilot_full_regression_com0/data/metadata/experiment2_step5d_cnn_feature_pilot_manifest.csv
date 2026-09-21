@@ -1,2 +1,0 @@
-﻿pilot_order,video_id,split,label,imputed_count,context_sequence_path,selection_reason
-0,v1,train,drowsy,0,sequence.csv,test

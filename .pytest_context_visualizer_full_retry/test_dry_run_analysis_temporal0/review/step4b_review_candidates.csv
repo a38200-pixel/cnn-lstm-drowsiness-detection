@@ -1,3 +1,0 @@
-﻿review_order,video_id,split,label,selection_reason,yunet_missing_count,yunet_missing_rate,longest_missing_run,context_missing_count,behavior_valid_rate,representative_missing_start,representative_missing_end,recommended_frame_indices
-0,d_1,train,drowsy,highest_missing_count,4,0.04,2,1,0.96,0,1,0;1;2
-1,n_1,val,not_drowsy,highest_missing_count,1,0.01,1,0,0.99,10,10,9;10;11

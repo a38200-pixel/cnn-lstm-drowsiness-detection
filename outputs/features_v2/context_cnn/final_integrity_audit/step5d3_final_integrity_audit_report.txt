@@ -1,0 +1,55 @@
+STEP 5-D3 Full CNN Feature Final Integrity Audit
+
+Status: STEP_5D3_FINAL_INTEGRITY_AUDIT_PASS
+Decision: STEP 5 FULLY CLOSED
+Anomaly count: 0
+CNN inference executed: false
+Audited feature artifacts modified: false
+Test access: 0 (SEALED)
+
+[Universe]
+Videos: 1677 (train 1382, val 295)
+Labels: drowsy 800, not_drowsy 877
+Context-only: 157; n_246 absent
+Targets: 53664; sources: 52965; imputed: 699
+Environment: Python 3.12.14, torch 2.11.0+cu130, torchvision 0.26.0+cu130, CUDA 13.0, NVIDIA GeForce RTX 3080
+
+[resnet18]
+Source shape: [52965, 512]
+Source dtype: float32; finite: 27118080; NaN/Inf/all-zero rows: 0/0/0
+Source index rows/unique IDs/unique paths: 52965/52965/52965
+Bundles: 1677; missing files: 0
+Target/source exact mismatch: 0
+Original/imputed rows: 52965/699
+Imputed feature mismatch: 0; mask mismatch: 0
+Artifact hash mismatch: 0; policy mismatch: 0
+Mapping fingerprint: 83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453
+Weights: ResNet18_Weights.IMAGENET1K_V1
+Checkpoint: resnet18-f37072fd.pth (f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec)
+
+[vgg16]
+Source shape: [52965, 512]
+Source dtype: float32; finite: 27118080; NaN/Inf/all-zero rows: 0/0/0
+Source index rows/unique IDs/unique paths: 52965/52965/52965
+Bundles: 1677; missing files: 0
+Target/source exact mismatch: 0
+Original/imputed rows: 52965/699
+Imputed feature mismatch: 0; mask mismatch: 0
+Artifact hash mismatch: 0; policy mismatch: 0
+Mapping fingerprint: 83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453
+Weights: VGG16_Weights.IMAGENET1K_V1
+Checkpoint: vgg16-397923af.pth (397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0)
+
+[Cross-backbone]
+Video ID mismatch: 0
+Semantic mapping mismatch: 0
+
+[D1/D2 Regression]
+15/16 exact videos per backbone.
+n_311 remains a known numerical exception.
+Cause: BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE
+Unexpected mismatched videos: []
+Affected target slots: 24-31; unique sources: 6.
+Controlled rerun: D1 batch size 6 and D2 batch size 16 each match stored vectors 6/6 exactly for both backbones.
+Tolerance remains rtol=1e-5, atol=1e-6; result is not rewritten as 16/16 PASS.
+Full re-extraction required: false

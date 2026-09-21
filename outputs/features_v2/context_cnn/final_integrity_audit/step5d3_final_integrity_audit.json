@@ -1,0 +1,350 @@
+{
+  "status": "STEP_5D3_FINAL_INTEGRITY_AUDIT_PASS",
+  "universe": {
+    "videos": 1677,
+    "train": 1382,
+    "val": 295,
+    "drowsy": 800,
+    "not_drowsy": 877,
+    "context_only": 157,
+    "target_rows": 53664,
+    "unique_sources": 52965,
+    "imputed": 699,
+    "original": 52965,
+    "sequence_length": 32,
+    "relationship_verified": true
+  },
+  "environment_reference": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "torch_import": true,
+    "torch_version": "2.11.0+cu130",
+    "cuda_available": true,
+    "torch_cuda_runtime": "13.0",
+    "gpu_device_count": 1,
+    "cudnn_version": 91900,
+    "gpu_device_name": "NVIDIA GeForce RTX 3080",
+    "float32_inference_supported": true,
+    "torchvision_import": true,
+    "torchvision_version": "0.26.0+cu130",
+    "status": "PASS"
+  },
+  "backbones": [
+    {
+      "backbone": "resnet18",
+      "root": "data/interim/features_v2/context_full/resnet18",
+      "global_artifacts": {
+        "required_present": true,
+        "global_hash_mismatch": 0,
+        "global_metadata_mismatch": 0,
+        "actual_sha256": {
+          "source_features.npy": "1b6dbb2e91d8e919df7e43d126dc9499c66c8331edf656275b49cd243da960d4",
+          "source_feature_index.csv": "de55fe3c50521f7cad435e9b8a3e3e2d280b2bd04c0423ffac513facf6f9465e",
+          "full_feature_videos.csv": "6a6f91faff377bd099f7ec396f6f08b20948eb353380e0480e689fb1bd8fa1df",
+          "full_feature_summary.json": "eb53d34bf0ba1ecb8cbec90894e589b41864f1a287ec2c3b7a45aa2a8c5a5cdf",
+          "COMPLETE.json": "58dcd36582337cee992fd5911571c73b1fe49cc631e403dea415cb1c16f3eafe"
+        }
+      },
+      "universe": {
+        "videos": 1677,
+        "unique_video_ids": 1677,
+        "train": 1382,
+        "val": 295,
+        "test": 0,
+        "drowsy": 800,
+        "not_drowsy": 877,
+        "context_only": 157,
+        "n_246_present": false,
+        "metadata_missing_videos": 0,
+        "test_directory_present": false,
+        "feature_video_index_mismatch": 0,
+        "marker_video_order_mismatch": 0
+      },
+      "source_feature_integrity": {
+        "shape": [
+          52965,
+          512
+        ],
+        "dtype": "float32",
+        "shape_mismatch": 0,
+        "dtype_mismatch": 0,
+        "finite_count": 27118080,
+        "nan_count": 0,
+        "inf_count": 0,
+        "all_zero_rows": 0
+      },
+      "source_index_integrity": {
+        "rows": 52965,
+        "row_count_mismatch": 0,
+        "unique_source_ids": 52965,
+        "duplicate_source_ids": 0,
+        "source_id_order_mismatch": 0,
+        "invalid_source_ids": 0,
+        "unique_source_paths": 52965,
+        "duplicate_source_paths": 0,
+        "missing_source_paths": 0,
+        "test_source_references": 0
+      },
+      "video_bundle_integrity": {
+        "bundles": 1677,
+        "missing_bundle_files": 0,
+        "feature_shape_mismatch": 0,
+        "feature_dtype_mismatch": 0,
+        "nan_count": 0,
+        "inf_count": 0,
+        "all_zero_rows": 0,
+        "mapping_row_mismatch": 0,
+        "target_index_mismatch": 0,
+        "feature_row_index_mismatch": 0,
+        "invalid_source_ids": 0,
+        "source_path_mapping_mismatch": 0,
+        "target_source_exact_mismatch": 0,
+        "imputed_count": 699,
+        "original_count": 52965,
+        "imputed_feature_mismatch": 0,
+        "mask_shape_mismatch": 0,
+        "mask_dtype_mismatch": 0,
+        "mask_complement_mismatch": 0,
+        "mask_mapping_mismatch": 0,
+        "hash_mismatch": 0,
+        "policy_hash_mismatch": 0,
+        "canonical_hash_mismatch": 0,
+        "missing_policy_hash_mismatch": 0,
+        "resolved_weights_mismatch": 0,
+        "bundle_metadata_mismatch": 0,
+        "bundle_fingerprint_mismatch": 0,
+        "test_mapping_rows": 0,
+        "test_source_references": 0
+      },
+      "mapping_integrity": {
+        "computed_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+        "expected_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+        "fingerprint_mismatch": 0
+      },
+      "policy_integrity": {
+        "expected_cnn_feature_policy_hash": "0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e",
+        "resolved_weights": "ResNet18_Weights.IMAGENET1K_V1",
+        "policy_hash_mismatch": 0,
+        "canonical_hash_mismatch": 0,
+        "missing_policy_hash_mismatch": 0,
+        "resolved_weights_mismatch": 0
+      },
+      "checkpoint_provenance": {
+        "filename": "resnet18-f37072fd.pth",
+        "expected_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+        "recorded_filename": "resnet18-f37072fd.pth",
+        "recorded_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+        "recorded_mismatch": 0,
+        "cache_present": true,
+        "cache_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+        "cache_mismatch": 0
+      }
+    },
+    {
+      "backbone": "vgg16",
+      "root": "data/interim/features_v2/context_full/vgg16",
+      "global_artifacts": {
+        "required_present": true,
+        "global_hash_mismatch": 0,
+        "global_metadata_mismatch": 0,
+        "actual_sha256": {
+          "source_features.npy": "9c38c3d8cb964e545b5c15421e324d6b88db2752ed0ee4c447211bd8dc818662",
+          "source_feature_index.csv": "de55fe3c50521f7cad435e9b8a3e3e2d280b2bd04c0423ffac513facf6f9465e",
+          "full_feature_videos.csv": "6a6f91faff377bd099f7ec396f6f08b20948eb353380e0480e689fb1bd8fa1df",
+          "full_feature_summary.json": "aa9c16f7cb60464c31c03b7d1a9978c333b2268191f8318fa87eaab0463f9257",
+          "COMPLETE.json": "1da9734fc9a52d6ec9fb88615ddd77981b0037f17091e665889e5bf506b43dd6"
+        }
+      },
+      "universe": {
+        "videos": 1677,
+        "unique_video_ids": 1677,
+        "train": 1382,
+        "val": 295,
+        "test": 0,
+        "drowsy": 800,
+        "not_drowsy": 877,
+        "context_only": 157,
+        "n_246_present": false,
+        "metadata_missing_videos": 0,
+        "test_directory_present": false,
+        "feature_video_index_mismatch": 0,
+        "marker_video_order_mismatch": 0
+      },
+      "source_feature_integrity": {
+        "shape": [
+          52965,
+          512
+        ],
+        "dtype": "float32",
+        "shape_mismatch": 0,
+        "dtype_mismatch": 0,
+        "finite_count": 27118080,
+        "nan_count": 0,
+        "inf_count": 0,
+        "all_zero_rows": 0
+      },
+      "source_index_integrity": {
+        "rows": 52965,
+        "row_count_mismatch": 0,
+        "unique_source_ids": 52965,
+        "duplicate_source_ids": 0,
+        "source_id_order_mismatch": 0,
+        "invalid_source_ids": 0,
+        "unique_source_paths": 52965,
+        "duplicate_source_paths": 0,
+        "missing_source_paths": 0,
+        "test_source_references": 0
+      },
+      "video_bundle_integrity": {
+        "bundles": 1677,
+        "missing_bundle_files": 0,
+        "feature_shape_mismatch": 0,
+        "feature_dtype_mismatch": 0,
+        "nan_count": 0,
+        "inf_count": 0,
+        "all_zero_rows": 0,
+        "mapping_row_mismatch": 0,
+        "target_index_mismatch": 0,
+        "feature_row_index_mismatch": 0,
+        "invalid_source_ids": 0,
+        "source_path_mapping_mismatch": 0,
+        "target_source_exact_mismatch": 0,
+        "imputed_count": 699,
+        "original_count": 52965,
+        "imputed_feature_mismatch": 0,
+        "mask_shape_mismatch": 0,
+        "mask_dtype_mismatch": 0,
+        "mask_complement_mismatch": 0,
+        "mask_mapping_mismatch": 0,
+        "hash_mismatch": 0,
+        "policy_hash_mismatch": 0,
+        "canonical_hash_mismatch": 0,
+        "missing_policy_hash_mismatch": 0,
+        "resolved_weights_mismatch": 0,
+        "bundle_metadata_mismatch": 0,
+        "bundle_fingerprint_mismatch": 0,
+        "test_mapping_rows": 0,
+        "test_source_references": 0
+      },
+      "mapping_integrity": {
+        "computed_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+        "expected_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+        "fingerprint_mismatch": 0
+      },
+      "policy_integrity": {
+        "expected_cnn_feature_policy_hash": "1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0",
+        "resolved_weights": "VGG16_Weights.IMAGENET1K_V1",
+        "policy_hash_mismatch": 0,
+        "canonical_hash_mismatch": 0,
+        "missing_policy_hash_mismatch": 0,
+        "resolved_weights_mismatch": 0
+      },
+      "checkpoint_provenance": {
+        "filename": "vgg16-397923af.pth",
+        "expected_sha256": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0",
+        "recorded_filename": "vgg16-397923af.pth",
+        "recorded_sha256": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0",
+        "recorded_mismatch": 0,
+        "cache_present": true,
+        "cache_sha256": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0",
+        "cache_mismatch": 0
+      }
+    }
+  ],
+  "cross_backbone_integrity": {
+    "video_id_mismatch": 0,
+    "semantic_mapping_mismatch": 0,
+    "source_mapping_fingerprint_equal": true
+  },
+  "d1_d2_regression": {
+    "cause": "BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE",
+    "expected_cause": "BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE",
+    "known_exception_verified": true,
+    "unexpected_mismatched_videos": [],
+    "details": [
+      {
+        "backbone": "resnet18",
+        "videos_compared": 16,
+        "exact_equal_videos": 15,
+        "regression_status_preserved": "FAIL",
+        "rtol": 1e-05,
+        "atol": 1e-06,
+        "mismatched_video_ids": [
+          "n_311"
+        ],
+        "known_exception_video": "n_311",
+        "target_slots": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "mismatch_source_count": 6,
+        "d1_batch_sizes": [
+          6
+        ],
+        "d2_batch_sizes": [
+          16
+        ],
+        "controlled_rerun_exact_evidence": 6,
+        "source_mapping_mismatch": 0
+      },
+      {
+        "backbone": "vgg16",
+        "videos_compared": 16,
+        "exact_equal_videos": 15,
+        "regression_status_preserved": "FAIL",
+        "rtol": 1e-05,
+        "atol": 1e-06,
+        "mismatched_video_ids": [
+          "n_311"
+        ],
+        "known_exception_video": "n_311",
+        "target_slots": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "mismatch_source_count": 6,
+        "d1_batch_sizes": [
+          6
+        ],
+        "d2_batch_sizes": [
+          16
+        ],
+        "controlled_rerun_exact_evidence": 6,
+        "source_mapping_mismatch": 0
+      }
+    ]
+  },
+  "known_exception": {
+    "video_id": "n_311",
+    "classification": "BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE",
+    "tolerance_relaxed": false,
+    "full_reextraction_required": false
+  },
+  "test_protection": {
+    "test_access": 0,
+    "test_rows": 0,
+    "status": "SEALED"
+  },
+  "artifact_immutability": {
+    "mutation_count": 0,
+    "complete_fingerprints_unchanged": true,
+    "source_feature_hashes_unchanged": true,
+    "reference_hashes_unchanged": true
+  },
+  "anomaly_count": 0,
+  "decision": "STEP 5 FULLY CLOSED",
+  "cnn_inference_executed": false,
+  "artifacts_modified": false
+}

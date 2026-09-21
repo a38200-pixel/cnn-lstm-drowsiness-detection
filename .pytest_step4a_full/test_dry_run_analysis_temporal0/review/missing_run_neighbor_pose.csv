@@ -1,5 +1,0 @@
-﻿video_id,split,label,run_id,start_index,end_index,nearest_valid_before_index,nearest_valid_before_yaw,nearest_valid_after_index,nearest_valid_after_yaw,hint_scope
-d_1,train,drowsy,1,0,1,,,2,5.0,neighboring pose only; not pose of missing frames
-d_1,train,drowsy,2,5,5,4,5.0,6,5.0,neighboring pose only; not pose of missing frames
-d_1,train,drowsy,3,99,99,98,5.0,,,neighboring pose only; not pose of missing frames
-n_1,val,not_drowsy,1,10,10,9,5.0,11,5.0,neighboring pose only; not pose of missing frames

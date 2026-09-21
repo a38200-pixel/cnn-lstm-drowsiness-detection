@@ -1,1 +1,0 @@
-﻿review_id,split,label,video_id,canonical_index,context_slot,source_frame_index,detector_success,landmark_success,context_crop_available,suspected_reason_auto,manual_category,detector_miss_plausible,crop_storage_bug_suspected,bbox_visible_to_human,face_near_edge,extreme_pose,occlusion,low_light,blur,review_decision,review_note

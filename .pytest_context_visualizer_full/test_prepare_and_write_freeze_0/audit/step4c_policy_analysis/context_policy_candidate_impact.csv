@@ -1,4 +1,0 @@
-candidate,eligible_videos,min_stratum_retention,substituted_slot_fraction,max_missing_run_retained,max_missing_time_span_sec
-C3_MODERATE_GAP,1677,0.92,0.013,4,1.0
-C4_COVERAGE_ONLY,1704,0.94,0.016,8,2.2
-C2_SHORT_GAP,1587,0.86,0.005,2,0.4

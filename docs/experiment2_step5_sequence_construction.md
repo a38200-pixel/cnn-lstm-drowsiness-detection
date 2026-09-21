@@ -159,6 +159,16 @@ D1/D2 regression에서 두 backbone 모두 16개 pilot 중 `n_311` 하나가 `rt
 
 **STEP 5-D2: FULL EXTRACTION COMPLETED / READY FOR FINAL INTEGRITY AUDIT.** Full 재추출은 필요하지 않으며 test는 계속 sealed 상태다.
 
+### STEP 5-D3 Full CNN Feature Final Integrity Audit
+
+기존 STEP 5-D2 산출물을 수정하지 않고 읽기 전용으로 전수 감사했다. ResNet18과 VGG16 각각에 대해 global source feature `[52965,512]` float32, source index 52,965행, train/val 1,677개 per-video bundle의 `[32,512]` feature·mapping·mask·summary·완료 마커를 확인했다. 53,664개 target row가 source feature와 exact equality를 만족했고 699개 imputed target도 지정 source vector를 정확히 재사용했다. NaN, Inf, all-zero vector, 누락 artifact, hash mismatch, policy mismatch, mapping mismatch는 모두 0건이었다.
+
+두 backbone의 video universe와 semantic mapping은 동일하며 mapping fingerprint는 `83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453`로 일치했다. ResNet18/VGG16 policy hash, canonical policy hash, sequence missing policy hash 및 pretrained checkpoint SHA-256도 모두 동결 기록과 일치했다. 감사 전후 source feature와 완료 마커 fingerprint는 변하지 않았고 CNN inference·재추출·repair·overwrite는 수행하지 않았다. Test 접근은 0이며 test split은 sealed 상태다.
+
+D1/D2 regression은 양 backbone 모두 기존 15/16 exact 결과와 `rtol=1e-5`, `atol=1e-6`을 유지한다. 유일한 예외 `n_311`의 target slot 24~31과 6개 source는 D1 batch 6장/D2 batch 16장 재현에서 각각 stored vector와 6/6 exact match했다. 따라서 원인은 `BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE`로 유지하며 tolerance를 완화하거나 16/16 PASS로 재표기하지 않는다. 최종 보고서는 `outputs/features_v2/context_cnn/final_integrity_audit/`에 보존했다.
+
+**STEP 5-D3 FINAL INTEGRITY AUDIT: PASS. STEP 5 FULLY CLOSED.**
+
 ### Context Sequence Classifier Baseline
 
 STEP 5-D feature extraction 이후의 초기 Context baseline은 backbone별 `[B,32,512]` feature를 동일한 temporal/classifier 구조에 입력한다. LSTM은 `input_size=512`, `hidden_size=128`, `num_layers=1`, `batch_first=true`, `bidirectional=false`, internal dropout `0.0`이다. 마지막 hidden state `[B,128]`에 `Linear(128→64) → ReLU → Linear(64→2)`를 적용하며 classifier dropout도 `0.0`이다. `CrossEntropyLoss`에는 raw logits를 전달하므로 model 내부에 필수 softmax layer를 넣지 않는다.
@@ -177,6 +187,8 @@ Experiment 2의 초기 Context baseline은 1-layer unidirectional LSTM(hidden=12
 - STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
 - STEP 5-C — Cross-Branch Sequence Integrity Audit: **COMPLETE**
 - STEP 5-D1 — CNN Feature Extraction Preflight & Controlled Pilot: **COMPLETE**
-- STEP 5-D2 — Full Context CNN Feature Extraction: **FULL EXTRACTION COMPLETED / READY FOR FINAL INTEGRITY AUDIT**
+- STEP 5-D2 — Full Context CNN Feature Extraction: **COMPLETE**
+- STEP 5-D3 — Full CNN Feature Final Integrity Audit: **PASS**
+- STEP 5 — Sequence & CNN Feature Preparation: **FULLY CLOSED**
 
-다음 단계는 STEP 5-D2 full artifact의 final integrity audit이다. D2R에서 batch composition에 따른 benign numerical difference를 재현했으며 artifact 재추출은 필요하지 않다.
+STEP 5-D3 read-only 전수 감사까지 anomaly 0건으로 통과했다. 다음 단계는 동결된 `[32,512]` feature artifact를 입력으로 사용하는 Context LSTM 학습 준비이며, epoch마다 CNN feature를 재추출하지 않는다.
