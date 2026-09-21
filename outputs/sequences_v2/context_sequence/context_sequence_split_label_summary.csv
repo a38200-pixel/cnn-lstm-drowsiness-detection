@@ -1,0 +1,9 @@
+﻿group_type,group_name,videos,original_valid_slots,imputed_slots,videos_requiring_imputation
+split,train,1382,43648,576,207
+split,val,295,9317,123,45
+label,drowsy,800,25323,277,105
+label,not_drowsy,877,27642,422,147
+split_x_label,train/drowsy,658,20826,230,85
+split_x_label,train/not_drowsy,724,22822,346,122
+split_x_label,val/drowsy,142,4497,47,20
+split_x_label,val/not_drowsy,153,4820,76,25

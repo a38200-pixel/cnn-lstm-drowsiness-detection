@@ -1,0 +1,6 @@
+STEP 5-A COMPLETE
+Bundles: 1677
+Rows: 53664
+Original: 52965
+Imputed: 699
+JPEG created/copied: 0

@@ -1,0 +1,166 @@
+{
+  "input_videos": 1763,
+  "eligible_videos": 1677,
+  "excluded_videos": 86,
+  "frame_rows": 53664,
+  "original_valid_rows": 52965,
+  "imputed_rows": 699,
+  "videos_without_imputation": 1425,
+  "videos_requiring_imputation": 252,
+  "status": "STEP_5A_CONTEXT_SEQUENCE_CONSTRUCTION_COMPLETE",
+  "sequence_length": 32,
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+  "context_policy_id": "CONTEXT_C3_SHORT_GAP",
+  "test_rows": 0,
+  "test_access": 0,
+  "chained_imputation_count": 0,
+  "nearest_source_mismatch_count": 0,
+  "missing_source_jpeg_count": 0,
+  "new_or_copied_jpeg_count": 0,
+  "sample_decoded_unique_jpegs": 256,
+  "past_source_count": 465,
+  "future_source_count": 234,
+  "distance_statistics": {
+    "context_slots": {
+      "min": 1.0,
+      "mean": 1.2374821173104436,
+      "median": 1.0,
+      "p90": 2.0,
+      "p95": 2.0,
+      "max": 4.0
+    },
+    "canonical_slots": {
+      "min": 3.0,
+      "mean": 3.992846924177396,
+      "median": 3.0,
+      "p90": 6.0,
+      "p95": 7.0,
+      "max": 13.0
+    },
+    "seconds": {
+      "min": 0.2681863895407304,
+      "mean": 0.3993456534087392,
+      "median": 0.3005008347245406,
+      "p90": 0.6034193764666443,
+      "p95": 0.700070070070071,
+      "max": 1.3000000000000007
+    }
+  },
+  "imputation_histogram": [
+    {
+      "imputed_slots": 0,
+      "videos": 1425,
+      "fraction_of_eligible_videos": 0.8497316636851521
+    },
+    {
+      "imputed_slots": 1,
+      "videos": 74,
+      "fraction_of_eligible_videos": 0.044126416219439475
+    },
+    {
+      "imputed_slots": 2,
+      "videos": 69,
+      "fraction_of_eligible_videos": 0.04114490161001789
+    },
+    {
+      "imputed_slots": 3,
+      "videos": 40,
+      "fraction_of_eligible_videos": 0.02385211687537269
+    },
+    {
+      "imputed_slots": 4,
+      "videos": 25,
+      "fraction_of_eligible_videos": 0.01490757304710793
+    },
+    {
+      "imputed_slots": 5,
+      "videos": 16,
+      "fraction_of_eligible_videos": 0.009540846750149075
+    },
+    {
+      "imputed_slots": 6,
+      "videos": 13,
+      "fraction_of_eligible_videos": 0.007751937984496124
+    },
+    {
+      "imputed_slots": 7,
+      "videos": 11,
+      "fraction_of_eligible_videos": 0.00655933214072749
+    },
+    {
+      "imputed_slots": 8,
+      "videos": 4,
+      "fraction_of_eligible_videos": 0.002385211687537269
+    }
+  ],
+  "split_label_summary": [
+    {
+      "group_type": "split",
+      "group_name": "train",
+      "videos": 1382,
+      "original_valid_slots": 43648,
+      "imputed_slots": 576,
+      "videos_requiring_imputation": 207
+    },
+    {
+      "group_type": "split",
+      "group_name": "val",
+      "videos": 295,
+      "original_valid_slots": 9317,
+      "imputed_slots": 123,
+      "videos_requiring_imputation": 45
+    },
+    {
+      "group_type": "label",
+      "group_name": "drowsy",
+      "videos": 800,
+      "original_valid_slots": 25323,
+      "imputed_slots": 277,
+      "videos_requiring_imputation": 105
+    },
+    {
+      "group_type": "label",
+      "group_name": "not_drowsy",
+      "videos": 877,
+      "original_valid_slots": 27642,
+      "imputed_slots": 422,
+      "videos_requiring_imputation": 147
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "train/drowsy",
+      "videos": 658,
+      "original_valid_slots": 20826,
+      "imputed_slots": 230,
+      "videos_requiring_imputation": 85
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "train/not_drowsy",
+      "videos": 724,
+      "original_valid_slots": 22822,
+      "imputed_slots": 346,
+      "videos_requiring_imputation": 122
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "val/drowsy",
+      "videos": 142,
+      "original_valid_slots": 4497,
+      "imputed_slots": 47,
+      "videos_requiring_imputation": 20
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "val/not_drowsy",
+      "videos": 153,
+      "original_valid_slots": 4820,
+      "imputed_slots": 76,
+      "videos_requiring_imputation": 25
+    }
+  ],
+  "canonical_data_modified": false,
+  "raw_video_opened": false,
+  "cnn_feature_extraction_started": false
+}
