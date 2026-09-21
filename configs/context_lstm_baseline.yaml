@@ -1,0 +1,29 @@
+# STEP 6-B는 baseline model 구조를 구현하며 training loop는 구현하지 않는다.
+data:
+  sequence_length: 32
+  feature_dim: 512
+  label_mapping:
+    not_drowsy: 0
+    drowsy: 1
+  additional_normalization: none
+  imputed_mask_concatenated: false
+  train_shuffle: true
+  val_shuffle: false
+  num_workers: 0
+  batch_size: 32
+  batch_size_status: candidate_not_frozen
+
+model_baseline_future:
+  type: lstm
+  input_size: 512
+  hidden_size: 128
+  num_layers: 1
+  bidirectional: false
+  lstm_dropout: 0.0
+  classifier_hidden: 64
+  classifier_dropout: 0.0
+  num_classes: 2
+  implementation_status: implemented_in_step_6b
+
+test_policy:
+  sealed: true
