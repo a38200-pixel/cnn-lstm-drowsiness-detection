@@ -1,6 +1,6 @@
 # CNN-LSTM Driver Drowsiness Detection
 
-SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증부터 frozen CNN feature 생성·감사, Context Dataset/LSTM/training pipeline 구현과 두 backbone의 seed42 baseline 및 batch/dropout/weight decay/learning rate tuning까지 완료됐다.
+SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증부터 frozen CNN feature 생성·감사, Context Dataset/LSTM/training pipeline 구현과 두 backbone의 seed42 baseline 및 batch/dropout/weight decay/learning rate/Input LayerNorm tuning까지 완료됐다.
 
 > **Current milestone:** STEP 6-A~6-C **COMPLETE** · seed42 Context baseline 및 hyperparameter tuning **COMPLETE** · TEST **SEALED**
 > 아래 성능은 train/validation 결과이며 최종 test 성능이 아니다. Behavior rule threshold 확정과 test 평가는 아직 수행하지 않았다.
@@ -177,15 +177,20 @@ Seed42에서는 VGG16의 validation metric이 더 높게 관찰됐지만 단일 
 | VGG16 | WD 0.0005 | 16 | 0.0 | 0.0005 | 0.0005 | 0.4983 | 0.7797 | 0.7794 | 0.7746 |
 | ResNet18 | LR 0.00025 | 16 | 0.0 | 0.0001 | 0.00025 | 0.4523 | 0.8068 | 0.8063 | 0.7887 |
 | VGG16 | LR 0.00025 | 16 | 0.0 | 0.0001 | 0.00025 | 0.4769 | 0.8000 | 0.7998 | 0.7958 |
+| ResNet18 | Input LayerNorm | 16 | 0.0 | 0.0001 | 0.0005 | 0.4973 | 0.7661 | 0.7637 | 0.6901 |
+| VGG16 | Input LayerNorm | 16 | 0.0 | 0.0001 | 0.0005 | 0.5000 | 0.7695 | 0.7683 | 0.8732 |
 
 - **Batch 8:** 두 backbone 모두 악화되어 제외한다.
 - **Classifier dropout 0.2:** drowsy recall은 증가했지만 전체 validation 품질의 공통 개선에 실패하여 제외한다.
 - **Weight decay 0.0005:** ResNet18은 소폭 개선됐지만 VGG16의 validation loss, accuracy와 Macro F1이 악화되어 공통 정책으로 채택하지 않는다.
 - **Learning rate 0.00025:** ResNet18에서는 현재까지 가장 크게 개선됐지만 VGG16의 validation loss, accuracy와 Macro F1은 baseline보다 소폭 악화됐다. VGG16의 drowsy recall은 증가했으나 공통 LR은 변경하지 않는다.
+- **Input LayerNorm(512):** 두 backbone 모두 validation loss, accuracy와 Macro F1이 악화되어 채택하지 않는다. ResNet18의 drowsy recall도 감소했다. VGG16은 drowsy recall이 0.7746에서 0.8732로 증가했지만 confusion matrix가 `TN 128 / FP 25 / FN 32 / TP 110`에서 `TN 103 / FP 50 / FN 18 / TP 124`로 변해 false positive가 두 배가 됐으므로 전체 validation 품질 개선으로 보지 않는다.
 
-현재 공통 baseline은 **train batch 16 / classifier dropout 0.0 / weight decay 0.0001 / learning rate 0.0005**로 유지한다. 단순 hyperparameter 변경이 두 backbone에 동일한 효과를 주지 않았고 특히 LR 민감도가 다르게 관찰됐다. 이는 frozen ResNet18/VGG16 feature distribution 차이와 관련됐을 가능성이 있으나 원인으로 확정하지 않는다. 모두 seed42 개발 실험이므로 최종 backbone 성능으로 해석하지 않으며 test split은 계속 sealed 상태로 유지한다.
+Input LayerNorm 후보는 mini-batch 통계에 의존하지 않고 train/test에서 같은 계산을 사용하며 recurrent model에 적용하기 쉽다는 선행연구를 근거로 선정했다. Frozen ResNet18/VGG16 512D feature의 scale/distribution 차이를 LSTM 입력 직전 `LayerNorm(512)`으로 완화하면 validation generalization이 개선될 수 있다는 가설이었다. 다만 이는 원 논문의 직접 재현이 아니며, 실제로는 두 backbone 모두 validation loss를 개선하지 못했다. LayerNorm 적용 후에도 train fitting은 진행됐지만 validation loss가 조기에 정체한 뒤 상승하는 경향이 관찰됐다. LayerNorm은 그 자체가 regularization을 목적으로 하는 기법이 아니므로 train loss 감소를 이상 현상으로 해석하지 않는다.
 
-실험 추적에는 local MLflow를 사용한다. Experiment는 `context_lstm_baseline_v1`이며 baseline, `batch8`, `dropout02`, `wd0005`, `lr00025` run의 params, epoch metrics와 local artifacts를 backbone별로 관리한다. `mlflow.db`, `mlartifacts/`, `mlruns/`는 Git에서 제외한다.
+현재 공통 baseline은 **train batch 16 / classifier dropout 0.0 / weight decay 0.0001 / learning rate 0.0005 / Input LayerNorm 미적용**으로 유지한다. 이번 방식은 feature scale/distribution 차이가 validation 문제의 주요 원인이라는 가설을 지지하지 못했지만, feature distribution 문제 자체를 완전히 배제하지는 않는다. 모두 seed42 개발 실험이므로 최종 backbone 성능으로 해석하지 않으며 test split은 계속 sealed 상태로 유지한다.
+
+실험 추적에는 local MLflow를 사용한다. Experiment는 `context_lstm_baseline_v1`이며 baseline, `batch8`, `dropout02`, `wd0005`, `lr00025`, `layernorm` run의 params, epoch metrics와 local artifacts를 backbone별로 관리한다. `mlflow.db`, `mlartifacts/`, `mlruns/`는 Git에서 제외한다.
 
 ## 6. Context Branch
 
@@ -379,13 +384,12 @@ STEP 6-C COMPLETE
 TEST     SEALED
 ```
 
-다음 작업은 **LayerNorm(512) → LSTM 단일 변수 실험**이다. ResNet18/VGG16 모두 seed42와 공통 baseline 조건을 사용하고 LayerNorm 적용 여부만 변경한다.
+Input LayerNorm 실험은 **미채택으로 종료**했다. 다음 regularization 후보는 **Label Smoothing**이며 아직 seed42 development stage와 최종 3-seed validation 이전 단계다.
 
-1. Train batch 16, learning rate 0.0005, weight decay 0.0001, classifier dropout 0.0 유지
-2. 두 backbone에서 LayerNorm의 공통 개선 여부 확인
-3. 양 backbone에 공통으로 적용할 training policy 동결
-4. ResNet18 / VGG16 × seeds 42, 123, 2026 검증
-5. 모든 선택을 동결한 뒤 최종 test를 한 번 평가
+1. 공통 baseline을 유지한 Label Smoothing 단일 변수 실험 검토
+2. 채택 여부를 validation 근거로 결정한 뒤 공통 training policy 동결
+3. ResNet18 / VGG16 × seeds 42, 123, 2026 검증
+4. 모든 선택을 동결한 뒤 최종 test를 한 번 평가
 
 ## 16. Limitations
 
@@ -396,3 +400,7 @@ TEST     SEALED
 - Behavior branch의 threshold, event 정의와 head-pose physical sign convention은 미확정이다.
 - Pilot runtime과 feature 통계는 시스템 진단값이며 정확도 비교 근거가 아니다.
 - Test split은 계속 sealed 상태이며 최종 test 성능은 아직 존재하지 않는다.
+
+## 17. References
+
+- Ba, J. L., Kiros, J. R., & Hinton, G. E. (2016). [Layer Normalization](https://arxiv.org/abs/1607.06450). arXiv:1607.06450.

@@ -23,6 +23,7 @@ class ContextLSTMConfig:
         num_layers: int,
         bidirectional: bool,
         lstm_dropout: float,
+        input_layer_norm: bool,
         classifier_hidden: int,
         classifier_dropout: float,
         num_classes: int,
@@ -33,6 +34,7 @@ class ContextLSTMConfig:
         self.num_layers = num_layers
         self.bidirectional = bidirectional
         self.lstm_dropout = lstm_dropout
+        self.input_layer_norm = input_layer_norm
         self.classifier_hidden = classifier_hidden
         self.classifier_dropout = classifier_dropout
         self.num_classes = num_classes
@@ -72,6 +74,8 @@ class ContextLSTMConfig:
         if not 0.0 <= self.classifier_dropout < 1.0:
             raise ContextLSTMConfigError(
                 "classifier dropout은 0 이상 1 미만이어야 합니다")
+        if not isinstance(self.input_layer_norm, bool):
+            raise ContextLSTMConfigError("input_layer_norm은 bool이어야 합니다")
 
 
 def context_lstm_config_from_mapping(
@@ -91,6 +95,7 @@ def context_lstm_config_from_mapping(
             num_layers=int(model["num_layers"]),
             bidirectional=bool(model["bidirectional"]),
             lstm_dropout=float(model["lstm_dropout"]),
+            input_layer_norm=model["input_layer_norm"],
             classifier_hidden=int(model["classifier_hidden"]),
             classifier_dropout=float(model["classifier_dropout"]),
             num_classes=int(model["num_classes"]),
@@ -113,6 +118,10 @@ class ContextLSTMBaseline(nn.Module):
         super().__init__()
         config.validate()
         self.config = config
+        self.input_layer_norm = (
+            nn.LayerNorm(config.input_size, elementwise_affine=True)
+            if config.input_layer_norm else None
+        )
         self.lstm = nn.LSTM(
             input_size=config.input_size,
             hidden_size=config.hidden_size,
@@ -145,7 +154,11 @@ class ContextLSTMBaseline(nn.Module):
         if features.dtype != torch.float32:
             raise TypeError(f"features dtype은 float32여야 합니다: {features.dtype}")
 
-        _, (hidden, _) = self.lstm(features)
+        lstm_input = (
+            self.input_layer_norm(features)
+            if self.input_layer_norm is not None else features
+        )
+        _, (hidden, _) = self.lstm(lstm_input)
         final_hidden = hidden[-1]
         return self.classifier(final_hidden)
 

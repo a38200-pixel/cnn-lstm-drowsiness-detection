@@ -33,6 +33,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="config의 weight decay를 이 run에서만 변경")
     parser.add_argument("--learning-rate", type=float,
                         help="config의 initial learning rate를 이 run에서만 변경")
+    parser.add_argument("--input-layer-norm", action="store_true", default=None,
+                        help="이 run에서 LSTM 입력 직전에 LayerNorm(512) 적용")
     parser.add_argument("--run-tag",
                         help="분리된 local output과 MLflow run 이름에 붙일 안전한 tag")
     mlflow_group = parser.add_mutually_exclusive_group()
@@ -57,6 +59,7 @@ def main() -> int:
         classifier_dropout_override=args.classifier_dropout,
         weight_decay_override=args.weight_decay,
         learning_rate_override=args.learning_rate,
+        input_layer_norm_override=args.input_layer_norm,
         run_tag=args.run_tag,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))

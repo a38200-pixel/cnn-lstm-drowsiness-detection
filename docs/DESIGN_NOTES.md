@@ -107,3 +107,44 @@ Behavior raw continuous feature는 smoothing이나 interpolation 없이 저장�
 - 32-frame context가 짧은 행동을 놓칠 수 있으므로 Rule stream으로 보완
 - pretrained ResNet/VGG 내부 BatchNorm의 동작이 1차 GN 실험과 다르므로 train/freeze 정책을 명확히 해야 함
 - Rule Engine과 Decision Fusion은 validation에 과도하게 맞추지 않도록 사전 규칙을 고정해야 함
+
+## 10. STEP 6 Input LayerNorm Controlled Experiment
+
+### 후보 선정 근거와 가설
+
+Ba, Kiros, Hinton (2016)의 Layer Normalization은 Batch Normalization과 달리 mini-batch statistics에 의존하지 않고 train/test에서 동일한 normalization 계산을 사용한다. 원 논문은 recurrent neural network에 적용하기 쉬운 방법으로 제시하며 recurrent hidden-state dynamics의 안정화와 optimization/training 안정화 가능성을 보고했다.
+
+이번 실험은 원 논문의 직접 재현이 아니다. 원 논문의 recurrent setting과 달리 여기서는 저장된 frozen CNN feature가 LSTM에 들어가기 직전에만 `LayerNorm(512)`을 한 번 적용했다. 가설은 ResNet18과 VGG16 frozen 512D feature의 scale/distribution 차이를 입력단에서 완화하면 두 backbone의 validation generalization이 공통으로 개선될 수 있다는 것이었다. 논문의 결과가 이 프로젝트의 성능 향상을 보장한다고 전제하지 않았다.
+
+```text
+Baseline
+Frozen CNN feature [B,32,512] → LSTM → classifier
+
+Controlled experiment
+Frozen CNN feature [B,32,512] → LayerNorm(512) → LSTM → classifier
+```
+
+LayerNorm만 단일 변수로 변경했다. 두 backbone 모두 seed 42, train/validation batch 16/32, learning rate 0.0005, weight decay 0.0001, classifier/LSTM dropout 0.0, 동일 scheduler와 early stopping을 사용했다. AMP는 사용하지 않았고 test split은 sealed 상태를 유지했다. Frozen feature artifact와 Dataset은 변경하지 않았다.
+
+### Validation 결과
+
+| Backbone | Setting | Val Loss | Accuracy | Macro F1 | Drowsy Recall |
+|---|---|---:|---:|---:|---:|
+| ResNet18 | Baseline | 0.4906 | 0.7797 | 0.7784 | 0.7324 |
+| ResNet18 | LayerNorm | 0.4973 | 0.7661 | 0.7637 | 0.6901 |
+| VGG16 | Baseline | 0.4637 | 0.8068 | 0.8061 | 0.7746 |
+| VGG16 | LayerNorm | 0.5000 | 0.7695 | 0.7683 | 0.8732 |
+
+ResNet18은 validation loss, accuracy, Macro F1과 drowsy recall이 모두 악화됐다. Train loss는 계속 감소했지만 validation loss는 조기에 정체한 뒤 상승해 generalization 개선 효과가 관찰되지 않았다.
+
+VGG16도 validation loss, accuracy와 Macro F1이 악화됐다. Drowsy recall은 증가했지만 confusion matrix가 baseline `TN 128 / FP 25 / FN 32 / TP 110`에서 LayerNorm `TN 103 / FP 50 / FN 18 / TP 124`로 변했다. False negative는 감소했으나 false positive가 25에서 50으로 증가했고 drowsy precision도 낮아졌으므로 recall 상승을 전체 validation 품질 개선으로 해석하지 않는다.
+
+### Negative result의 의미와 결정
+
+이번 Input LayerNorm 방식으로는 두 backbone의 공통 개선이 관찰되지 않았고 모두 전체 validation 성능이 악화됐다. 따라서 `LayerNorm(512)`은 현재 또는 향후 공통 baseline에 적용하지 않는다. 이번 결과는 frozen feature의 단순 scale/distribution 차이가 validation 문제의 주요 원인이라는 가설을 지지하지 못하지만, feature distribution 문제가 완전히 배제됐다는 뜻은 아니다.
+
+LayerNorm 적용 후 train fitting이 계속 진행되면서 validation loss가 상승한 현상은 모순이 아니다. LayerNorm은 그 자체가 regularization을 목적으로 하는 기법이 아니므로 train loss의 지속적 감소만으로 validation generalization을 기대하지 않는다. 이 결과는 seed42 development experiment의 negative result이며 최종 backbone 성능이 아니다.
+
+LayerNorm 실험은 미채택으로 종료한다. 다음 regularization 후보로 Label Smoothing을 검토하며, 공통 정책 동결과 ResNet18/VGG16의 seeds 42/123/2026 validation은 아직 수행 전이다. Test split은 계속 **SEALED** 상태다.
+
+참고문헌: Ba, J. L., Kiros, J. R., & Hinton, G. E. (2016). *Layer Normalization*. arXiv:1607.06450.

@@ -139,6 +139,21 @@ def test_non_positive_learning_rate_is_rejected(learning_rate: float) -> None:
         trainer.resolve_learning_rate(0.0005, learning_rate, "invalid")
 
 
+def test_input_layer_norm_override_requires_tag_and_keeps_baseline_policy() -> None:
+    assert trainer.resolve_input_layer_norm(False, True, "layernorm") is True
+    assert trainer.resolve_input_layer_norm(False, None, None) is False
+    assert trainer.resolve_train_batch_size(16, None, "layernorm") == 16
+    assert trainer.resolve_classifier_dropout(0.0, None, "layernorm") == 0.0
+    assert trainer.resolve_weight_decay(0.0001, None, "layernorm") == 0.0001
+    assert trainer.resolve_learning_rate(0.0005, None, "layernorm") == 0.0005
+    assert trainer.resolve_run_names("resnet18", 42, "layernorm") == (
+        "seed_42_layernorm", "resnet18_seed42_layernorm")
+    assert trainer.resolve_run_names("vgg16", 42, "layernorm") == (
+        "seed_42_layernorm", "vgg16_seed42_layernorm")
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_input_layer_norm(False, True, None)
+
+
 @pytest.mark.parametrize("run_tag", ["", "../batch8", "batch 8", "batch/8"])
 def test_unsafe_run_tag_is_rejected(run_tag: str) -> None:
     with pytest.raises(trainer.TrainingPipelineError, match="run tag"):
@@ -189,6 +204,19 @@ def test_cli_accepts_learning_rate_tuning_options() -> None:
     assert args.weight_decay is None
     assert args.learning_rate == 0.00025
     assert args.run_tag == "lr00025"
+
+
+def test_cli_accepts_input_layer_norm_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "resnet18", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--input-layer-norm", "--run-tag", "layernorm",
+    ])
+    assert args.input_layer_norm is True
+    assert args.train_batch_size is None
+    assert args.classifier_dropout is None
+    assert args.weight_decay is None
+    assert args.learning_rate is None
+    assert args.run_tag == "layernorm"
 
 
 def test_classification_metrics() -> None:

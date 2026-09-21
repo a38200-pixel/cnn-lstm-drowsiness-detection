@@ -22,6 +22,7 @@ from drowsiness_detection.models_v2.context_lstm import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "configs/context_lstm_baseline.yaml"
 EXPECTED_PARAMETERS = 337_090
+EXPECTED_LAYERNORM_PARAMETERS = 338_114
 
 
 @pytest.fixture(scope="module")
@@ -43,6 +44,7 @@ def test_config_contract(config_mapping: dict) -> None:
     assert config.num_layers == 1
     assert config.bidirectional is False
     assert config.lstm_dropout == 0.0
+    assert config.input_layer_norm is False
     assert config.classifier_hidden == 64
     assert config.classifier_dropout == 0.0
     assert config.num_classes == 2
@@ -107,6 +109,47 @@ def test_parameter_count(model: ContextLSTMBaseline) -> None:
         "total": EXPECTED_PARAMETERS,
         "trainable": EXPECTED_PARAMETERS,
     }
+
+
+def test_input_layer_norm_tuning_preserves_shape_and_adds_expected_parameters(
+        config_mapping: dict) -> None:
+    changed = {
+        **config_mapping,
+        "model_baseline_future": {
+            **config_mapping["model_baseline_future"],
+            "input_layer_norm": True,
+        },
+    }
+    layernorm_model = build_context_lstm(changed)
+    assert isinstance(layernorm_model.input_layer_norm, nn.LayerNorm)
+    assert layernorm_model.input_layer_norm.normalized_shape == (512,)
+    assert layernorm_model.input_layer_norm.elementwise_affine is True
+    assert layernorm_model.lstm.input_size == 512
+    assert layernorm_model.parameter_counts() == {
+        "total": EXPECTED_LAYERNORM_PARAMETERS,
+        "trainable": EXPECTED_LAYERNORM_PARAMETERS,
+    }
+
+    features = torch.randn(2, 32, 512, dtype=torch.float32)
+    original = features.clone()
+    normalized: list[torch.Tensor] = []
+    hook = layernorm_model.input_layer_norm.register_forward_hook(
+        lambda _module, _inputs, output: normalized.append(output.detach()))
+    logits = layernorm_model(features)
+    hook.remove()
+
+    assert normalized[0].shape == (2, 32, 512)
+    assert torch.isfinite(normalized[0]).all()
+    assert logits.shape == (2, 2)
+    assert torch.isfinite(logits).all()
+    assert torch.equal(features, original)
+
+
+def test_baseline_model_contains_no_input_layer_norm(
+        model: ContextLSTMBaseline) -> None:
+    assert model.input_layer_norm is None
+    assert not any(isinstance(module, nn.LayerNorm) for module in model.modules())
+    assert model.parameter_counts()["total"] == EXPECTED_PARAMETERS
 
 
 def test_same_model_for_both_backbones(config_mapping: dict) -> None:

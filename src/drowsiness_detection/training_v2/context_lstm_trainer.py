@@ -112,6 +112,25 @@ def resolve_learning_rate(
     return override
 
 
+def resolve_input_layer_norm(
+    configured_input_layer_norm: bool,
+    override: bool | None,
+    run_tag: str | None,
+) -> bool:
+    """Run별 input LayerNorm override를 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if not isinstance(configured_input_layer_norm, bool):
+        raise TrainingPipelineError("input_layer_norm config는 bool이어야 합니다")
+    if override is None:
+        return configured_input_layer_norm
+    if not isinstance(override, bool):
+        raise TrainingPipelineError("input layer norm override는 bool이어야 합니다")
+    if override != configured_input_layer_norm and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 input LayerNorm에는 --run-tag가 필요합니다")
+    return override
+
+
 def resolve_run_names(backbone: str, seed: int, run_tag: str | None) -> tuple[str, str]:
     """안전한 local output directory와 MLflow run 이름을 만든다."""
 
@@ -611,6 +630,7 @@ def train_context_lstm(
     classifier_dropout_override: float | None = None,
     weight_decay_override: float | None = None,
     learning_rate_override: float | None = None,
+    input_layer_norm_override: bool | None = None,
     run_tag: str | None = None,
 ) -> dict[str, Any]:
     baseline_training_config = training_config_from_mapping(config)
@@ -630,12 +650,19 @@ def train_context_lstm(
         baseline_training_config.weight_decay, weight_decay_override, run_tag)
     resolved_learning_rate = resolve_learning_rate(
         baseline_training_config.learning_rate, learning_rate_override, run_tag)
+    resolved_input_layer_norm = resolve_input_layer_norm(
+        config["model_baseline_future"]["input_layer_norm"],
+        input_layer_norm_override,
+        run_tag,
+    )
     output_name, mlflow_run_name = resolve_run_names(backbone, seed, run_tag)
     resolved_config = copy.deepcopy(config)
     resolved_config["model_baseline_future"]["classifier_dropout"] = (
         resolved_classifier_dropout)
     resolved_config["training"]["optimizer"]["weight_decay"] = resolved_weight_decay
     resolved_config["training"]["optimizer"]["learning_rate"] = resolved_learning_rate
+    resolved_config["model_baseline_future"]["input_layer_norm"] = (
+        resolved_input_layer_norm)
     training_config = training_config_from_mapping(resolved_config)
     if device_name == "auto":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -677,6 +704,7 @@ def train_context_lstm(
         "lstm_dropout": float(config["model_baseline_future"]["lstm_dropout"]),
         "weight_decay": resolved_weight_decay,
         "learning_rate": resolved_learning_rate,
+        "input_layer_norm": resolved_input_layer_norm,
         "run_tag": run_tag,
     }
     model_config = resolved_config["model_baseline_future"]

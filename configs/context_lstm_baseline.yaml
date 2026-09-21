@@ -20,6 +20,7 @@ model_baseline_future:
   num_layers: 1
   bidirectional: false
   lstm_dropout: 0.0
+  input_layer_norm: false
   classifier_hidden: 64
   classifier_dropout: 0.0
   num_classes: 2
