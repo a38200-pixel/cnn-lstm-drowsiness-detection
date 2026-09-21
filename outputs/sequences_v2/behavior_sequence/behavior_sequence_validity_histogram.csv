@@ -1,0 +1,13 @@
+﻿metric,value,videos,fraction_of_eligible_videos
+valid_count,95,17,0.01118421052631579
+valid_count,96,21,0.01381578947368421
+valid_count,97,21,0.01381578947368421
+valid_count,98,34,0.02236842105263158
+valid_count,99,45,0.029605263157894735
+valid_count,100,1382,0.9092105263157895
+longest_missing_run,0,1382,0.9092105263157895
+longest_missing_run,1,63,0.04144736842105263
+longest_missing_run,2,31,0.020394736842105264
+longest_missing_run,3,19,0.0125
+longest_missing_run,4,16,0.010526315789473684
+longest_missing_run,5,9,0.0059210526315789476

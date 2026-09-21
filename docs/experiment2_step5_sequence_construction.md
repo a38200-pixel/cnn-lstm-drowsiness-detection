@@ -6,7 +6,7 @@ STEP 5-A는 `data/interim/preprocessing_v2/canonical/`의 train/validation metad
 
 ## 2. Sequence Missing Policy
 
-동결 설정은 `configs/sequence_missing_policy.yaml`이며 hash는 `f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d`이다. Context 정책 `CONTEXT_C3_SHORT_GAP`은 missing count ≤ 8, longest missing run ≤ 4인 영상을 허용한다.
+동결 설정은 `configs/sequence_missing_policy.yaml`이며 hash는 `f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d`이다. Context 정책 `CONTEXT_C3_SHORT_GAP`은 missing count ≤ 8, longest missing run ≤ 4인 영상을 허용한다. Behavior 정책 `BEHAVIOR_B2_COVERAGE_95`는 valid count ≥ 95, longest YuNet missing run ≤ 5를 요구하고 NaN과 mask를 유지하며 보간하지 않는다.
 
 ## 3. STEP 5-A Context Sequence
 
@@ -47,10 +47,31 @@ Context eligibility는 Behavior eligibility와 독립적이다. Behavior 적격 
 
 Context-slot 대체 거리는 min 1, mean 1.2375, median 1, p90/p95 2, max 4였다. Canonical-slot 거리는 min 3, mean 3.9928, median 3, p90 6, p95 7, max 13이었고 시간 거리는 min 0.2682초, mean 0.3993초, median 0.3005초, p90 0.6034초, p95 0.7001초, max 1.3초였다.
 
-## 10. Limitations
+영상별 대체 slot 분포는 `0:1425, 1:74, 2:69, 3:40, 4:25, 5:16, 6:13, 7:11, 8:4`이다. Train/validation은 1,382/295개, drowsy/not_drowsy는 800/877개다. Mask shape `(32,)`, dtype bool, per-video/global integrity, 1,677-bundle resume skip가 모두 통과했다. Canonical 변경과 test 접근은 0건이다.
 
-이 단계는 sequence mapping의 구조·출처 무결성을 검증한다. 대체 참조가 모델 성능을 향상한다는 주장이 아니며, subject-wise 독립성도 보장하지 않는다. Behavior sequence 및 모델 feature는 생성하지 않았다.
+STEP 5-A 완료 시 targeted test 25개와 당시 전체 test 134개 및 subtest 5개가 통과했고 `git diff --check`도 통과했다.
 
-## 11. Next Steps
+## 10. STEP 5-B Behavior 100-Slot Sequence Construction
 
-STEP 5-B에서 이 참조와 mask를 loader 입력으로 사용해 Context CNN feature extraction을 별도로 구현·검증한다. ResNet18/VGG16 비교, ImageNet normalization, LSTM 학습은 STEP 5-A 범위 밖이며 현재 시작하지 않았다.
+Train/validation 1,763개 중 B2 적격 1,520개를 각각 100-slot로 materialize해 총 152,000행을 생성했다. 243개 부적격 영상은 bundle 없이 제외 manifest에 기록했다. `n_246`은 100/100 missing, `NO_VALID_BEHAVIOR`로 제외했다. Context eligibility는 filter로 사용하지 않았으며 Context-only 157개에는 Behavior bundle을 만들지 않았다.
+
+Feature 순서는 `ear`, `mar`, `pitch_raw`, `pitch_centered_candidate`, `yaw`, `roll`이고 영상별 tensor shape는 `(100, 6)`, dtype은 float32다. `feature_valid_mask`는 feature별 finite 여부이며 `detector_valid_mask`, `landmark_valid_mask`, `pose_valid_mask`, frozen semantics의 `behavior_valid_mask`를 bool로 별도 보존한다. Canonical index와 timestamp도 함께 저장한다.
+
+결측 slot을 삭제하거나 채우지 않는다. Canonical NaN과 부분 유효값을 그대로 보존하며 nearest/forward/backward/linear interpolation, zero/mean fill, smoothing, normalization, threshold 및 event 생성을 수행하지 않았다. Valid count와 frozen manifest 불일치 0, longest-run 불일치 0, required-valid NaN contradiction 0, infinity 0, canonical numeric mismatch 0이다.
+
+Valid-count 분포는 `95:17, 96:21, 97:21, 98:34, 99:45, 100:1382`, longest YuNet missing-run 분포는 `0:1382, 1:63, 2:31, 3:19, 4:16, 5:9`이다. Train/validation은 1,256/264개, drowsy/not_drowsy는 736/784개다. 결과는 `data/interim/sequences_v2/behavior/`, 보고서는 `outputs/sequences_v2/behavior_sequence/`에 있으며 atomic bundle과 policy/source/schema hash 기반 resume을 사용한다.
+
+Head Pose physical sign convention remains unresolved. Pitch continuous values are preserved without semantic head-down/head-up interpretation. `pitch_raw`와 `pitch_centered_candidate`는 진단용 연속값으로 함께 보존한다.
+
+## 11. Limitations
+
+이 단계는 sequence packaging의 구조·출처 무결성을 검증한다. Context 대체나 B2 mask가 모델 성능을 향상한다는 주장이 아니며, subject-wise 독립성도 보장하지 않는다. Behavior threshold/event와 CNN feature는 생성하지 않았다.
+
+## 12. STEP 5 Roadmap and Next Steps
+
+- STEP 5-A — Context 32-Slot Sequence Construction: **COMPLETE**
+- STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
+- STEP 5-C — Cross-Branch Sequence Integrity Audit: **NOT STARTED**
+- STEP 5-D — CNN Feature Extraction: **NOT STARTED**
+
+다음 단계는 실제 Context/Behavior sequence artifact 기준의 STEP 5-C다. 1,520 both, 157 Context-only, 0 Behavior-only, 86 neither 관계는 이 다음 단계에서 재검증하며 이번 단계에서는 cross-branch artifact를 만들지 않았다. ResNet18/VGG16 및 ImageNet normalization은 STEP 5-D 전까지 실행하지 않는다.

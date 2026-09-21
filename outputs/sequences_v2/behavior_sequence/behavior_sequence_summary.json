@@ -1,0 +1,172 @@
+{
+  "input_videos": 1763,
+  "eligible_videos": 1520,
+  "excluded_videos": 243,
+  "frame_rows": 152000,
+  "status": "STEP_5B_BEHAVIOR_SEQUENCE_CONSTRUCTION_COMPLETE",
+  "sequence_length": 100,
+  "feature_names": [
+    "ear",
+    "mar",
+    "pitch_raw",
+    "pitch_centered_candidate",
+    "yaw",
+    "roll"
+  ],
+  "feature_shape_per_video": [
+    100,
+    6
+  ],
+  "behavior_feature_schema_hash": "f880a9289cc1593f5defc87e5cbd7a0d50865dfebce910a4d1ab59113b4bedd2",
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+  "behavior_policy_id": "BEHAVIOR_B2_COVERAGE_95",
+  "behavior_handling": "NaN + valid masks",
+  "interpolation_count": 0,
+  "valid_count_mismatch": 0,
+  "missing_run_mismatch": 0,
+  "required_valid_nan_contradiction": 0,
+  "infinite_value_count": 0,
+  "canonical_numeric_mismatch": 0,
+  "test_rows": 0,
+  "test_access": 0,
+  "valid_count_histogram": [
+    {
+      "metric": "valid_count",
+      "value": 95,
+      "videos": 17,
+      "fraction_of_eligible_videos": 0.01118421052631579
+    },
+    {
+      "metric": "valid_count",
+      "value": 96,
+      "videos": 21,
+      "fraction_of_eligible_videos": 0.01381578947368421
+    },
+    {
+      "metric": "valid_count",
+      "value": 97,
+      "videos": 21,
+      "fraction_of_eligible_videos": 0.01381578947368421
+    },
+    {
+      "metric": "valid_count",
+      "value": 98,
+      "videos": 34,
+      "fraction_of_eligible_videos": 0.02236842105263158
+    },
+    {
+      "metric": "valid_count",
+      "value": 99,
+      "videos": 45,
+      "fraction_of_eligible_videos": 0.029605263157894735
+    },
+    {
+      "metric": "valid_count",
+      "value": 100,
+      "videos": 1382,
+      "fraction_of_eligible_videos": 0.9092105263157895
+    }
+  ],
+  "longest_run_histogram": [
+    {
+      "metric": "longest_missing_run",
+      "value": 0,
+      "videos": 1382,
+      "fraction_of_eligible_videos": 0.9092105263157895
+    },
+    {
+      "metric": "longest_missing_run",
+      "value": 1,
+      "videos": 63,
+      "fraction_of_eligible_videos": 0.04144736842105263
+    },
+    {
+      "metric": "longest_missing_run",
+      "value": 2,
+      "videos": 31,
+      "fraction_of_eligible_videos": 0.020394736842105264
+    },
+    {
+      "metric": "longest_missing_run",
+      "value": 3,
+      "videos": 19,
+      "fraction_of_eligible_videos": 0.0125
+    },
+    {
+      "metric": "longest_missing_run",
+      "value": 4,
+      "videos": 16,
+      "fraction_of_eligible_videos": 0.010526315789473684
+    },
+    {
+      "metric": "longest_missing_run",
+      "value": 5,
+      "videos": 9,
+      "fraction_of_eligible_videos": 0.0059210526315789476
+    }
+  ],
+  "split_label_summary": [
+    {
+      "group_type": "split",
+      "group_name": "train",
+      "videos": 1256,
+      "behavior_valid_slots": 125308,
+      "behavior_missing_slots": 292
+    },
+    {
+      "group_type": "split",
+      "group_name": "val",
+      "videos": 264,
+      "behavior_valid_slots": 26347,
+      "behavior_missing_slots": 53
+    },
+    {
+      "group_type": "label",
+      "group_name": "drowsy",
+      "videos": 736,
+      "behavior_valid_slots": 73455,
+      "behavior_missing_slots": 145
+    },
+    {
+      "group_type": "label",
+      "group_name": "not_drowsy",
+      "videos": 784,
+      "behavior_valid_slots": 78200,
+      "behavior_missing_slots": 200
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "train/drowsy",
+      "videos": 606,
+      "behavior_valid_slots": 60485,
+      "behavior_missing_slots": 115
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "train/not_drowsy",
+      "videos": 650,
+      "behavior_valid_slots": 64823,
+      "behavior_missing_slots": 177
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "val/drowsy",
+      "videos": 130,
+      "behavior_valid_slots": 12970,
+      "behavior_missing_slots": 30
+    },
+    {
+      "group_type": "split_x_label",
+      "group_name": "val/not_drowsy",
+      "videos": 134,
+      "behavior_valid_slots": 13377,
+      "behavior_missing_slots": 23
+    }
+  ],
+  "raw_video_opened": false,
+  "context_sequence_accessed": false,
+  "canonical_data_modified": false,
+  "context_sequence_modified": false,
+  "cnn_executed": false
+}

@@ -1,0 +1,9 @@
+﻿group_type,group_name,videos,behavior_valid_slots,behavior_missing_slots
+split,train,1256,125308,292
+split,val,264,26347,53
+label,drowsy,736,73455,145
+label,not_drowsy,784,78200,200
+split_x_label,train/drowsy,606,60485,115
+split_x_label,train/not_drowsy,650,64823,177
+split_x_label,val/drowsy,130,12970,30
+split_x_label,val/not_drowsy,134,13377,23

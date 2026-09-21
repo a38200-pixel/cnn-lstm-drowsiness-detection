@@ -32,13 +32,17 @@
 | STEP 4-C2 — Missing Policy Selection & Freeze | **COMPLETE** |
 | STEP 4 — Quality Audit & Missing Policy | **FULLY CLOSED** |
 | STEP 5-A — Context 32-Slot Sequence Construction | **COMPLETE** |
-| STEP 5-B — CNN Feature Extraction | **NOT STARTED** |
+| STEP 5-B — Behavior 100-Slot Sequence Construction | **COMPLETE** |
+| STEP 5-C — Cross-Branch Sequence Integrity Audit | **NOT STARTED** |
+| STEP 5-D — CNN Feature Extraction | **NOT STARTED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
 
 STEP 3-A는 영상당 10 Hz × 10초의 100개 canonical slot과 검출 독립적인 32개 Context slot, 결측 무대체, atomic bundle·resume·policy/run hash·모델 SHA-256·source fingerprint·integrity 검사를 구현했다. STEP 3-B의 20개 pilot은 2,000/2,000 decode, YuNet 1,916/2,000(95.8%), 검출 후 Dlib68 1,916/1,916, Context 613/640(95.78%) 가용 및 27개 결측이었다. 자동·사용자 시각 검토를 거쳐 STEP 3-B를 완료했고, STEP 3-C에서 train/val 1,763개 영상·176,300 canonical row·54,672 Context crop을 생성해 무결성·resume 검증을 통과했다. Pilot의 품질 분포를 전체 영상에 일반화하지 않는다. **TEST SPLIT SEALED**.
 
 STEP 5-A는 동결된 `CONTEXT_C3_SHORT_GAP` 정책(`f382c790...`)으로 Context 적격 1,677개 영상을 각각 32-slot 참조 시퀀스로 구성했다. 총 53,664행 중 원본 관측은 52,965행, 최근접 원본-valid slot 참조 대체는 699행이며, 252개 영상이 대체를 사용했다. 동일 거리에서는 earlier slot을 선택하고 chained imputation은 허용하지 않는다. JPEG 재생성·복사는 0건이며 CNN feature extraction은 아직 시작하지 않았다. 상세 내용은 [STEP 5 sequence construction](docs/experiment2_step5_sequence_construction.md)에 정리했다. **TEST SPLIT SEALED**.
+
+STEP 5-B는 동결된 `BEHAVIOR_B2_COVERAGE_95` 정책으로 Behavior 적격 1,520개 영상을 각각 100-slot sequence로 구성했다. 총 152,000행에서 EAR, MAR, `pitch_raw`, `pitch_centered_candidate`, yaw, roll을 canonical 값 그대로 보존하고 결측은 NaN과 feature/detector/landmark/pose/behavior mask로 표현했다. 제외 243개에는 bundle을 만들지 않았으며 interpolation·threshold·행동 event·CNN 처리는 0건이다. Head Pose의 physical sign convention은 미확정이고 CNN feature extraction은 STEP 5-D이다. **TEST SPLIT SEALED**.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 

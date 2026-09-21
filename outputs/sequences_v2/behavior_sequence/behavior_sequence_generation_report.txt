@@ -1,0 +1,5 @@
+STEP 5-B COMPLETE
+Bundles: 1520
+Rows: 152000
+Interpolation: 0
+CNN: NOT RUN
