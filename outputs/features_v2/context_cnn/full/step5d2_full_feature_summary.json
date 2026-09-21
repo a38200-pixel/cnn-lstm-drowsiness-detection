@@ -1,0 +1,233 @@
+{
+  "status": "STEP_5D2_FULL_CNN_FEATURE_EXTRACTION_COMPLETE",
+  "environment": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "torch_import": true,
+    "torch_version": "2.11.0+cu130",
+    "cuda_available": true,
+    "torch_cuda_runtime": "13.0",
+    "gpu_device_count": 1,
+    "cudnn_version": 91900,
+    "gpu_device_name": "NVIDIA GeForce RTX 3080",
+    "float32_inference_supported": true,
+    "torchvision_import": true,
+    "torchvision_version": "0.26.0+cu130",
+    "status": "PASS"
+  },
+  "full_context": {
+    "videos": 1677,
+    "train": 1382,
+    "val": 295,
+    "drowsy": 800,
+    "not_drowsy": 877,
+    "sequence_length": 32,
+    "target_rows": 53664,
+    "imputed_target_refs": 699,
+    "context_only_videos": 157,
+    "test_rows": 0
+  },
+  "unique_source_images": 52965,
+  "backbones": [
+    {
+      "backbone": "resnet18",
+      "feature_policy": {
+        "backbone_name": "resnet18",
+        "torchvision_model": "resnet18",
+        "weights": "DEFAULT",
+        "classifier_removed": "fc",
+        "pooling": "native_avgpool_1x1",
+        "output_dim": 512,
+        "weights_enum": "ResNet18_Weights.IMAGENET1K_V1",
+        "input": {
+          "image_size": 224,
+          "sequence_length": 32,
+          "channel_order": "RGB",
+          "input_scale": "uint8_to_float32_div_255"
+        },
+        "normalization": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "geometry_transform": "none",
+        "augmentation": "none",
+        "dtype": "float32",
+        "amp": false,
+        "frozen_pretrained": true
+      },
+      "cnn_feature_policy_hash": "0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e",
+      "full_videos": 1677,
+      "sequence_length": 32,
+      "target_rows": 53664,
+      "unique_source_images": 52965,
+      "feature_dimension": 512,
+      "dtype": "float32",
+      "finite_count": 27475968,
+      "nan_count": 0,
+      "inf_count": 0,
+      "all_zero_count": 0,
+      "mean": 0.7392520904541016,
+      "std": 0.7306910157203674,
+      "min": 0.0,
+      "max": 8.890824317932129,
+      "l2_mean": 23.421096801757812,
+      "l2_median": 23.35370445251465,
+      "l2_min": 15.873414993286133,
+      "l2_max": 34.75716781616211,
+      "imputed_feature_mismatch": 0,
+      "wrong_source_mapping": 0,
+      "runtime": {
+        "model_load_sec": 0.39455839997390285,
+        "feature_extraction_sec": 206.1618579000351,
+        "total_sec": 206.556416300009,
+        "source_images_per_sec": 256.90979184753934,
+        "device": "cuda",
+        "batch_size": 16,
+        "amp": false,
+        "peak_gpu_memory_bytes": 159284224
+      },
+      "environment_provenance": {
+        "python_version": "3.12.14",
+        "python_implementation": "CPython",
+        "torch_import": true,
+        "torch_version": "2.11.0+cu130",
+        "cuda_available": true,
+        "torch_cuda_runtime": "13.0",
+        "gpu_device_count": 1,
+        "cudnn_version": 91900,
+        "gpu_device_name": "NVIDIA GeForce RTX 3080",
+        "float32_inference_supported": true,
+        "torchvision_import": true,
+        "torchvision_version": "0.26.0+cu130",
+        "status": "PASS"
+      },
+      "checkpoint_provenance": {
+        "cached_checkpoint": "resnet18-f37072fd.pth",
+        "checkpoint_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+      },
+      "test_used": false,
+      "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+      "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+      "source_mapping_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+      "pilot_full_regression": {
+        "status": "FAIL",
+        "videos_compared": 16,
+        "allclose_mismatch": 1,
+        "exact_equal_videos": 15,
+        "source_mapping_mismatch": 0,
+        "rtol": 1e-05,
+        "atol": 1e-06
+      }
+    },
+    {
+      "backbone": "vgg16",
+      "feature_policy": {
+        "backbone_name": "vgg16",
+        "torchvision_model": "vgg16",
+        "weights": "DEFAULT",
+        "classifier_removed": "classifier",
+        "pooling": "adaptive_avgpool_1x1_after_features",
+        "output_dim": 512,
+        "weights_enum": "VGG16_Weights.IMAGENET1K_V1",
+        "input": {
+          "image_size": 224,
+          "sequence_length": 32,
+          "channel_order": "RGB",
+          "input_scale": "uint8_to_float32_div_255"
+        },
+        "normalization": {
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "geometry_transform": "none",
+        "augmentation": "none",
+        "dtype": "float32",
+        "amp": false,
+        "frozen_pretrained": true
+      },
+      "cnn_feature_policy_hash": "1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0",
+      "full_videos": 1677,
+      "sequence_length": 32,
+      "target_rows": 53664,
+      "unique_source_images": 52965,
+      "feature_dimension": 512,
+      "dtype": "float32",
+      "finite_count": 27475968,
+      "nan_count": 0,
+      "inf_count": 0,
+      "all_zero_count": 0,
+      "mean": 0.20531494915485382,
+      "std": 0.35635703802108765,
+      "min": 0.0,
+      "max": 8.901276588439941,
+      "l2_mean": 9.219554901123047,
+      "l2_median": 9.026815414428711,
+      "l2_min": 4.791667461395264,
+      "l2_max": 17.9536190032959,
+      "imputed_feature_mismatch": 0,
+      "wrong_source_mapping": 0,
+      "runtime": {
+        "model_load_sec": 1.3819128000177443,
+        "feature_extraction_sec": 184.9546880000271,
+        "total_sec": 186.33660080004483,
+        "source_images_per_sec": 286.3674371962512,
+        "device": "cuda",
+        "batch_size": 16,
+        "amp": false,
+        "peak_gpu_memory_bytes": 686154240
+      },
+      "environment_provenance": {
+        "python_version": "3.12.14",
+        "python_implementation": "CPython",
+        "torch_import": true,
+        "torch_version": "2.11.0+cu130",
+        "cuda_available": true,
+        "torch_cuda_runtime": "13.0",
+        "gpu_device_count": 1,
+        "cudnn_version": 91900,
+        "gpu_device_name": "NVIDIA GeForce RTX 3080",
+        "float32_inference_supported": true,
+        "torchvision_import": true,
+        "torchvision_version": "0.26.0+cu130",
+        "status": "PASS"
+      },
+      "checkpoint_provenance": {
+        "cached_checkpoint": "vgg16-397923af.pth",
+        "checkpoint_sha256": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0"
+      },
+      "test_used": false,
+      "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+      "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+      "source_mapping_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+      "pilot_full_regression": {
+        "status": "FAIL",
+        "videos_compared": 16,
+        "allclose_mismatch": 1,
+        "exact_equal_videos": 15,
+        "source_mapping_mismatch": 0,
+        "rtol": 1e-05,
+        "atol": 1e-06
+      }
+    }
+  ],
+  "source_mapping_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+  "backbone_fusion": false,
+  "total_wall_sec": 521.3706772000296,
+  "test_access": 0
+}

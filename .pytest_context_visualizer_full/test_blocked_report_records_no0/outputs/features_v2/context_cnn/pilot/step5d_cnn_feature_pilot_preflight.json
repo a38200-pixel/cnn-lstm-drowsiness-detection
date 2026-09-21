@@ -1,0 +1,11 @@
+{
+  "environment": {
+    "python_version": "3.12",
+    "torch_error": "missing",
+    "torchvision_error": "missing"
+  },
+  "decision": "STEP_5D1_IMPLEMENTED_BLOCKED_BY_ENVIRONMENT",
+  "feature_artifacts_created": false,
+  "random_weight_fallback": false,
+  "full_extraction_started": false
+}

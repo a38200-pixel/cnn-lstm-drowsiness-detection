@@ -39,7 +39,7 @@ Dropout `0.0`은 base paper의 완전 재현을 뜻하지 않는 Experiment 2 �
 | STEP 5-B — Behavior 100-Slot Sequence Construction | **COMPLETE** |
 | STEP 5-C — Cross-Branch Sequence Integrity Audit | **COMPLETE** |
 | STEP 5-D1 — CNN Feature Extraction Preflight & Controlled Pilot | **COMPLETE** |
-| STEP 5-D2 — Full Context CNN Feature Extraction | **NOT STARTED** |
+| STEP 5-D2 — Full Context CNN Feature Extraction | **FULL EXTRACTION COMPLETED / READY FOR FINAL INTEGRITY AUDIT** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
 
@@ -51,7 +51,9 @@ STEP 5-B는 동결된 `BEHAVIOR_B2_COVERAGE_95` 정책으로 Behavior 적격 1,5
 
 STEP 5-C는 실제 canonical·frozen eligibility·Context·Behavior artifact를 전수 교차 감사했다. 1,763개 영상은 BOTH 1,520, Context-only 157, Behavior-only 0, neither 86으로 재확인됐고 frozen eligibility, split/label, target timeline, mask/NaN, canonical numeric lineage 및 artifact 불변성 mismatch/anomaly는 모두 0건이었다. Context target timeline과 대체 image-source provenance는 의도적으로 분리되어 있다. **INTEGRITY PASS · TEST SPLIT SEALED**.
 
-STEP 5-D1은 Python 3.12.14, torch 2.11.0+cu130, torchvision 0.26.0+cu130, CUDA 13.0, RTX 3080 환경에서 actual controlled pilot을 완료했다. Pilot은 train/val 12/4, drowsy/not-drowsy 9/7, no-imputation/imputation 8/8의 16개 영상이며, backbone별 512 target이 454개 unique source JPEG를 참조한다. ResNet18과 VGG16 모두 ImageNet `IMAGENET1K_V1`, batch size 16, CUDA float32, AMP off, frozen eval/inference mode, 동일 ImageNet normalization과 geometry 변경 없음 조건을 사용했다. 두 backbone 모두 영상별 `[32,512]` float32 feature를 생성했고 NaN/Inf/all-zero, imputed feature mismatch, wrong source mapping은 모두 0이었다. Backbone artifact는 완전히 분리되며 fusion하지 않는다. 이 pilot은 pipeline correctness·feature integrity·runtime feasibility 검증이지 정확도 비교나 backbone 선택이 아니다. STEP 5-D2 full 1,677-video extraction은 시작하지 않았다. **TEST SPLIT SEALED**.
+STEP 5-D1은 Python 3.12.14, torch 2.11.0+cu130, torchvision 0.26.0+cu130, CUDA 13.0, RTX 3080 환경에서 actual controlled pilot을 완료했다. Pilot은 train/val 12/4, drowsy/not-drowsy 9/7, no-imputation/imputation 8/8의 16개 영상이며, backbone별 512 target이 454개 unique source JPEG를 참조한다. ResNet18과 VGG16 모두 ImageNet `IMAGENET1K_V1`, batch size 16, CUDA float32, AMP off, frozen eval/inference mode, 동일 ImageNet normalization과 geometry 변경 없음 조건을 사용했다. 두 backbone 모두 영상별 `[32,512]` float32 feature를 생성했고 NaN/Inf/all-zero, imputed feature mismatch, wrong source mapping은 모두 0이었다. Backbone artifact는 완전히 분리되며 fusion하지 않는다. 이 pilot은 pipeline correctness·feature integrity·runtime feasibility 검증이지 정확도 비교나 backbone 선택이 아니다. **TEST SPLIT SEALED**.
+
+STEP 5-D2 actual full extraction은 Context eligible 전체 1,677개(train 1,382 / val 295, drowsy 800 / not_drowsy 877)에 대해 완료됐다. Context-only 157개를 포함하고 `n_246`과 test는 제외했으며, 53,664 target row는 52,965개 unique source feature와 699개 imputed reference로 구성된다. 두 backbone 모두 NaN/Inf/all-zero, imputed mismatch, wrong source mapping은 0이다. D1/D2 regression의 유일한 mismatch 영상은 양쪽 모두 `n_311`이고 semantic mapping은 동일하다. D1 마지막 partial batch 6장과 D2 full batch 16장의 composition 차이를 그대로 재현했을 때 stored vector가 각 당시 batch 결과와 6/6 exact match하여 원인을 benign CUDA floating-point/batch numerical difference로 분류했다. Full 재추출은 필요하지 않으며 현재 상태는 **READY FOR FINAL INTEGRITY AUDIT · TEST SPLIT SEALED**이다.
 
 STEP 2에서 확정한 범위는 face detector, Dlib68 fitting ROI, Context CNN crop geometry입니다. 행동 임계값·시간 규칙과 모델 성능은 아직 확정되지 않았습니다. 수치, 후보별 판단, 원본 artifact의 당시 Decision 상태는 [STEP 2 preprocessing policy 상세 기록](docs/experiment2_step2_preprocessing_policy.md)에 정리했습니다.
 
@@ -544,3 +546,23 @@ C4는 연속 gap 제약이 없는 **진단용 비교 후보**다. 유지 영상�
 Behavior는 `BEHAVIOR_B2_COVERAGE_95`: 원본 100 slot 중 유효 관측 ≥95개이면서 최장 YuNet 결측 ≤5 frame인 경우 적격이다. 결측 feature는 NaN으로 두고 valid mask를 보존하며 보간하지 않는다. 두 branch의 적격성은 독립적이고 train/val·label에 동일 기준을 적용한다. [적격성 manifest](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_eligibility.csv) 1,763행에서 Context **1,677 적격/86 부적격(95.12%)**, Behavior **1,520 적격/243 부적격(86.22%)**로 STEP 4-C1과 정확히 일치한다. `n_246`은 두 branch 모두 부적격이지만 원본 영상·label은 유지된다. 따라서 1,520개를 최종 학습 영상 수로 해석하지 않는다.
 
 C3는 C4보다 27개 영상을 덜 남기지만 유지 영상의 최장 Context gap을 8→4 slot, 최대 실제 timestamp span을 2.2→약 1.003초로 제한한다. B2는 Behavior 연속 미관측을 최대 5 frame으로 제한한다. 이 선택은 보존량·집단별 보존율·구성 변화·가상 대체 부담·시간 연속성 및 STEP 4-B 정성 검토에 근거한 **데이터 정책 결정**이며 모델 정확도 최적점이라는 주장은 아니다. 기존 canonical policy hash는 변경하지 않고 별도 `sequence_missing_policy_hash` `f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d`를 부여했다. [동결 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_summary.json)과 [보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_report.txt)에 검증 결과와 한계를 남겼다. **STEP 4 FULLY CLOSED**, **TEST SPLIT SEALED**이며 STEP 5는 시작하지 않았다.
+
+### Context Sequence Visual Inspection
+
+STEP 5-A의 32-frame Context RGB sequence를 사람이 검수하기 위한 visualization-only 도구다. `sequence.csv`의 target/source provenance와 기존 Context JPEG를 read-only로 사용하며 sequence, JPEG, mask, CNN feature artifact를 수정하지 않는다. Train/val만 허용하고 test 요청은 `VISUALIZATION_BLOCKED_TEST_ACCESS`로 거부한다.
+
+```powershell
+# 보완 없는 예시
+python scripts/visualize_context_sequence.py --video-id d_10 --mode contact
+
+# 보완 8-slot 예시: 8×4 contact sheet와 summary 저장
+python scripts/visualize_context_sequence.py --video-id n_265 --mode contact --save
+
+# 보완 target과 replacement source를 2열로 비교
+python scripts/visualize_context_sequence.py --video-id n_265 --mode imputed --save
+
+# visual inspection playback speed 3.2 fps
+python scripts/visualize_context_sequence.py --video-id n_265 --mode play --fps 3.2
+```
+
+기본 저장 위치는 `outputs/visualizations/context_sequences/`이며 저장 이미지는 모델 입력이 아닌 visualization derivative다. Contact sheet는 target index 순서의 8×4 배치이고 ORIGINAL/IMPUTED를 border와 명시적 텍스트로 함께 구분한다. Playback은 `SPACE` pause/resume, 좌우 방향키 이동, `Q`/`ESC` 종료를 지원한다. **TEST SPLIT SEALED**.

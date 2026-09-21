@@ -1,0 +1,4 @@
+﻿group_type,group_name,videos,original_valid_slots,imputed_slots,videos_requiring_imputation
+split,train,1,30,2,1
+label,drowsy,1,30,2,1
+split_x_label,train/drowsy,1,30,2,1

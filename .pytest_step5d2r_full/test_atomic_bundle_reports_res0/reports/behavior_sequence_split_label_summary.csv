@@ -1,0 +1,4 @@
+﻿group_type,group_name,videos,behavior_valid_slots,behavior_missing_slots
+split,train,1,98,2
+label,drowsy,1,98,2
+split_x_label,train/drowsy,1,98,2

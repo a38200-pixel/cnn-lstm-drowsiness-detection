@@ -1,0 +1,28 @@
+{
+  "status": "STEP_5B_BEHAVIOR_SEQUENCE_CONSTRUCTION_COMPLETE",
+  "feature_schema": {
+    "feature_names": [
+      "ear",
+      "mar",
+      "pitch_raw",
+      "pitch_centered_candidate",
+      "yaw",
+      "roll"
+    ],
+    "feature_dtype": "float32",
+    "feature_valid_mask": "isfinite_per_feature",
+    "behavior_valid_mask": "yunet_success AND landmark_success AND finite(ear) AND finite(mar)",
+    "detector_valid_mask": "yunet_success",
+    "landmark_valid_mask": "landmark_success",
+    "pose_valid_mask": "pose_success AND finite(pitch_raw,pitch_centered_candidate,yaw,roll)",
+    "missing_semantics": "NaN",
+    "interpolation": "none"
+  },
+  "behavior_feature_schema_hash": "f880a9289cc1593f5defc87e5cbd7a0d50865dfebce910a4d1ab59113b4bedd2",
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+  "eligible_videos": 1,
+  "sequence_rows": 100,
+  "test_sealed": true,
+  "source_metadata_fingerprints": "d507355d194614705bfe55c942f4213fe7768cb822264113fc8dba1769be06f7"
+}

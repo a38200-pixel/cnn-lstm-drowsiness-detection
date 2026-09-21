@@ -1,0 +1,44 @@
+STEP 4-C2 Sequence Missing Policy Selection & Freeze
+
+[Scope]
+사용자가 지정한 Context C3·Behavior B2를 STEP 4-C1 train/val 1763개 metadata와 대조해 동결했다. Test는 열지 않았고 sequence/JPEG를 만들지 않았다.
+
+[Frozen Context Policy]
+CONTEXT_C3_SHORT_GAP: 원본 32-slot Context missing<=8 AND 최장 연속 missing<=4. 적격 1677, 부적격 86, 보존율 95.12%.
+
+[Context Handling Semantics]
+STEP 5에서만 같은 영상의 가장 가까운 기존 valid Context slot을 복제한다. 동거리면 이전 slot 우선. 이미지 재생성·interpolation·타 영상 복제는 금지한다. 적격성은 원본 결측 pattern으로 판단한다.
+
+[Required Context Provenance]
+context_index, target_canonical_index, original_available, used_available, imputed, source_context_index, source_canonical_index, imputation_distance_context_slots, imputation_distance_canonical_slots, imputation_distance_sec; sequence-level original/imputed masks. 이번에는 mapping을 생성하지 않았다.
+
+[Why C3]
+STEP 4-C1: 최저 split×label 보존율 92.00%, 가상 대체 slot 비율 1.300%, 최대 유지 run 4 slot, 최대 실제 timestamp span 1.000s. C2 적격 1587보다 영상 보존량이 높으면서 run guard가 있다.
+
+[Why Not C4]
+C4는 C3보다 27개 더 유지하지만 run guard가 없어 최대 유지 run 8 slot, timestamp span 2.200s까지 허용한다. 목적 선정 36개 수동 검토에서도 긴 결측은 다양한 pose/가시성 상태와 연관됐다. C0/C1/C2는 각각 더 많은 영상을 제외한다.
+
+[Frozen Behavior Policy]
+BEHAVIOR_B2_COVERAGE_95: 원본 100-slot behavior_valid>=95 AND 최장 YuNet missing run<=5. 적격 1520, 부적격 243, 보존율 86.22%.
+
+[Behavior Handling Semantics]
+EAR/MAR/pitch/yaw/roll의 결측은 NaN으로 유지하고 behavior_valid_mask를 보존한다. nearest/forward/backward/linear/spline fill과 zero-as-measurement 금지. 실제 mask sequence는 STEP 5에서 생성한다.
+
+[Why B2]
+B1은 적격 1604개이나 최대 10-frame gap을 허용한다. B2는 1520개를 유지하면서 최장 5-frame gap·최소 95 valid observation을 요구한다. B0의 최소 1 valid frame과 B3의 최대 20-frame gap보다 시간 이벤트 분석의 미관측 범위를 줄인다.
+
+[Branch Independence]
+Context와 Behavior 적격 flag를 따로 보존한다. 영상 전체 삭제·global_video_eligible·label별 threshold·relabel은 수행하지 않는다.
+
+[Validation]
+STEP 4-C1 C3/B2와 영상별·총량 불일치 0. n_246은 Context 32/32, Behavior 100/100 결측으로 두 branch 모두 부적격이나 원본 영상은 그대로 보존한다. Canonical policy hash 29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721. Sequence missing policy hash f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d.
+
+[Limitations]
+C3/B2는 data-quality·보존율·집단 구성 변화·대체 부담·시간 연속성·수동 정성 근거에 따른 선택이다. CNN-LSTM 정확도 최적 정책임을 보인 실험은 아니다. 최종 model-specific 학습 표본 수도 아직 결정하지 않았다.
+
+[Decision]
+STEP 4-C2: COMPLETE
+MISSING POLICY: FROZEN
+STEP 4: FULLY CLOSED
+STEP 5: NOT STARTED
+TEST SPLIT: SEALED

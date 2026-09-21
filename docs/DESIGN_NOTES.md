@@ -56,6 +56,10 @@ ResNet18과 VGG16의 첫 비교에서는 split, 32 target timestamps, missing po
 
 STEP 5-D1 controlled pilot에서는 두 frozen backbone 모두 CNN feature extraction batch size를 16으로 통일했다. 이는 pretrained feature의 의미를 맞추기 위한 요구가 아니라 runtime·VRAM·pipeline 비교의 run setting을 통제하기 위한 결정이다. 향후 LSTM training batch size와는 별개다.
 
+STEP 5-D2는 STEP 5-A의 Context eligible 1,677개와 frozen `source_image_relpath`를 그대로 소비한다. Behavior eligibility로 대상을 줄이거나 nearest-neighbor source를 다시 계산하지 않는다. 53,664 target을 52,965 unique source inference로 deduplicate하고 699개 imputed target은 source feature를 정확히 재사용한다. Full artifact는 `context_full/resnet18`과 `context_full/vgg16`으로 분리하고, 원자적 publish와 provenance 일치 기반 `--resume`을 사용한다.
+
+STEP 5-D2R에서 두 backbone 모두 `n_311`의 마지막 6개 unique source가 D1의 6장 partial batch와 D2의 16장 full batch에서 작은 수치 차이를 보였다. Source path와 target/source index는 동일했고, 각 stored vector는 동일 batch composition 재실행 결과와 exact match했다. 따라서 이는 mapping 또는 input 오류가 아니라 benign floating-point/batch numerical difference이며 full artifact를 재생성하지 않는다. Source universe마다 달라지는 `source_feature_id` 자체는 semantic mapping equality 기준으로 사용하지 않고 `source_image_relpath`와 canonical/context index를 기준으로 비교한다.
+
 ### Behavior Sequence
 - Window: 동일한 10초 clip
 - Sampling: 10 FPS, 약 100 timestamp

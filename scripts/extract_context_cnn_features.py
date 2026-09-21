@@ -11,14 +11,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from drowsiness_detection.sequences_v2.cnn_feature_extractor import (  # noqa: E402
-    DependencyBlocked, dry_run, run_pilot, select_pilot, write_blocked_report,
-    write_pilot_manifest,
+    DependencyBlocked, dry_run, full_dry_run, run_full, run_pilot, select_pilot,
+    write_blocked_report, write_pilot_manifest,
 )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("pilot",), default="pilot")
+    parser.add_argument("--mode", choices=("pilot", "full"), default="pilot")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
@@ -30,6 +30,20 @@ def main() -> int:
     if args.resnet_batch_size < 1 or args.vgg_batch_size < 1:
         parser.error("batch size는 양수여야 합니다")
     config = PROJECT_ROOT / "configs/context_cnn_features.yaml"
+    if args.mode == "full":
+        planned = full_dry_run(
+            PROJECT_ROOT, config, resnet_batch_size=args.resnet_batch_size,
+            vgg_batch_size=args.vgg_batch_size)
+        if args.dry_run:
+            print(json.dumps(planned, ensure_ascii=False, indent=2))
+            return 0
+        result = run_full(
+            PROJECT_ROOT, config, PROJECT_ROOT / "data/interim/features_v2/context_full",
+            PROJECT_ROOT / "outputs/features_v2/context_cnn/full",
+            device=args.device, resnet_batch_size=args.resnet_batch_size,
+            vgg_batch_size=args.vgg_batch_size, resume=args.resume)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     planned = dry_run(PROJECT_ROOT, config)
     if args.dry_run:
         print(json.dumps(planned, ensure_ascii=False, indent=2))

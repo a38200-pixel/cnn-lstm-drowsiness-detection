@@ -1,0 +1,10 @@
+{
+  "status": "STEP_5A_CONTEXT_SEQUENCE_CONSTRUCTION_COMPLETE",
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d",
+  "input_videos": 1,
+  "eligible_videos": 1,
+  "sequence_rows": 32,
+  "test_sealed": true,
+  "source_metadata_fingerprints": "a7b2634260d3c556e8e74875ae8d6521d8b02f6a675213083d5a301358ad7787"
+}

@@ -1,0 +1,94 @@
+{
+  "generated_at_utc": "2026-09-21T06:07:32.750193+00:00",
+  "manual_review_source": "USER_CONFIRMED_CHATGPT_ASSISTED_VISUAL_REVIEW",
+  "manual_review_method": "CONTACT_SHEET_VISUAL_INSPECTION",
+  "reviewed_candidates": 36,
+  "contact_sheets": 9,
+  "source_attachment_sha256": "fedd7a912d64ed168faf76511897548ea71d3dfe0f5acb589f62d38b1007ad06",
+  "manual_csv_before_sha256": "e150fad2228fd233b7d7031166c6528f9f72197cd434ad542a6958fb17d18e90",
+  "manual_csv_after_sha256": "b61195f134d473557453f7e180e4dc2a64ef8bbe3497f3df89c9fe63ccfa3299",
+  "automatic_metadata_unchanged": true,
+  "automatic_inference_rerun": false,
+  "test_used": false,
+  "codex_visual_rejudgment": false,
+  "schema_conversions": [
+    {
+      "review_id": 1,
+      "field": "face_visible_during_miss",
+      "from": "PARTIAL",
+      "to": "TRUE"
+    },
+    {
+      "review_id": 30,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 30,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 31,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 31,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 32,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 32,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 33,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 33,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 34,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 34,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 35,
+      "field": "face_visible_during_miss",
+      "from": "N.A.",
+      "to": ""
+    },
+    {
+      "review_id": 35,
+      "field": "detector_miss_plausible",
+      "from": "N.A.",
+      "to": ""
+    }
+  ]
+}

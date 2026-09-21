@@ -1,0 +1,15 @@
+{
+  "status": "STEP_5D2_FULL_DRY_RUN_PASS",
+  "full_context": {
+    "videos": 1677,
+    "train": 1382,
+    "val": 295,
+    "drowsy": 800,
+    "not_drowsy": 877,
+    "target_rows": 53664,
+    "unique_source_images": 52965,
+    "imputed_target_refs": 699,
+    "context_only_videos": 157
+  },
+  "source_mapping_fingerprint": "abc"
+}

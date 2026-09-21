@@ -117,11 +117,47 @@ Deterministic pilot 16개는 `d_10, n_1, d_103, n_1002, d_100, d_101, d_102, d_1
 
 Pilot에서 ResNet18이 더 짧은 extraction time과 더 낮은 peak GPU memory를 기록했지만 이는 pilot runtime observation일 뿐 정확도·feature quality·최종 backbone 우위를 의미하지 않는다. Backbone별 feature mean과 L2 norm 크기는 서로 다른 representation이므로 직접적인 품질 비교 지표가 아니다. 최종 모델 선택은 동일한 LSTM/classifier training protocol의 결과를 함께 검토해야 한다.
 
-**STEP 5-D1: COMPLETE.** Environment, pretrained weights, `[32,512]` shape, numeric integrity, target/source reuse와 test 보호가 모두 통과했다. STEP 5-D2 full extraction은 **NOT STARTED**다.
+**STEP 5-D1: COMPLETE.** Environment, pretrained weights, `[32,512]` shape, numeric integrity, target/source reuse와 test 보호가 모두 통과했다. STEP 5-D2 actual full inference도 완료됐으며 STEP 5-D2R regression 조사를 거쳐 final integrity audit 대기 상태다.
 
 ### STEP 5-D2 Full Extraction
 
-향후 dependency와 pretrained weight load가 검증된 뒤 Context eligible 1,677개 전체를 대상으로 실행한다. ResNet18과 VGG16은 독립 artifact를 만들며 1,520개 BOTH set으로 축소하지 않는다. 현재 full extraction은 실행하지 않았다.
+#### Full Universe
+
+STEP 5-D2 구현 대상은 STEP 5-A의 Context eligible train/val 1,677개 전체다. Train 1,382개, val 295개, drowsy 800개, not_drowsy 877개이며 Behavior-ineligible이지만 Context-eligible인 157개도 모두 포함한다. Context-ineligible `n_246`과 test는 제외한다. 영상당 32개로 총 target row는 53,664개다.
+
+#### Same D1 Feature Policies
+
+D2는 D1의 feature semantics를 변경하지 않는다. ResNet18은 `ResNet18_Weights.IMAGENET1K_V1`, native GAP, 512D와 policy hash `0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e`를 사용한다. VGG16은 `VGG16_Weights.IMAGENET1K_V1`, `model.features → AdaptiveAvgPool2d((1,1)) → flatten`, 512D와 policy hash `1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0`를 사용한다. 입력은 RGB uint8 224×224, float32 `/255`, ImageNet mean/std normalization이며 resize, crop, augmentation은 없다. 두 모델은 frozen eval/inference mode, AMP off이고 artifact를 fusion하지 않는다.
+
+#### Controlled Batch and Global Deduplication
+
+Full mode에서는 ResNet18과 VGG16 모두 extraction batch size 16을 강제한다. 이 설정은 controlled run condition이며 향후 LSTM training batch와 별개다. 53,664개 target의 STEP 5-A `source_image_relpath`를 전역 deduplicate한 결과는 52,965개이며, 699개 imputed target은 original source feature를 재사용한다. D2는 nearest-neighbor를 다시 계산하거나 chained imputation을 만들지 않는다. Dry-run에서 계산한 mapping fingerprint는 `83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453`다.
+
+#### Artifact, Atomic Publish, and Resume
+
+Full output root는 `data/interim/features_v2/context_full/`이며 `resnet18/`과 `vgg16/`을 완전히 분리한다. Backbone별로 `source_features.npy`, `source_feature_index.csv`, `full_feature_videos.csv`, `full_feature_summary.json`, `per_video/{train,val}/{video_id}/`와 `COMPLETE.json`을 생성한다. 영상 bundle은 `[32,512]` float32 `features.npy`, target/source provenance를 담은 `feature_mapping.csv`, original/imputed mask, summary와 완료 마커를 포함한다. 각 backbone은 staging에서 shape·dtype·numeric·mapping 검증 후 원자적으로 게시한다. 한 backbone이 실패해도 이미 완료된 다른 backbone은 삭제하지 않는다.
+
+`--resume`은 backbone, CNN feature policy hash, canonical policy hash, sequence missing policy hash, full video ID/order, source mapping fingerprint, global summary와 source feature SHA-256이 모두 일치할 때만 완료 artifact를 건너뛴다. 불일치하거나 incomplete output이면 `STEP_5D2_RESUME_CONFLICT`로 중단하며 자동 overwrite하지 않는다. `--resume` 없이 기존 complete output이 있으면 `FileExistsError`다.
+
+#### Pilot/Full Regression
+
+Actual full extraction이 게시되면 D1 pilot 16개와 D2의 동일 영상·target slot을 backbone별로 비교한다. Source path 일치와 `np.allclose(rtol=1e-5, atol=1e-6)` mismatch를 기록하고 exact-equality 영상 수도 별도로 보고한다. 이 검증은 feature가 없는 dry-run에서는 수행하지 않고 실제 full 완료 후 수행한다.
+
+#### Full Dry-run Result and Decision
+
+실행 명령은 `python scripts/extract_context_cnn_features.py --mode full --dry-run --device cuda --resnet-batch-size 16 --vgg-batch-size 16`이다. 결과는 `STEP_5D2_FULL_DRY_RUN_PASS`였으며 1,677 videos, train/val 1,382/295, drowsy/not_drowsy 800/877, target 53,664, unique source 52,965, imputed reference 699, Context-only 157/157, test access 0을 재계산했다. CUDA 환경은 PASS였지만 dry-run의 CNN execution은 false다. Preflight는 `outputs/features_v2/context_cnn/full/step5d2_full_feature_preflight.json`과 `step5d2_full_feature_report.txt`에 기록했다.
+
+**STEP 5-D2 FULL EXTRACTION: COMPLETED.** Context eligible 1,677개, target 53,664행, unique source 52,965개에 대해 ResNet18/VGG16 독립 artifact가 생성됐다. 두 backbone 모두 numeric anomaly, imputed feature mismatch, wrong source mapping은 0이며 test access도 0이다. Feature 통계와 runtime은 integrity/runtime diagnostic일 뿐 backbone의 정확도 우위나 최종 선택 근거가 아니다.
+
+#### STEP 5-D2R Pilot/Full Regression Investigation
+
+D1/D2 regression에서 두 backbone 모두 16개 pilot 중 `n_311` 하나가 `rtol=1e-5`, `atol=1e-6`을 통과하지 못했다. Shape `[32,512]`와 float32 dtype은 동일하고 target/source semantic mapping mismatch와 source path mismatch는 0이다. 차이가 있는 target slot은 양쪽 모두 24~31이고, unique source는 `ctx_24_k077.jpg`, `ctx_25_k080.jpg`, `ctx_26_k083.jpg`, `ctx_29_k093.jpg`, `ctx_30_k096.jpg`, `ctx_31_k099.jpg` 6개다. Pilot source 454개 중 448개는 exact equal이고 이 6개만 allclose mismatch다.
+
+이 6개는 D1 정렬 source ID 448~453으로 마지막 batch index 28의 6장 partial batch 전체다. D2에서는 source ID 49,649~49,654, batch index 3,103의 position 1~6에 놓인 16장 full batch다. CUDA controlled rerun에서 두 backbone 모두 D1 stored vector와 D1-style batch rerun이 6/6 exact equal이고, D2 stored vector와 D2-style batch rerun도 6/6 exact equal했다. D1-style과 D2-style batch 결과 차이도 그대로 재현됐다. 따라서 원인은 `BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE`이며 mapping/input/feature extraction bug 증거는 없다.
+
+현재 JPEG SHA-256은 별도 D2R 보고서에 기록했지만 D1/D2 artifact에는 당시 input JPEG hash가 저장돼 있지 않아 “D1 당시 JPEG와 동일하다”고 artifact hash만으로 증명할 수는 없다. 다만 현재 JPEG로 재현한 각 batch 결과가 stored vector와 exact match한다. 기준 tolerance는 변경하지 않았고 full artifact도 수정·재생성하지 않았다. 상세 결과는 `outputs/features_v2/context_cnn/full_regression_audit/`에 있다.
+
+**STEP 5-D2: FULL EXTRACTION COMPLETED / READY FOR FINAL INTEGRITY AUDIT.** Full 재추출은 필요하지 않으며 test는 계속 sealed 상태다.
 
 ### Context Sequence Classifier Baseline
 
@@ -141,6 +177,6 @@ Experiment 2의 초기 Context baseline은 1-layer unidirectional LSTM(hidden=12
 - STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
 - STEP 5-C — Cross-Branch Sequence Integrity Audit: **COMPLETE**
 - STEP 5-D1 — CNN Feature Extraction Preflight & Controlled Pilot: **COMPLETE**
-- STEP 5-D2 — Full Context CNN Feature Extraction: **NOT STARTED**
+- STEP 5-D2 — Full Context CNN Feature Extraction: **FULL EXTRACTION COMPLETED / READY FOR FINAL INTEGRITY AUDIT**
 
-다음 단계는 Context eligible 1,677개 전체에 대해 두 backbone을 독립적으로 materialize하는 STEP 5-D2다. Behavior eligible 1,520개로 대상을 축소하지 않으며, 현재 full extraction은 시작하지 않았다.
+다음 단계는 STEP 5-D2 full artifact의 final integrity audit이다. D2R에서 batch composition에 따른 benign numerical difference를 재현했으며 artifact 재추출은 필요하지 않다.

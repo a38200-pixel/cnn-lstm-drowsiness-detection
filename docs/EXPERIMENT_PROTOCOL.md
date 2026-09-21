@@ -21,6 +21,10 @@ Dropout 0.0은 base paper의 완전 재현을 의미하지 않으며, 두 backbo
 
 첫 frozen CNN feature controlled comparison에서는 ResNet18과 VGG16 모두 feature extraction batch size 16, CUDA float32, AMP off, eval mode와 `torch.inference_mode()`를 사용한다. Batch size 통일은 feature 의미를 결정하기 위한 조건이 아니라 runtime·VRAM·pipeline 비교에서 불필요한 run-condition 차이를 줄이기 위한 것이다. CNN feature extraction batch와 향후 LSTM training batch는 서로 다른 설정이며, training batch size는 별도 training protocol에서 동결한다.
 
+STEP 5-D2 full extraction도 D1과 동일한 CNN feature policy를 사용한다. 대상은 Context eligible train/val 1,677개 전체이며 Behavior eligible 1,520개로 축소하지 않는다. ResNet18과 VGG16 모두 batch size 16을 사용해야 하며 full mode에서 두 값이 다르거나 16이 아니면 `STEP_5D2_BLOCKED_BATCH_MISMATCH`로 중단한다. 이는 extraction run setting 통제이며 LSTM training batch size를 정의하지 않는다. Test sequence/JPEG/feature 접근은 금지한다.
+
+Pilot/full feature regression은 semantic mapping과 input policy를 먼저 확인하고 `np.allclose(rtol=1e-5, atol=1e-6)`를 적용한다. 같은 batch size라도 전체 source count가 달라 마지막 batch composition이 달라질 수 있으며, CUDA 연산은 이에 따른 작은 수치 차이를 만들 수 있다. Regression 실패 시 tolerance를 임의로 완화하거나 artifact를 덮어쓰지 않고, source path 기반 비교와 당시 batch 재현으로 원인을 조사한다. Extraction 완료 상태와 integrity closure 상태는 별도로 기록한다.
+
 ## Common input
 - 10-second original clip
 - 32 uniformly sampled Full Face RGB frames

@@ -1,0 +1,116 @@
+STEP 5-D2R Pilot/Full Feature Regression Mismatch Investigation
+
+Cause: BENIGN FLOATING-POINT / BATCH NUMERICAL DIFFERENCE
+Extraction status: COMPLETE
+Integrity status: READY_FOR_FINAL_INTEGRITY_AUDIT
+Same mismatched videos: True
+cuDNN deterministic: False
+cuDNN benchmark: False
+Deterministic algorithms: False
+Test access: 0 (SEALED)
+
+[resnet18]
+Mismatched videos: n_311
+Mismatched target slots: 24, 25, 26, 27, 28, 29, 30, 31
+Mapping mismatch: 0
+Shape/dtype equal: True
+Max abs diff: 0.0019167661666870117
+Mean abs diff: 3.838589237137313e-05
+Median abs diff: 0.0
+RMSE: 0.00011241143641789122
+Failed elements: 3937
+Source allclose mismatch: 6
+Exact equal sources: 448 / 454
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_24_k077.jpg
+Current JPEG SHA-256: 4c1c32b9ba7a4ce576ed63a7ec1c7a305df0490974e10f195cb75dd2eb304768
+D1 batch: {'source_feature_id': 448, 'batch_index': 28, 'position_within_batch': 0, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49649, 'batch_index': 3103, 'position_within_batch': 1, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_25_k080.jpg
+Current JPEG SHA-256: b5aba6869095646e27677692ceb12bb671a5a3d5affa612dad7ad7ce0f240017
+D1 batch: {'source_feature_id': 449, 'batch_index': 28, 'position_within_batch': 1, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49650, 'batch_index': 3103, 'position_within_batch': 2, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_26_k083.jpg
+Current JPEG SHA-256: e813c7230350580c55b077c971d0d33d92f3eb53873613a525620721c201b7b3
+D1 batch: {'source_feature_id': 450, 'batch_index': 28, 'position_within_batch': 2, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49651, 'batch_index': 3103, 'position_within_batch': 3, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_29_k093.jpg
+Current JPEG SHA-256: 5f1e24675fdc6cafdbb488875831bf01018fce4b12abe501fa4c801127ae52b0
+D1 batch: {'source_feature_id': 451, 'batch_index': 28, 'position_within_batch': 3, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49652, 'batch_index': 3103, 'position_within_batch': 4, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_30_k096.jpg
+Current JPEG SHA-256: 1eefa9f59c9e85e4227fa057a7155e3a0f58d83d53df4cec9b57783d45f03d1e
+D1 batch: {'source_feature_id': 452, 'batch_index': 28, 'position_within_batch': 4, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49653, 'batch_index': 3103, 'position_within_batch': 5, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_31_k099.jpg
+Current JPEG SHA-256: 3742bba5ac895fdc554736ec8c1161a26958d3005a13197b9e376e5d5433951f
+D1 batch: {'source_feature_id': 453, 'batch_index': 28, 'position_within_batch': 5, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49654, 'batch_index': 3103, 'position_within_batch': 6, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Controlled rerun device: cuda
+D1 stored == D1 batch rerun: 6/6
+D2 stored == D2 batch rerun: 6/6
+
+[vgg16]
+Mismatched videos: n_311
+Mismatched target slots: 24, 25, 26, 27, 28, 29, 30, 31
+Mapping mismatch: 0
+Shape/dtype equal: True
+Max abs diff: 0.00027751922607421875
+Mean abs diff: 4.775153078701022e-06
+Median abs diff: 0.0
+RMSE: 1.500384056054916e-05
+Failed elements: 3170
+Source allclose mismatch: 6
+Exact equal sources: 448 / 454
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_24_k077.jpg
+Current JPEG SHA-256: 4c1c32b9ba7a4ce576ed63a7ec1c7a305df0490974e10f195cb75dd2eb304768
+D1 batch: {'source_feature_id': 448, 'batch_index': 28, 'position_within_batch': 0, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49649, 'batch_index': 3103, 'position_within_batch': 1, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_25_k080.jpg
+Current JPEG SHA-256: b5aba6869095646e27677692ceb12bb671a5a3d5affa612dad7ad7ce0f240017
+D1 batch: {'source_feature_id': 449, 'batch_index': 28, 'position_within_batch': 1, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49650, 'batch_index': 3103, 'position_within_batch': 2, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_26_k083.jpg
+Current JPEG SHA-256: e813c7230350580c55b077c971d0d33d92f3eb53873613a525620721c201b7b3
+D1 batch: {'source_feature_id': 450, 'batch_index': 28, 'position_within_batch': 2, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49651, 'batch_index': 3103, 'position_within_batch': 3, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_29_k093.jpg
+Current JPEG SHA-256: 5f1e24675fdc6cafdbb488875831bf01018fce4b12abe501fa4c801127ae52b0
+D1 batch: {'source_feature_id': 451, 'batch_index': 28, 'position_within_batch': 3, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49652, 'batch_index': 3103, 'position_within_batch': 4, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_30_k096.jpg
+Current JPEG SHA-256: 1eefa9f59c9e85e4227fa057a7155e3a0f58d83d53df4cec9b57783d45f03d1e
+D1 batch: {'source_feature_id': 452, 'batch_index': 28, 'position_within_batch': 4, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49653, 'batch_index': 3103, 'position_within_batch': 5, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Source: data/interim/preprocessing_v2/canonical/per_video/val/n_311/context_crops/ctx_31_k099.jpg
+Current JPEG SHA-256: 3742bba5ac895fdc554736ec8c1161a26958d3005a13197b9e376e5d5433951f
+D1 batch: {'source_feature_id': 453, 'batch_index': 28, 'position_within_batch': 5, 'batch_actual_size': 6, 'partial_batch': True, 'batch_start_source_feature_id': 448, 'batch_end_source_feature_id_exclusive': 454}
+D2 batch: {'source_feature_id': 49654, 'batch_index': 3103, 'position_within_batch': 6, 'batch_actual_size': 16, 'partial_batch': False, 'batch_start_source_feature_id': 49648, 'batch_end_source_feature_id_exclusive': 49664}
+D1 당시 JPEG와 동일하다고 증명할 수 없음
+
+Controlled rerun device: cuda
+D1 stored == D1 batch rerun: 6/6
+D2 stored == D2 batch rerun: 6/6

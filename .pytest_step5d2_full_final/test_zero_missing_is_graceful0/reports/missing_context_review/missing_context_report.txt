@@ -1,0 +1,31 @@
+STEP 3-B Missing Context Crop Review
+
+목적: 선택된 Context slot의 crop 결측만 분리해 detector miss·false negative·저장/파이프라인 문제를 시각 점검한다.
+출처: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\.pytest_step5d2_full_final\test_zero_missing_is_graceful0\canonical_pilot
+대상: split in {train,val} AND context_selected=True AND context_crop_available=False
+결측: 0/1 (0.00%)
+split: {}
+label: {}
+video: []
+YuNet: {} / Dlib68: {} / Pose: {}
+decode: {} / context: {}
+자동 원인 후보: {}
+canonical index: None..None; context slot: None..None
+이미지: 0개, sheet: 0장, 원본 frame decode 누락: 0개
+
+대표 패턴 및 구현 문제 의심 여부:
+결측이 없어 검토 대상이 없습니다.
+`DETECTOR_MISS`는 저장된 stage 상태에 따른 기계적 분류일 뿐 정상 miss와 false negative를 구분하지 않습니다. 근처 frame의 yaw/edge 힌트도 현재 frame의 사람 판정이 아닙니다.
+
+다음 액션: 모든 원본 frame을 보고 얼굴·profile·edge·가림·조명·흐림을 분류하고, 검출 성공인데 crop이 없는 사례가 있으면 우선 구현/경로 문제로 조사합니다. STEP 2 정책은 바꾸지 않고 full preprocessing은 시작하지 않습니다.
+
+DECISION:
+MISSING_CONTEXT_REVIEW_COMPLETE
+
+PRELIMINARY INTERPRETATION:
+- 결측이 없어 검토 대상이 없습니다.
+
+STEP 3-B STATUS:
+AUTOMATIC CHECK COMPLETE
+MISSING-ONLY VISUAL REVIEW GENERATED
+MANUAL INTERPRETATION REQUIRED

@@ -1,0 +1,69 @@
+{
+  "status": "STEP_5D2_FULL_DRY_RUN_PASS",
+  "environment": {
+    "python_version": "3.12.14",
+    "python_implementation": "CPython",
+    "torch_import": true,
+    "torch_version": "2.11.0+cu130",
+    "cuda_available": true,
+    "torch_cuda_runtime": "13.0",
+    "gpu_device_count": 1,
+    "cudnn_version": 91900,
+    "gpu_device_name": "NVIDIA GeForce RTX 3080",
+    "float32_inference_supported": true,
+    "torchvision_import": true,
+    "torchvision_version": "0.26.0+cu130",
+    "status": "PASS"
+  },
+  "full_context": {
+    "videos": 1677,
+    "train": 1382,
+    "val": 295,
+    "drowsy": 800,
+    "not_drowsy": 877,
+    "sequence_length": 32,
+    "target_rows": 53664,
+    "imputed_target_refs": 699,
+    "context_only_videos": 157,
+    "test_rows": 0,
+    "unique_source_images": 52965
+  },
+  "backbones": [
+    "resnet18",
+    "vgg16"
+  ],
+  "resolved_weights": {
+    "resnet18": "ResNet18_Weights.IMAGENET1K_V1",
+    "vgg16": "VGG16_Weights.IMAGENET1K_V1"
+  },
+  "cnn_feature_policy_hashes": {
+    "resnet18": "0b8d72abdc9f3fbdb44934100c507ebc249ea8225d01fe1e4ca0de2236c4cd3e",
+    "vgg16": "1edc39db86531ea3240f767722236ab45ee89d607811770308c30b526f0b2bc0"
+  },
+  "batch_size": {
+    "resnet18": 16,
+    "vgg16": 16
+  },
+  "feature_dimension": 512,
+  "normalization": {
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "geometry_transform": "none",
+  "source_mapping_fingerprint": "83b4587fdb41e5ef4f02287a0de8076426910a65eefb02cf4cc032527b42e453",
+  "context_only_included": 157,
+  "n_246_included": false,
+  "cnn_execution": false,
+  "actual_full_inference": false,
+  "test_access": 0,
+  "canonical_policy_hash": "29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721",
+  "sequence_missing_policy_hash": "f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d"
+}
