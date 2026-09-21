@@ -29,7 +29,8 @@
 | STEP 4-A — Full Train/Val Automatic Quality & Missing Audit | **COMPLETE** |
 | STEP 4-B — Missing / Quality Manual Visual Review | **COMPLETE** |
 | STEP 4-C1 — Missing Policy Candidate Impact Analysis | **COMPLETE** |
-| STEP 4-C2 — Missing Policy Selection & Freeze | **PENDING** |
+| STEP 4-C2 — Missing Policy Selection & Freeze | **COMPLETE** |
+| STEP 4 — Quality Audit & Missing Policy | **FULLY CLOSED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
 
@@ -473,7 +474,7 @@ Train의 YuNet 성공/미검출은 140,815/4,385, Context 가용/결측은 45,05
 
 [Full 요약](outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_summary.json), [처리 보고서](outputs/preprocessing_v2/canonical_preprocessing/full/full_preprocessing_report.txt), [엄격 무결성 보고서](outputs/preprocessing_v2/canonical_preprocessing/full/full_integrity_report.txt), [실패 목록](outputs/preprocessing_v2/canonical_preprocessing/full/failed_videos.csv), [resume 검증](outputs/preprocessing_v2/canonical_preprocessing/full/full_resume_report.txt)에 결과를 분리했다. 원본 run metadata의 `dlib_version`은 배포판 metadata 조회 실패로 `null`이며 수정하지 않았다. 확인된 `dlib.__version__=20.0.1`은 [provenance addendum](outputs/preprocessing_v2/canonical_preprocessing/full/run_provenance_addendum.json)에 별도로 기록했다. YuNet miss와 Context 결측은 처리 실패가 아닌 data-quality 관찰이다. 이번 train/val 실행에서 YuNet 성공 frame의 Dlib68은 모두 성공했으므로 관찰된 얼굴 검출·landmark 결측의 시작점은 YuNet 미검출이었다. 이는 모든 환경에서의 Dlib 정확도를 뜻하거나 Context 결측의 시각적 원인을 확정하지 않는다. STEP 2 detector 및 결측 정책은 변경하지 않았다.
 
-STEP 4-A에서 저장된 train/val canonical metadata만 자동 분석했다. Head Pose 물리적 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 규칙과 결측 처리 정책은 아직 미확정이다. ResNet18/VGG16 CNN과 LSTM은 학습하지 않았으며, test 311개 영상은 열기·decode·YuNet/Dlib 추론·crop 생성 모두 하지 않았다. 최종 평가 전까지 **TEST SPLIT SEALED**를 유지한다.
+STEP 4-A에서는 저장된 train/val canonical metadata만 자동 분석했다. **당시에는** Head Pose 물리적 부호 규약, EAR closure·PERCLOS·MAR/yawn·head-drop/nod 규칙과 결측 처리 정책이 미확정이었다. 결측 처리 정책은 이후 STEP 4-C2에서 별도로 동결했으며, 행동 event 규칙은 여전히 미확정이다. ResNet18/VGG16 CNN과 LSTM은 학습하지 않았으며, test 311개 영상은 열기·decode·YuNet/Dlib 추론·crop 생성 모두 하지 않았다. 최종 평가 전까지 **TEST SPLIT SEALED**를 유지한다.
 
 ### STEP 4 — Full Preprocessing Quality / Missing Audit
 
@@ -501,7 +502,7 @@ STEP 4-A의 36개 후보를 재선정하지 않고 [시각 검토 팩](outputs/p
 
 수동 판정 결과는 `EXPECTED_DETECTOR_MISS` 13개, `LIKELY_FALSE_NEGATIVE` 12개, `MIXED_MISSING_PATTERN` 5개, `NORMAL_REFERENCE` 6개다. `PASS` 19개, `CHECK_NEEDED` 17개, `INVESTIGATE` 및 pipeline/storage issue 의심 0개다. `n_246`은 100/100 결측·`FULL_CLIP_MISSING`·`EXPECTED_DETECTOR_MISS`로 기록됐다. 선택된 긴 run에서는 pose/head orientation 난이도뿐 아니라 얼굴이 충분히 보이는 연속 미검출도, 고립 miss에서는 blur로 설명되는 사례와 앞뒤 frame과 비슷한 false-negative 후보가 모두 보고됐다. 따라서 yaw/profile만을 전체 결측의 원인으로 단정하지 않는다. 이 36개는 목적 선정 후보이며 전체 1,763개 영상의 무작위 표본이 아니다.
 
-[수동 결과 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_summary.json), [해석 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_report.txt), [출처·전후 해시](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_provenance.json)에 세부 내용을 남겼다. STEP 4-B는 **COMPLETE**다. 자동 메타데이터와 저장된 YuNet bbox·Context JPEG는 변경하지 않았고 YuNet·Dlib68 재추론, crop 재생성, 결측 대체도 하지 않았다. Missing policy는 **NOT SELECTED**, STEP 4-C2 선택·동결은 **PENDING**, test split은 **SEALED**다.
+[수동 결과 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_summary.json), [해석 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_report.txt), [출처·전후 해시](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_provenance.json)에 세부 내용을 남겼다. STEP 4-B는 **COMPLETE**다. 자동 메타데이터와 저장된 YuNet bbox·Context JPEG는 변경하지 않았고 YuNet·Dlib68 재추론, crop 재생성, 결측 대체도 하지 않았다. **STEP 4-B 완료 당시** missing policy는 미선택이었으며 test split은 계속 **SEALED**다. 최종 선택 상태는 아래 STEP 4-C2 절에 기록한다.
 
 #### STEP 4-C1 — Missing Policy Candidate Impact Analysis
 
@@ -517,4 +518,12 @@ Train/val 1,763개 영상의 기존 metadata만 읽어 Context(32 slot) 후보 C
 
 C4는 연속 gap 제약이 없는 **진단용 비교 후보**다. 유지 영상의 최장 Context 결측 timestamp span은 C3 약 1.003초, C4 2.2초였다. Context가 32/32 결측인 `n_246`은 C0~C4 모두 부적격이며 같은 영상 안에 복제할 유효 source slot도 없다. Behavior 후보 적격 영상은 B0(valid≥1) 1,762개, B1(valid≥90·run≤10) 1,604개, B2(valid≥95·run≤5) 1,520개, B3(valid≥80·run≤20) 1,682개다. 모두 NaN·valid mask 유지를 가정하며 보간은 하지 않는다.
 
-[후보별 영향표](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/context_policy_candidate_impact.csv), [Behavior 영향표](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/behavior_policy_candidate_impact.csv), [집단별 영향](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/policy_candidate_stratum_impact.csv), [분석 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_report.txt)에 보존량·구성 비율 변화·대체 부담·시간 gap을 기록했다. STEP 4-B 수동 결과는 count와 연속 길이를 별도로 비교하는 정성 근거로만 사용했다. 이는 모델 정확도 비교가 아니며 **Context/Behavior 정책은 모두 미선택**, STEP 4-C2는 사용자 결정 대기 상태다.
+[후보별 영향표](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/context_policy_candidate_impact.csv), [Behavior 영향표](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/behavior_policy_candidate_impact.csv), [집단별 영향](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/policy_candidate_stratum_impact.csv), [분석 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_report.txt)에 보존량·구성 비율 변화·대체 부담·시간 gap을 기록했다. STEP 4-B 수동 결과는 count와 연속 길이를 별도로 비교하는 정성 근거로만 사용했다. 이는 모델 정확도 비교가 아니다. **STEP 4-C1 당시에는** 후보 우승자를 선택하지 않았으며, 아래 STEP 4-C2에서 사용자가 지정한 C3/B2를 동결했다.
+
+#### STEP 4-C2 — Missing Policy Selection & Freeze
+
+사용자가 지정한 sequence missing policy를 [설정](configs/sequence_missing_policy.yaml)과 [동결 JSON](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_frozen.json)에 확정했다. Context는 `CONTEXT_C3_SHORT_GAP`: 원본 32 slot 중 결측 ≤8개이면서 최장 연속 결측 ≤4 slot인 경우 적격이다. 향후 STEP 5에서만 같은 영상의 가장 가까운 기존 유효 Context slot으로 결측 위치를 채우며, 동거리면 이전 slot을 택한다. 원본 유효 mask와 대체 mask, source slot·canonical index·시간 거리 provenance를 반드시 별도로 보존한다. **이번 단계에서 JPEG·sequence·slot별 대체 mapping은 만들지 않았다.**
+
+Behavior는 `BEHAVIOR_B2_COVERAGE_95`: 원본 100 slot 중 유효 관측 ≥95개이면서 최장 YuNet 결측 ≤5 frame인 경우 적격이다. 결측 feature는 NaN으로 두고 valid mask를 보존하며 보간하지 않는다. 두 branch의 적격성은 독립적이고 train/val·label에 동일 기준을 적용한다. [적격성 manifest](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_eligibility.csv) 1,763행에서 Context **1,677 적격/86 부적격(95.12%)**, Behavior **1,520 적격/243 부적격(86.22%)**로 STEP 4-C1과 정확히 일치한다. `n_246`은 두 branch 모두 부적격이지만 원본 영상·label은 유지된다. 따라서 1,520개를 최종 학습 영상 수로 해석하지 않는다.
+
+C3는 C4보다 27개 영상을 덜 남기지만 유지 영상의 최장 Context gap을 8→4 slot, 최대 실제 timestamp span을 2.2→약 1.003초로 제한한다. B2는 Behavior 연속 미관측을 최대 5 frame으로 제한한다. 이 선택은 보존량·집단별 보존율·구성 변화·가상 대체 부담·시간 연속성 및 STEP 4-B 정성 검토에 근거한 **데이터 정책 결정**이며 모델 정확도 최적점이라는 주장은 아니다. 기존 canonical policy hash는 변경하지 않고 별도 `sequence_missing_policy_hash` `f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d`를 부여했다. [동결 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_summary.json)과 [보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_report.txt)에 검증 결과와 한계를 남겼다. **STEP 4 FULLY CLOSED**, **TEST SPLIT SEALED**이며 STEP 5는 시작하지 않았다.

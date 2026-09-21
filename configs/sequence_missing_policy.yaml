@@ -1,0 +1,39 @@
+# STEP 4-C2에서 선택한 sequence 결측 정책. STEP 5 전까지 실제 sequence는 만들지 않는다.
+version: 1
+context:
+  policy_id: CONTEXT_C3_SHORT_GAP
+  total_slots: 32
+  max_missing_count: 8
+  max_consecutive_missing: 4
+  handling: nearest_valid_context_slot_substitution
+  tie_break: earlier
+  source_scope: same_video_existing_valid_context_slot
+  preserve_original_valid_mask: true
+  preserve_imputed_mask: true
+  required_slot_provenance:
+    - context_index
+    - target_canonical_index
+    - original_available
+    - used_available
+    - imputed
+    - source_context_index
+    - source_canonical_index
+    - imputation_distance_context_slots
+    - imputation_distance_canonical_slots
+    - imputation_distance_sec
+  required_sequence_masks:
+    - context_original_valid_mask
+    - context_imputed_mask
+behavior:
+  policy_id: BEHAVIOR_B2_COVERAGE_95
+  total_slots: 100
+  min_valid_count: 95
+  max_missing_count: 5
+  max_consecutive_missing: 5
+  handling: masked_nan
+  interpolation: none
+  preserve_valid_mask: true
+global:
+  branch_eligibility_independent: true
+  label_dependent_policy: false
+  test_allowed: false

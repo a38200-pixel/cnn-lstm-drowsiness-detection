@@ -2,7 +2,7 @@
 
 ## 1. Objective
 
-STEP 4는 자동 관찰(4-A), 선정 사례의 수동 시각 검토(4-B), 결측 처리 정책 선택·동결(4-C)로 분리한다. 이 문서는 **STEP 4-A 실제 결과**까지만 기록한다. 원본 영상 재처리, detector 재선택, missing 보정, 행동 threshold 결정 및 test 분석은 하지 않았다.
+STEP 4는 자동 관찰(4-A), 선정 사례의 수동 시각 검토(4-B), 결측 정책 후보 영향 분석(4-C1), 정책 선택·동결(4-C2)로 분리한다. 이 문서는 **STEP 4-A~4-C2 실제 결과**를 단계별로 기록한다. 원본 영상 재처리, detector 재선택, missing 실제 보정, 행동 threshold 결정 및 test 분석은 하지 않았다.
 
 ## 2. Input Canonical Dataset
 
@@ -86,8 +86,8 @@ STEP 3-B의 27건 사용자 시각 검토에서는 yaw/profile 관련성이 관�
 - STEP 4-A: **AUTOMATIC QUALITY & MISSING AUDIT COMPLETE**
 - STEP 4-B: **COMPLETE**
 - STEP 4-C1: **POLICY CANDIDATE IMPACT ANALYSIS COMPLETE**
-- STEP 4-C2: **POLICY SELECTION / FREEZE PENDING**
-- Missing handling policy: **NOT SELECTED**
+- STEP 4-C2: **COMPLETE — C3/B2 FROZEN**
+- Missing handling policy: **C3/B2 FROZEN IN STEP 4-C2**
 - Frozen YuNet·Dlib68 RAW bbox·SQUARE_M10: **UNCHANGED**
 - Test split: **SEALED**
 
@@ -118,7 +118,7 @@ STEP 4-A의 [36개 deterministic 후보](../outputs/preprocessing_v2/canonical_p
 
 이 36개는 STEP 4-A의 deterministic·purposeful 후보이지 전체 1,763개 영상의 무작위 표본이 아니다. 따라서 13/12/5 등의 category 비율을 전체 detector 오류 비율로 해석하거나, 모든 YuNet 결측을 profile 때문이라고 일반화하지 않는다. [수동 요약](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_summary.json)과 [상세 보고서](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_report.txt)에 해석 범위와 결과를 남겼다.
 
-STEP 4-B는 **COMPLETE**다. Missing policy는 **NOT SELECTED**, STEP 4-C2는 **PENDING**이며 test split은 **SEALED**다. 허용 결측 개수, 영상 제외, masking·replacement·sequence 구성은 이 단계에서 결정하지 않았다.
+STEP 4-B는 **COMPLETE**다. **STEP 4-B 완료 당시** missing policy는 미선택이었고 test split은 **SEALED**였다. 허용 결측 개수, 영상 제외, masking·replacement·sequence 구성은 이 단계에서 결정하지 않았으며 이후 선택 결과는 STEP 4-C2 절에 기록한다.
 
 ## STEP 4-C1 Missing Policy Candidate Impact Analysis
 
@@ -159,4 +159,28 @@ STEP 4-B의 목적 선정 36건에서 고립 miss와 긴 run 모두 납득 가�
 
 향후 Context 복제가 선택된다면 `context_index`, `canonical_index`, `original_available`, `used_available`, `imputed`, `source_context_index`, `source_canonical_index`, `imputation_distance_context_slots`, `imputation_distance_sec`를 원본 값과 분리해 보존해야 한다. 이는 **schema 설계**이며 이번 단계에서 mapping 파일이나 실제 sequence를 생성하지 않았다. STEP 4-C2에서는 전체·최저 집단 보존율, label/split 구성 변화, 보완 부담, 긴 gap 제약, 32-slot 고정 길이와 Behavior mask 보존을 함께 검토한다. 이 진단 flag로 자동 우승자를 정하지 않는다.
 
-[STEP 4-C1 상세 보고서](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_report.txt)와 [JSON 요약](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_summary.json)에 전체 비교와 한계를 남겼다. **Context 정책과 Behavior 정책 모두 NOT SELECTED**, STEP 4-C2 정책 선택·동결은 **PENDING**, canonical data는 **UNCHANGED**, test split은 **SEALED**다.
+[STEP 4-C1 상세 보고서](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_report.txt)와 [JSON 요약](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_analysis/step4c_policy_analysis_summary.json)에 전체 비교와 한계를 남겼다. **STEP 4-C1 당시에는 정책을 선택하지 않았으며**, 선택·동결 결과는 다음 절에 분리해 기록한다.
+
+## STEP 4-C2 Missing Policy Selection & Freeze
+
+사용자 지정에 따라 Context **`CONTEXT_C3_SHORT_GAP`**과 Behavior **`BEHAVIOR_B2_COVERAGE_95`**를 Experiment 2 sequence missing policy로 동결했다. [정책 config](../configs/sequence_missing_policy.yaml)의 의미만 sorted-key canonical JSON으로 해시했으며 기존 canonical preprocessing policy hash `29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721`는 변경하지 않았다. 새 `sequence_missing_policy_hash`는 **`f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d`**이다. 해시 입력에는 timestamp·절대 경로·기계 정보가 없다.
+
+### Frozen Context policy
+
+적격 조건은 원본 32개 Context slot의 `context_missing_count ≤ 8` **AND** `longest_context_missing_run ≤ 4`다. STEP 4-C1과 재검증한 결과 **1,677/1,763개 적격(95.12%), 86개 부적격**, 최저 split×label 보존율 92.73%다. 적격 영상에서 결측 slot이 있다면 STEP 5에서만 **같은 영상의 가장 가까운 기존 valid Context slot**을 사용한다. 0~31 sequence index 기준 동거리이면 이전 slot을 우선한다. 원본 frame을 crop해 다시 만들거나 검출기를 재실행하거나 다른 영상에서 가져오지 않는다. 이는 새 이미지 interpolation이 아닌 기존 관측의 temporal placeholder 복제다.
+
+실제 적용 시 slot별 `context_index`, `target_canonical_index`, `original_available`, `used_available`, `imputed`, `source_context_index`, `source_canonical_index`, `imputation_distance_context_slots`, `imputation_distance_canonical_slots`, `imputation_distance_sec`와 sequence별 `context_original_valid_mask`, `context_imputed_mask`를 보존해야 한다. 원래 결측이었던 slot은 대체 후에도 원본 유효 관측으로 재분류하지 않는다. 이번 STEP 4-C2에서는 JPEG·32-slot tensor·slot별 source mapping을 **생성하지 않았다**.
+
+C3는 C2(1,587개)보다 보존량이 높으면서 연속 gap 제한을 유지한다. C4는 C3보다 27개를 더 남기지만 run 제한이 없어 유지 영상에서 최장 8 slot·최대 실제 timestamp span 2.2초까지 허용한다(C3는 4 slot·약 1.003초). C0/C1은 각각 1,425/1,516개만 유지한다. C3 선택은 이 보존량·대체 부담(적격 영상 252개, 가상 699 slot·1.303%)·집단 구성 변화·시간 연속성의 trade-off에 근거하며 정확도 최적 주장과 다르다.
+
+### Frozen Behavior policy
+
+적격 조건은 원본 100개 canonical slot의 `behavior_valid_count ≥ 95` **AND** `longest_yunet_missing_run ≤ 5`다. STEP 4-C1과 재검증한 결과 **1,520/1,763개 적격(86.22%), 243개 부적격**이다. EAR·MAR·pitch·yaw·roll 결측은 NaN으로 유지하고 `behavior_valid_mask`를 보존한다. Nearest/forward/backward fill, linear·spline interpolation, 0을 관측값으로 대체하는 행위는 금지한다. 실제 100-slot feature sequence·mask는 STEP 5에서 준비한다.
+
+B0(valid 1개만 있어도 허용)는 temporal 관측 품질 기준으로 너무 완화돼 있고, B3는 최장 20-frame gap, B1은 최장 10-frame gap을 허용한다. B2의 최장 5-frame(10 Hz 기준 약 0.5초) 제한은 향후 eye closure·PERCLOS·yawn duration·head movement 해석에서 미관측 구간을 더 짧게 유지하려는 선택이다. STEP 4-B에서 긴 run의 자세 난이도와 얼굴이 보이는 false-negative가 공존했고, 고립 miss도 한 유형으로 단정할 수 없었다. 그 수동 검토는 정성 근거일 뿐 threshold 비율 추정에 사용하지 않았다.
+
+### Eligibility 검증과 보호 범위
+
+[동결 적격성 manifest](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_eligibility.csv)는 train/val **1,763행**, test 0행이며 영상별 Context·Behavior 적격성과 표준 제외 이유를 독립적으로 기록한다. C3/B2 영상별·총량 결과는 STEP 4-C1과 불일치 **0건**이다. `n_246`은 Context 32/32·Behavior 100/100 결측이므로 `NO_VALID_CONTEXT`·`NO_VALID_BEHAVIOR`로 두 branch 모두 부적격이나 원본 영상과 label은 삭제·변경하지 않는다. Train/val과 drowsy/not_drowsy에 동일한 규칙을 적용하며 `global_video_eligible`은 만들지 않았다. Context-only·Behavior-only·fusion 실험 가능성을 유지하므로 **1,520개가 최종 모델 학습 표본 수라는 뜻은 아니다**.
+
+[동결 JSON](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_frozen.json), [요약](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_summary.json), [해시 파일](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_hash.txt), [보고서](../outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4c_policy_freeze/sequence_missing_policy_report.txt)에 동결 의미와 출처를 보존했다. C3/B2는 데이터 품질·보존량·집단 구성 변화·시간 연속성·수동 시각 검토에 따른 결정이며 **CNN-LSTM 정확도 benchmark 결과가 아니다**. STEP 4는 **FULLY CLOSED**다. Canonical data는 **UNCHANGED**, test split은 **SEALED**, STEP 5 Sequence Construction은 **NOT STARTED**다.
