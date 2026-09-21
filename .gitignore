@@ -22,5 +22,9 @@ htmlcov/
 logs/
 runs/
 wandb/
+mlflow.db
+mlartifacts/
+mlruns/
 outputs/visualizations/
+outputs/training_v2/
 outputs/preprocessing_v2/canonical_preprocessing/

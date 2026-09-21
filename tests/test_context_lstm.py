@@ -14,6 +14,8 @@ from drowsiness_detection.models_v2.context_lstm import (
     ContextLSTMConfig,
     ContextLSTMConfigError,
     ContextLSTMBaseline,
+    build_context_lstm,
+    context_lstm_config_from_mapping,
 )
 
 
@@ -30,11 +32,11 @@ def config_mapping() -> dict:
 @pytest.fixture
 def model(config_mapping: dict) -> ContextLSTMBaseline:
     torch.manual_seed(0)
-    return ContextLSTMBaseline.from_mapping(config_mapping)
+    return build_context_lstm(config_mapping)
 
 
 def test_config_contract(config_mapping: dict) -> None:
-    config = ContextLSTMConfig.from_mapping(config_mapping)
+    config = context_lstm_config_from_mapping(config_mapping)
     assert config.sequence_length == 32
     assert config.input_size == 512
     assert config.hidden_size == 128
@@ -108,8 +110,8 @@ def test_parameter_count(model: ContextLSTMBaseline) -> None:
 
 
 def test_same_model_for_both_backbones(config_mapping: dict) -> None:
-    resnet_model = ContextLSTMBaseline.from_mapping(config_mapping)
-    vgg_model = ContextLSTMBaseline.from_mapping(config_mapping)
+    resnet_model = build_context_lstm(config_mapping)
+    vgg_model = build_context_lstm(config_mapping)
     assert type(resnet_model) is type(vgg_model)
     assert resnet_model.parameter_counts() == vgg_model.parameter_counts()
     assert all("backbone" not in name for name, _ in resnet_model.named_modules())
@@ -129,7 +131,7 @@ def test_nonbaseline_config_is_rejected(config_mapping: dict) -> None:
         },
     }
     with pytest.raises(ContextLSTMConfigError, match="baseline"):
-        ContextLSTMBaseline.from_mapping(changed)
+        build_context_lstm(changed)
 
 
 def test_module_contains_no_training_components() -> None:

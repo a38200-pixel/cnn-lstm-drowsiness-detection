@@ -1,4 +1,4 @@
-# STEP 6-B는 baseline model 구조를 구현하며 training loop는 구현하지 않는다.
+# STEP 6-C는 training pipeline까지 구현하며 정식 multi-seed 학습은 아직 실행하지 않는다.
 data:
   sequence_length: 32
   feature_dim: 512
@@ -10,8 +10,8 @@ data:
   train_shuffle: true
   val_shuffle: false
   num_workers: 0
-  batch_size: 32
-  batch_size_status: candidate_not_frozen
+  train_batch_size: 16
+  val_batch_size: 32
 
 model_baseline_future:
   type: lstm
@@ -27,3 +27,39 @@ model_baseline_future:
 
 test_policy:
   sealed: true
+
+training:
+  max_epochs: 60
+  seeds: [42, 123, 2026]
+  precision: float32
+  amp: false
+  loss:
+    name: cross_entropy
+    class_weight: null
+    label_smoothing: 0.0
+  optimizer:
+    name: adamw
+    learning_rate: 0.0005
+    weight_decay: 0.0001
+  gradient_clip:
+    max_norm: 1.0
+  scheduler:
+    name: reduce_lr_on_plateau
+    mode: min
+    factor: 0.5
+    patience: 4
+    min_lr: 0.000001
+  early_stopping:
+    monitor: val_loss
+    patience: 10
+    min_delta: 0.0001
+  checkpoint:
+    criterion: minimum_val_loss
+
+mlflow:
+  enabled: true
+  tracking_uri: http://127.0.0.1:5000
+  experiment_name: context_lstm_baseline_v1
+
+output:
+  root: outputs/training_v2/context_lstm
