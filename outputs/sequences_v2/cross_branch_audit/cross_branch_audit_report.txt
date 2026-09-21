@@ -1,0 +1,55 @@
+STEP 5-C Cross-Branch Sequence Integrity Audit
+
+[Scope]
+Canonical, frozen eligibility, Context 및 Behavior sequence를 읽기 전용으로 교차 검증했다.
+
+[Frozen Policies]
+Canonical: 29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721
+Sequence missing: f382c7900331c0be2f56b95f8fd95ed77f86dd5d4b06239da078e03d180eee4d
+
+[Input Artifact Counts]
+Canonical 1763; Context 1677/53664 rows; Behavior 1520/152000 rows.
+
+[Eligibility Consistency]
+Frozen eligibility와 실제 bundle mismatch 0.
+
+[Cross-Branch Video Sets]
+BOTH 1520; CONTEXT_ONLY 157; BEHAVIOR_ONLY 0; NEITHER 86.
+
+[Context Sequence Integrity]
+32-slot, mask, source JPEG, no chained imputation: PASS.
+
+[Behavior Sequence Integrity]
+100-slot, (100,6) float32, NaN/mask, canonical numeric lineage: PASS.
+
+[Target Timeline Alignment]
+Context target canonical indices are one deterministic 32-slot pattern.
+Context target timeline and image-source provenance are intentionally separated.
+
+[Context Imputation Provenance]
+Original 52965; imputed references 699; timestamp overwrite 0.
+
+[Behavior NaN/Mask Semantics]
+Valid 151655; missing 345; interpolation 0; anomalies 0.
+
+[Context-Only Videos]
+157 videos; retained only in the independent Context branch.
+
+[Neither-Branch Videos]
+86 videos; no sequence bundle in either branch.
+
+[n_246 Sanity Check]
+NEITHER; NO_VALID_CONTEXT; NO_VALID_BEHAVIOR.
+
+[Test Protection]
+Test rows/access 0; SEALED.
+
+[Artifact Immutability]
+Canonical, Context, Behavior, frozen inputs unchanged.
+
+[Limitations]
+Head Pose physical sign is unresolved; no head-down/head-up meaning is assigned.
+
+[Decision]
+STEP 5-C: COMPLETE
+STEP 5-D CNN FEATURE EXTRACTION: NOT STARTED

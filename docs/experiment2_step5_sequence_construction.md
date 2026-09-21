@@ -63,15 +63,27 @@ Valid-count 분포는 `95:17, 96:21, 97:21, 98:34, 99:45, 100:1382`, longest YuN
 
 Head Pose physical sign convention remains unresolved. Pitch continuous values are preserved without semantic head-down/head-up interpretation. `pitch_raw`와 `pitch_centered_candidate`는 진단용 연속값으로 함께 보존한다.
 
-## 11. Limitations
+## 11. STEP 5-C Cross-Branch Sequence Integrity Audit
+
+Canonical train/validation 1,763개, frozen eligibility, Context 1,677개 bundle, Behavior 1,520개 bundle을 실제 artifact에서 전수 교차 검증했다. 실제 집합은 BOTH 1,520, CONTEXT_ONLY 157, BEHAVIOR_ONLY 0, NEITHER 86이며 frozen eligibility와 실제 bundle mismatch는 0이다. Split/label mismatch도 0이다.
+
+Context 53,664행은 영상별 32 target, original 52,965행, imputed reference 699행으로 재검증됐다. Source JPEG 결측, chained imputation, mask 상보성 위반, target timestamp overwrite는 모두 0이다. 모든 영상은 동일한 target canonical index pattern `0, 3, 6, 10, 13, 16, 19, 22, 26, 29, 32, 35, 38, 42, 45, 48, 51, 54, 57, 61, 64, 67, 70, 73, 77, 80, 83, 86, 89, 93, 96, 99`를 사용한다. Context target timeline and image-source provenance are intentionally separated.
+
+Behavior 152,000행은 영상별 `(100, 6)` float32와 bool mask로 재검증됐다. 실제 mask 합은 valid 151,655, missing 345이며 valid-count/run mismatch, required-valid NaN contradiction, feature-valid mask mismatch, infinity, canonical numeric mismatch는 모두 0이다. `behavior_valid_mask`는 frozen B2의 YuNet·landmark·EAR/MAR 기준이며 pose mask와 동일하다고 가정하지 않는다.
+
+Context-only는 train/val 126/31, drowsy/not_drowsy 64/93이고 neither는 train/val 70/16, drowsy/not_drowsy 29/57이다. `n_246`은 NEITHER이며 `NO_VALID_CONTEXT`와 `NO_VALID_BEHAVIOR`를 유지한다. 실행 전후 canonical, frozen, Context, Behavior 및 각 report tree의 fingerprint가 동일했다. Test 접근·행은 0이고 audit anomaly도 0이다. 결과는 `outputs/sequences_v2/cross_branch_audit/`에만 생성했다.
+
+Head Pose의 `pitch_raw`와 `pitch_centered_candidate`는 저장된 연속값일 뿐이며 physical sign은 **UNRESOLVED**, head-down/head-up rule은 **NOT DEFINED** 상태다. CNN·ImageNet normalization·feature extraction·LSTM은 실행하지 않았다.
+
+## 12. Limitations
 
 이 단계는 sequence packaging의 구조·출처 무결성을 검증한다. Context 대체나 B2 mask가 모델 성능을 향상한다는 주장이 아니며, subject-wise 독립성도 보장하지 않는다. Behavior threshold/event와 CNN feature는 생성하지 않았다.
 
-## 12. STEP 5 Roadmap and Next Steps
+## 13. STEP 5 Roadmap and Next Steps
 
 - STEP 5-A — Context 32-Slot Sequence Construction: **COMPLETE**
 - STEP 5-B — Behavior 100-Slot Sequence Construction: **COMPLETE**
-- STEP 5-C — Cross-Branch Sequence Integrity Audit: **NOT STARTED**
+- STEP 5-C — Cross-Branch Sequence Integrity Audit: **COMPLETE**
 - STEP 5-D — CNN Feature Extraction: **NOT STARTED**
 
-다음 단계는 실제 Context/Behavior sequence artifact 기준의 STEP 5-C다. 1,520 both, 157 Context-only, 0 Behavior-only, 86 neither 관계는 이 다음 단계에서 재검증하며 이번 단계에서는 cross-branch artifact를 만들지 않았다. ResNet18/VGG16 및 ImageNet normalization은 STEP 5-D 전까지 실행하지 않는다.
+다음 단계는 STEP 5-D CNN Feature Extraction이다. Pretrained ResNet18과 VGG16은 서로 독립된 backbone experiment로 준비하며 두 feature를 결합하는 설계가 아니다. STEP 5-C에서는 torch tensor cache, ImageNet normalization, CNN embedding을 만들지 않았다.
