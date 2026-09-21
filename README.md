@@ -1,8 +1,8 @@
 # CNN-LSTM Driver Drowsiness Detection
 
-SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증부터 frozen CNN feature 생성·감사, Context Dataset/LSTM/training pipeline 구현과 두 backbone의 seed42 baseline 및 batch/dropout tuning까지 완료됐다.
+SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증부터 frozen CNN feature 생성·감사, Context Dataset/LSTM/training pipeline 구현과 두 backbone의 seed42 baseline 및 batch/dropout/weight decay/learning rate tuning까지 완료됐다.
 
-> **Current milestone:** STEP 6-A~6-C **COMPLETE** · seed42 Context baseline 및 batch/dropout tuning **COMPLETE** · TEST **SEALED**
+> **Current milestone:** STEP 6-A~6-C **COMPLETE** · seed42 Context baseline 및 hyperparameter tuning **COMPLETE** · TEST **SEALED**
 > 아래 성능은 train/validation 결과이며 최종 test 성능이 아니다. Behavior rule threshold 확정과 test 평가는 아직 수행하지 않았다.
 
 ## 1. Project Overview
@@ -163,20 +163,29 @@ AdamW(`lr=0.0005`, `weight_decay=0.0001`), CrossEntropyLoss, train/validation ba
 
 Seed42에서는 VGG16의 validation metric이 더 높게 관찰됐지만 단일 seed 결과이므로 backbone 우위를 확정하지 않는다. 두 backbone 모두 train loss는 계속 감소하는 반면 validation loss는 비교적 이른 시점부터 정체하거나 변동하는 경향을 보였다.
 
-Batch size와 classifier dropout을 각각 하나의 변수만 바꾸어 비교한 seed42 **validation tuning** 결과는 다음과 같다.
+각 실험에서 하나의 변수만 바꾸어 비교한 seed42 **validation tuning** 결과는 다음과 같다.
 
-| Backbone | Batch | Dropout | Val Loss | Accuracy | Macro F1 | Drowsy Recall |
-|---|---:|---:|---:|---:|---:|---:|
-| ResNet18 | 16 | 0.0 | 0.4906 | 0.7797 | 0.7784 | 0.7324 |
-| VGG16 | 16 | 0.0 | 0.4637 | 0.8068 | 0.8061 | 0.7746 |
-| ResNet18 | 8 | 0.0 | 0.5166 | 0.7458 | 0.7423 | 0.6549 |
-| VGG16 | 8 | 0.0 | 0.4895 | 0.7797 | 0.7782 | 0.7254 |
-| ResNet18 | 16 | 0.2 | 0.4965 | 0.7864 | 0.7864 | 0.8239 |
-| VGG16 | 16 | 0.2 | 0.5000 | 0.7627 | 0.7621 | 0.8451 |
+| Backbone | Variant | Batch | Dropout | WD | LR | Val Loss | Accuracy | Macro F1 | Drowsy Recall |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| ResNet18 | Baseline | 16 | 0.0 | 0.0001 | 0.0005 | 0.4906 | 0.7797 | 0.7784 | 0.7324 |
+| VGG16 | Baseline | 16 | 0.0 | 0.0001 | 0.0005 | 0.4637 | 0.8068 | 0.8061 | 0.7746 |
+| ResNet18 | Batch 8 | 8 | 0.0 | 0.0001 | 0.0005 | 0.5166 | 0.7458 | 0.7423 | 0.6549 |
+| VGG16 | Batch 8 | 8 | 0.0 | 0.0001 | 0.0005 | 0.4895 | 0.7797 | 0.7782 | 0.7254 |
+| ResNet18 | Dropout 0.2 | 16 | 0.2 | 0.0001 | 0.0005 | 0.4965 | 0.7864 | 0.7864 | 0.8239 |
+| VGG16 | Dropout 0.2 | 16 | 0.2 | 0.0001 | 0.0005 | 0.5000 | 0.7627 | 0.7621 | 0.8451 |
+| ResNet18 | WD 0.0005 | 16 | 0.0 | 0.0005 | 0.0005 | 0.4895 | 0.7898 | 0.7895 | 0.7817 |
+| VGG16 | WD 0.0005 | 16 | 0.0 | 0.0005 | 0.0005 | 0.4983 | 0.7797 | 0.7794 | 0.7746 |
+| ResNet18 | LR 0.00025 | 16 | 0.0 | 0.0001 | 0.00025 | 0.4523 | 0.8068 | 0.8063 | 0.7887 |
+| VGG16 | LR 0.00025 | 16 | 0.0 | 0.0001 | 0.00025 | 0.4769 | 0.8000 | 0.7998 | 0.7958 |
 
-Batch 8은 두 backbone 모두 validation 성능이 악화되어 채택하지 않는다. Classifier dropout 0.2는 두 backbone의 drowsy recall을 높였지만 validation loss를 개선하지 못했고, 특히 VGG16의 accuracy와 Macro F1이 명확히 낮아져 공통 regularization으로 채택하지 않는다. 따라서 현재 공통 정책은 **train batch 16 / classifier dropout 0.0**이다. 이 결과는 dropout이 drowsy 예측 성향을 강화했음을 보여주지만 전체 validation 품질의 일관된 개선을 뜻하지 않는다. 또한 모두 seed42 단일 개발 실험이므로 backbone 우위나 최종 성능으로 확정하지 않으며 test split은 계속 sealed 상태로 유지한다.
+- **Batch 8:** 두 backbone 모두 악화되어 제외한다.
+- **Classifier dropout 0.2:** drowsy recall은 증가했지만 전체 validation 품질의 공통 개선에 실패하여 제외한다.
+- **Weight decay 0.0005:** ResNet18은 소폭 개선됐지만 VGG16의 validation loss, accuracy와 Macro F1이 악화되어 공통 정책으로 채택하지 않는다.
+- **Learning rate 0.00025:** ResNet18에서는 현재까지 가장 크게 개선됐지만 VGG16의 validation loss, accuracy와 Macro F1은 baseline보다 소폭 악화됐다. VGG16의 drowsy recall은 증가했으나 공통 LR은 변경하지 않는다.
 
-실험 추적에는 local MLflow를 사용한다. Experiment는 `context_lstm_baseline_v1`이며 `resnet18_seed42`, `vgg16_seed42`, `resnet18_seed42_batch8`, `vgg16_seed42_batch8`, `resnet18_seed42_dropout02`, `vgg16_seed42_dropout02` run에서 params, epoch metrics와 local artifacts를 관리한다. `mlflow.db`, `mlartifacts/`, `mlruns/`는 Git에서 제외한다.
+현재 공통 baseline은 **train batch 16 / classifier dropout 0.0 / weight decay 0.0001 / learning rate 0.0005**로 유지한다. 단순 hyperparameter 변경이 두 backbone에 동일한 효과를 주지 않았고 특히 LR 민감도가 다르게 관찰됐다. 이는 frozen ResNet18/VGG16 feature distribution 차이와 관련됐을 가능성이 있으나 원인으로 확정하지 않는다. 모두 seed42 개발 실험이므로 최종 backbone 성능으로 해석하지 않으며 test split은 계속 sealed 상태로 유지한다.
+
+실험 추적에는 local MLflow를 사용한다. Experiment는 `context_lstm_baseline_v1`이며 baseline, `batch8`, `dropout02`, `wd0005`, `lr00025` run의 params, epoch metrics와 local artifacts를 backbone별로 관리한다. `mlflow.db`, `mlartifacts/`, `mlruns/`는 Git에서 제외한다.
 
 ## 6. Context Branch
 
@@ -370,19 +379,18 @@ STEP 6-C COMPLETE
 TEST     SEALED
 ```
 
-다음 작업은 **weight decay 단일 변수 tuning**이다. ResNet18/VGG16 모두 seed42, train batch 16, classifier dropout 0.0을 유지하고 다른 조건은 변경하지 않는다.
+다음 작업은 **LayerNorm(512) → LSTM 단일 변수 실험**이다. ResNet18/VGG16 모두 seed42와 공통 baseline 조건을 사용하고 LayerNorm 적용 여부만 변경한다.
 
-1. 동일 조건에서 두 backbone의 weight decay tuning 수행
-2. Validation loss, Macro F1과 drowsy recall의 공통 개선 여부 확인
-3. 필요 시 learning rate와 feature normalization을 한 번에 하나씩 검토
-4. 양 backbone에 공통으로 적용할 training policy 동결
-5. ResNet18 / VGG16 × seeds 42, 123, 2026 검증
-6. 모든 선택을 동결한 뒤 최종 test를 한 번 평가
+1. Train batch 16, learning rate 0.0005, weight decay 0.0001, classifier dropout 0.0 유지
+2. 두 backbone에서 LayerNorm의 공통 개선 여부 확인
+3. 양 backbone에 공통으로 적용할 training policy 동결
+4. ResNet18 / VGG16 × seeds 42, 123, 2026 검증
+5. 모든 선택을 동결한 뒤 최종 test를 한 번 평가
 
 ## 16. Limitations
 
 - 현재 split은 video-level이며 subject-wise unseen-driver 독립성을 보장하지 않는다.
-- 현재 LSTM 결과는 seed42 train/validation baseline 및 batch/dropout tuning에 한정되며 일반화 성능이나 최종 backbone 우위를 확정하지 않는다.
+- 현재 LSTM 결과는 seed42 train/validation baseline 및 단일 변수 tuning에 한정되며 일반화 성능이나 최종 backbone 우위를 확정하지 않는다.
 - STEP 2의 detector/crop 선택은 통제된 train/validation audit 결과이며 전체 조건에서의 절대적 최적성을 뜻하지 않는다.
 - Context nearest-source reuse가 성능을 향상한다는 주장은 아직 없다.
 - Behavior branch의 threshold, event 정의와 head-pose physical sign convention은 미확정이다.

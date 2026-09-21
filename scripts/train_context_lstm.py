@@ -29,6 +29,10 @@ def build_parser() -> argparse.ArgumentParser:
                         help="config의 train batch size를 이 run에서만 변경")
     parser.add_argument("--classifier-dropout", type=float,
                         help="config의 classifier dropout을 이 run에서만 변경")
+    parser.add_argument("--weight-decay", type=float,
+                        help="config의 weight decay를 이 run에서만 변경")
+    parser.add_argument("--learning-rate", type=float,
+                        help="config의 initial learning rate를 이 run에서만 변경")
     parser.add_argument("--run-tag",
                         help="분리된 local output과 MLflow run 이름에 붙일 안전한 tag")
     mlflow_group = parser.add_mutually_exclusive_group()
@@ -51,6 +55,8 @@ def main() -> int:
         device_name=args.device,
         train_batch_size_override=args.train_batch_size,
         classifier_dropout_override=args.classifier_dropout,
+        weight_decay_override=args.weight_decay,
+        learning_rate_override=args.learning_rate,
         run_tag=args.run_tag,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))

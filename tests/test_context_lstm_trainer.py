@@ -101,6 +101,44 @@ def test_invalid_classifier_dropout_is_rejected(dropout: float) -> None:
         trainer.resolve_classifier_dropout(0.0, dropout, "invalid")
 
 
+def test_weight_decay_override_requires_tag_and_keeps_other_baselines() -> None:
+    assert trainer.resolve_weight_decay(0.0001, 0.0005, "wd0005") == 0.0005
+    assert trainer.resolve_train_batch_size(16, None, "wd0005") == 16
+    assert trainer.resolve_classifier_dropout(0.0, None, "wd0005") == 0.0
+    assert trainer.resolve_run_names("resnet18", 42, "wd0005") == (
+        "seed_42_wd0005", "resnet18_seed42_wd0005")
+    assert trainer.resolve_run_names("vgg16", 42, "wd0005") == (
+        "seed_42_wd0005", "vgg16_seed42_wd0005")
+    assert trainer.resolve_weight_decay(0.0001, None, None) == 0.0001
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_weight_decay(0.0001, 0.0005, None)
+
+
+def test_negative_weight_decay_is_rejected() -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="weight decay"):
+        trainer.resolve_weight_decay(0.0001, -0.0005, "invalid")
+
+
+def test_learning_rate_override_requires_tag_and_keeps_other_baselines() -> None:
+    assert trainer.resolve_learning_rate(0.0005, 0.00025, "lr00025") == 0.00025
+    assert trainer.resolve_train_batch_size(16, None, "lr00025") == 16
+    assert trainer.resolve_classifier_dropout(0.0, None, "lr00025") == 0.0
+    assert trainer.resolve_weight_decay(0.0001, None, "lr00025") == 0.0001
+    assert trainer.resolve_run_names("resnet18", 42, "lr00025") == (
+        "seed_42_lr00025", "resnet18_seed42_lr00025")
+    assert trainer.resolve_run_names("vgg16", 42, "lr00025") == (
+        "seed_42_lr00025", "vgg16_seed42_lr00025")
+    assert trainer.resolve_learning_rate(0.0005, None, None) == 0.0005
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_learning_rate(0.0005, 0.00025, None)
+
+
+@pytest.mark.parametrize("learning_rate", [0.0, -0.00025])
+def test_non_positive_learning_rate_is_rejected(learning_rate: float) -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="learning rate"):
+        trainer.resolve_learning_rate(0.0005, learning_rate, "invalid")
+
+
 @pytest.mark.parametrize("run_tag", ["", "../batch8", "batch 8", "batch/8"])
 def test_unsafe_run_tag_is_rejected(run_tag: str) -> None:
     with pytest.raises(trainer.TrainingPipelineError, match="run tag"):
@@ -128,6 +166,29 @@ def test_cli_accepts_classifier_dropout_tuning_options() -> None:
     assert args.train_batch_size is None
     assert args.classifier_dropout == 0.2
     assert args.run_tag == "dropout02"
+
+
+def test_cli_accepts_weight_decay_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "vgg16", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--weight-decay", "0.0005", "--run-tag", "wd0005",
+    ])
+    assert args.train_batch_size is None
+    assert args.classifier_dropout is None
+    assert args.weight_decay == 0.0005
+    assert args.run_tag == "wd0005"
+
+
+def test_cli_accepts_learning_rate_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "resnet18", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--learning-rate", "0.00025", "--run-tag", "lr00025",
+    ])
+    assert args.train_batch_size is None
+    assert args.classifier_dropout is None
+    assert args.weight_decay is None
+    assert args.learning_rate == 0.00025
+    assert args.run_tag == "lr00025"
 
 
 def test_classification_metrics() -> None:

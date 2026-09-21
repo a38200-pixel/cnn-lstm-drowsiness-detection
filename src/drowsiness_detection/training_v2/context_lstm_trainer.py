@@ -78,6 +78,40 @@ def resolve_classifier_dropout(
     return override
 
 
+def resolve_weight_decay(
+    configured_weight_decay: float,
+    override: float | None,
+    run_tag: str | None,
+) -> float:
+    """Run별 weight decay override를 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if override is None:
+        return configured_weight_decay
+    if override < 0.0:
+        raise TrainingPipelineError("weight decay는 0 이상이어야 합니다")
+    if override != configured_weight_decay and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 weight decay에는 --run-tag가 필요합니다")
+    return override
+
+
+def resolve_learning_rate(
+    configured_learning_rate: float,
+    override: float | None,
+    run_tag: str | None,
+) -> float:
+    """Run별 initial learning rate override를 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if override is None:
+        return configured_learning_rate
+    if override <= 0.0:
+        raise TrainingPipelineError("learning rate는 양수여야 합니다")
+    if override != configured_learning_rate and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 learning rate에는 --run-tag가 필요합니다")
+    return override
+
+
 def resolve_run_names(backbone: str, seed: int, run_tag: str | None) -> tuple[str, str]:
     """안전한 local output directory와 MLflow run 이름을 만든다."""
 
@@ -575,24 +609,34 @@ def train_context_lstm(
     output_root_override: Path | None = None,
     train_batch_size_override: int | None = None,
     classifier_dropout_override: float | None = None,
+    weight_decay_override: float | None = None,
+    learning_rate_override: float | None = None,
     run_tag: str | None = None,
 ) -> dict[str, Any]:
-    training_config = training_config_from_mapping(config)
-    if seed not in training_config.seeds:
+    baseline_training_config = training_config_from_mapping(config)
+    if seed not in baseline_training_config.seeds:
         raise TrainingPipelineError(f"허용되지 않은 seed입니다: {seed}")
-    max_epochs = epochs_override if epochs_override is not None else training_config.max_epochs
+    max_epochs = (epochs_override if epochs_override is not None
+                  else baseline_training_config.max_epochs)
     if max_epochs <= 0:
         raise TrainingPipelineError("epochs는 양수여야 합니다")
     resolved_train_batch_size = resolve_train_batch_size(
-        training_config.train_batch_size, train_batch_size_override, run_tag)
+        baseline_training_config.train_batch_size, train_batch_size_override, run_tag)
     configured_classifier_dropout = float(
         config["model_baseline_future"]["classifier_dropout"])
     resolved_classifier_dropout = resolve_classifier_dropout(
         configured_classifier_dropout, classifier_dropout_override, run_tag)
+    resolved_weight_decay = resolve_weight_decay(
+        baseline_training_config.weight_decay, weight_decay_override, run_tag)
+    resolved_learning_rate = resolve_learning_rate(
+        baseline_training_config.learning_rate, learning_rate_override, run_tag)
     output_name, mlflow_run_name = resolve_run_names(backbone, seed, run_tag)
     resolved_config = copy.deepcopy(config)
     resolved_config["model_baseline_future"]["classifier_dropout"] = (
         resolved_classifier_dropout)
+    resolved_config["training"]["optimizer"]["weight_decay"] = resolved_weight_decay
+    resolved_config["training"]["optimizer"]["learning_rate"] = resolved_learning_rate
+    training_config = training_config_from_mapping(resolved_config)
     if device_name == "auto":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     elif device_name in ("cpu", "cuda"):
@@ -631,6 +675,8 @@ def train_context_lstm(
         "val_batch_size": training_config.val_batch_size,
         "classifier_dropout": resolved_classifier_dropout,
         "lstm_dropout": float(config["model_baseline_future"]["lstm_dropout"]),
+        "weight_decay": resolved_weight_decay,
+        "learning_rate": resolved_learning_rate,
         "run_tag": run_tag,
     }
     model_config = resolved_config["model_baseline_future"]
