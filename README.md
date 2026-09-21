@@ -1,15 +1,15 @@
 # CNN-LSTM Driver Drowsiness Detection
 
-SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증, 전처리 정책 확정, canonical materialization, sequence 구성, frozen CNN feature 생성과 최종 무결성 감사까지 완료됐다.
+SUST-DDD의 약 10초 길이 운전자 영상을 이용해 졸음 상태를 탐지하는 Experiment 2 저장소다. 현재 데이터 검증부터 frozen CNN feature 생성·감사, Context Dataset/LSTM/training pipeline 구현과 두 backbone의 seed42 baseline validation까지 완료됐다.
 
-> **Current milestone:** STEP 5 **FULLY CLOSED** · STEP 5-D3 **PASS** · TEST **SEALED**
-> 아직 LSTM 학습, Behavior rule threshold 확정, validation 성능 비교 및 최종 test 평가는 수행하지 않았다.
+> **Current milestone:** STEP 6-A~6-C **COMPLETE** · seed42 Context baseline validation **COMPLETE** · TEST **SEALED**
+> 아래 성능은 train/validation 결과이며 최종 test 성능이 아니다. Behavior rule threshold 확정과 test 평가는 아직 수행하지 않았다.
 
 ## 1. Project Overview
 
 Experiment 2는 Experiment 1의 학습 산출물을 재사용하지 않고, 기존 video-level split만 유지한 채 데이터와 모델 산출물을 처음부터 다시 구축한다. 모델 입력은 서로 다른 시간 해상도를 갖는 두 branch로 분리한다.
 
-- **Context branch:** 10초 clip에서 결정적으로 선택한 32개 RGB 얼굴 crop을 frozen pretrained CNN에 통과시켜 frame당 512차원 feature를 만든다. 현재 `[32,512]` feature artifact까지 동결됐다.
+- **Context branch:** 10초 clip에서 결정적으로 선택한 32개 RGB 얼굴 crop을 frozen pretrained CNN에 통과시켜 frame당 512차원 feature를 만든다. 현재 `[32,512]` frozen feature를 읽는 Dataset, LSTM baseline과 training pipeline까지 구현됐다.
 - **Behavior branch:** 같은 clip을 10 Hz의 100개 canonical slot으로 표현하고 EAR, MAR와 head-pose 관련 연속값을 보존한다. 현재 `[100,6]` feature와 mask까지 구성됐다.
 - 두 branch는 현재 독립적이다. ResNet18과 VGG16도 별도 실험이며 feature를 합치거나 ensemble하지 않는다.
 
@@ -23,7 +23,7 @@ SUST-DDD video (~10 sec)
 │   ├── RGB 224×224, SQUARE_M10 crop
 │   ├── ResNet18 OR VGG16 (frozen ImageNet weights)
 │   ├── 512-D per frame
-│   └── stored [32,512] → LSTM classifier (next stage)
+│   └── stored [32,512] → LSTM classifier
 │
 └── Behavior branch
     ├── 100 slots @ 10 Hz
@@ -32,7 +32,7 @@ SUST-DDD video (~10 sec)
     └── yaw / roll
 ```
 
-계획된 초기 Context baseline은 아직 학습되지 않았다.
+현재 Context baseline은 다음 구조로 구현됐으며 ResNet18/VGG16 seed42 validation run을 동일 정책으로 완료했다.
 
 ```text
 Input              [B,32,512]
@@ -44,7 +44,7 @@ Classifier dropout 0.0
 Loss               CrossEntropyLoss(raw logits)
 ```
 
-현재 model YAML은 초기 scaffold이므로 실제 학습 구현 전에 위 baseline protocol과 명시적으로 정렬해야 한다. 자세한 기준은 [Experiment Protocol](docs/EXPERIMENT_PROTOCOL.md)을 따른다.
+실제 구조와 학습 정책은 `configs/context_lstm_baseline.yaml`에서 관리한다. 자세한 실험 기준은 [Experiment Protocol](docs/EXPERIMENT_PROTOCOL.md)을 따른다.
 
 ## 3. Processing Pipeline
 
@@ -57,6 +57,8 @@ source validation
 → cross-branch integrity audit
 → frozen ResNet18 / VGG16 feature extraction
 → full feature final integrity audit
+→ Context feature Dataset / LSTM baseline / training pipeline
+→ seed42 train/validation baseline comparison
 ```
 
 | 항목 | 동결 정책 |
@@ -104,6 +106,9 @@ STEP 1에서 raw 영상과 metadata 2,074개를 모두 대조했고 누락 및 s
 | STEP 5-D2R | **COMPLETE** | `n_311` numerical difference 원인 확인 |
 | STEP 5-D3 | **PASS** | full artifact anomaly 0, test access 0 |
 | **STEP 5** | **FULLY CLOSED** | sequence 및 frozen CNN feature 준비 완료 |
+| STEP 6-A | **COMPLETE** | frozen Context feature Dataset/DataLoader |
+| STEP 6-B | **COMPLETE** | 337,090-parameter Context LSTM baseline |
+| STEP 6-C | **COMPLETE** | training pipeline, MLflow, seed42 baseline validation |
 
 ### STEP 1
 
@@ -136,6 +141,29 @@ Canonical, eligibility, Context 및 Behavior artifact를 교차 감사했다. �
 ### STEP 5-D
 
 ResNet18과 VGG16을 frozen ImageNet backbone으로 별도 실행했다. D1 pilot, D2 full extraction, D2R regression 조사와 D3 최종 무결성 감사까지 완료했다. D3에서 backbone별 52,965개 source feature와 1,677개 `[32,512]` bundle을 전수 검사했으며 numeric, mapping, imputation, policy/hash 및 cross-backbone semantic mapping anomaly는 모두 0건이었다.
+
+### STEP 6-A
+
+ResNet18과 VGG16 각각 train 1,382개, validation 295개의 frozen `[32,512]` float32 feature를 공급하는 Dataset/DataLoader를 구현했다. 추가 normalization 없이 저장값을 그대로 사용하며 Context-only 157개를 포함한다. Test 접근은 없다.
+
+### STEP 6-B
+
+입력 `[B,32,512]`를 받는 1-layer unidirectional LSTM을 구현했다. 구조는 `512→128`, classifier는 `128→64→2`와 ReLU이며 LSTM/classifier dropout은 모두 0.0이다. 출력은 softmax가 없는 raw logits이고 전체 parameter는 337,090개다. Imputed mask는 진단용으로만 보존하며 forward 입력에 결합하지 않는다.
+
+### STEP 6-C
+
+AdamW(`lr=0.0005`, `weight_decay=0.0001`), CrossEntropyLoss, train/validation batch 16/32, gradient clipping 1.0, ReduceLROnPlateau, early stopping과 minimum validation loss checkpoint를 사용하는 training pipeline을 구현했다. AMP와 feature normalization은 사용하지 않는다.
+
+동일한 seed42와 동일한 학습 정책으로 얻은 **validation baseline** 결과는 다음과 같다. 이는 test 결과가 아니다.
+
+| Backbone | Best Epoch | Val Loss | Accuracy | Macro F1 | Drowsy Recall | Early Stop |
+|---|---:|---:|---:|---:|---:|---:|
+| ResNet18 | 16 | 0.490563 | 0.7797 | 0.7784 | 0.7324 | Epoch 26 |
+| VGG16 | 7 | 0.463662 | 0.8068 | 0.8061 | 0.7746 | Epoch 17 |
+
+Seed42에서는 VGG16의 validation metric이 더 높게 관찰됐지만 단일 seed 결과이므로 backbone 우위를 확정하지 않는다. 두 backbone 모두 train loss는 계속 감소하는 반면 validation loss는 비교적 이른 시점부터 정체하거나 변동하는 경향을 보였다.
+
+실험 추적에는 local MLflow를 사용한다. Experiment는 `context_lstm_baseline_v1`, baseline run은 `resnet18_seed42`와 `vgg16_seed42`이며 params, epoch metrics와 local artifacts를 기록한다. `mlflow.db`, `mlartifacts/`, `mlruns/`는 Git에서 제외한다.
 
 ## 6. Context Branch
 
@@ -254,6 +282,10 @@ STEP 5-D feature extraction 및 감사에 기록된 환경:
 # Context sequence 시각화
 .\.venv\Scripts\python.exe scripts\visualize_context_sequence.py --help
 
+# Local MLflow server와 Context baseline training
+.\scripts\start_mlflow.ps1
+.\.venv\Scripts\python.exe scripts\train_context_lstm.py --backbone resnet18 --seed 42 --device cuda --mlflow
+
 # 회귀 테스트
 $env:PYTHONPATH = "src"
 .\.venv\Scripts\python.exe -m pytest -q
@@ -319,23 +351,27 @@ STEP 5-D2 COMPLETE
 STEP 5-D2R COMPLETE
 STEP 5-D3 PASS
 STEP 5   FULLY CLOSED
+STEP 6-A COMPLETE
+STEP 6-B COMPLETE
+STEP 6-C COMPLETE
 TEST     SEALED
 ```
 
-다음 작업은 모델 학습 준비다.
+다음 작업은 두 backbone에 동일하게 적용할 공통 학습정책 tuning이다. Seed42 결과만으로 backbone 우위나 최종 정책을 확정하지 않는다.
 
-1. 문서의 Context baseline과 model/training config를 명시적으로 정렬한다.
-2. 저장된 ResNet18/VGG16 `[32,512]`를 읽는 LSTM dataset·model·training pipeline을 구현한다.
-3. 동일한 training protocol과 validation 기준으로 backbone을 비교한다.
-4. Behavior threshold와 physical head-pose convention을 별도 train/validation 근거로 확정한다.
-5. 모든 선택을 동결한 뒤에만 test를 한 번 평가한다.
+1. Batch size 8 tuning — ResNet18 / VGG16, seed42
+2. 필요 시 classifier dropout 0.2 검토
+3. 필요 시 weight decay → learning rate → feature normalization 순서로 검토
+4. 양 backbone에 공통으로 적용할 training policy 동결
+5. ResNet18 / VGG16 × seeds 42, 123, 2026 검증
+6. 모든 선택을 동결한 뒤 최종 test를 한 번 평가
 
 ## 16. Limitations
 
 - 현재 split은 video-level이며 subject-wise unseen-driver 독립성을 보장하지 않는다.
-- CNN feature integrity는 검증됐지만 LSTM 성능, 일반화 성능 및 최종 backbone 우위는 아직 평가하지 않았다.
+- 현재 LSTM 결과는 seed42 train/validation baseline 두 건뿐이며 일반화 성능이나 최종 backbone 우위를 확정하지 않는다.
 - STEP 2의 detector/crop 선택은 통제된 train/validation audit 결과이며 전체 조건에서의 절대적 최적성을 뜻하지 않는다.
 - Context nearest-source reuse가 성능을 향상한다는 주장은 아직 없다.
 - Behavior branch의 threshold, event 정의와 head-pose physical sign convention은 미확정이다.
 - Pilot runtime과 feature 통계는 시스템 진단값이며 정확도 비교 근거가 아니다.
-- 최종 test 성능은 아직 존재하지 않는다.
+- Test split은 계속 sealed 상태이며 최종 test 성능은 아직 존재하지 않는다.
