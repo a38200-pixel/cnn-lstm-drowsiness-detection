@@ -1,0 +1,5 @@
+﻿video_id,split,label,run_id,start_index,end_index,run_length,start_timestamp_sec,end_timestamp_sec,touches_clip_start,touches_clip_end,context_slots_inside_run,context_missing_slots_inside_run
+d_1,train,drowsy,1,0,1,2,0.0,0.1,True,False,1,1
+d_1,train,drowsy,2,5,5,1,0.5,0.5,False,False,0,0
+d_1,train,drowsy,3,99,99,1,9.9,9.9,False,True,0,0
+n_1,val,not_drowsy,1,10,10,1,1.0,1.0,False,False,0,0

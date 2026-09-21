@@ -27,7 +27,7 @@
 | STEP 3-B — 20-Video Pilot | **COMPLETE** |
 | STEP 3-C — Full Train/Val Materialization | **COMPLETE** |
 | STEP 4-A — Full Train/Val Automatic Quality & Missing Audit | **COMPLETE** |
-| STEP 4-B — Missing / Quality Manual Visual Review | **WAITING** |
+| STEP 4-B — Missing / Quality Manual Visual Review | **COMPLETE** |
 | STEP 4-C — Missing Handling Policy Selection & Freeze | **NOT STARTED** |
 
 현재 milestone 요약: STEP 1에서 SUST-DDD 2,074개 영상과 video-level train/val/test 1,452/311/311개, split 중복 0개를 확인했다. 영상별 subject 매핑이 없어 unseen-driver 독립성은 보장하지 않는다. STEP 2에서 HOG 152/160(95.0%, 평균 372.15 ms)과 YuNet 157/160(98.125%, 평균 39.44 ms)을 통제 비교하고 YuNet primary를 확정했다. Dlib68은 YuNet 성공 157건에서 RAW/M05/M10/M15 모두 157/157 성공했으며, clipping metadata 오류는 저장 ROI 628/628개가 맞는 `REPORTING_ONLY_BUG`였다. 최종 정책은 YuNet → RAW bbox Dlib68 → EAR/MAR/Head Pose 및 SQUARE_M10 RGB 224×224, ImageNet mean padding이다. Context 선택은 모델 정확도 우위가 아닌 geometry/시각 정책 결정이다.
@@ -494,6 +494,10 @@ Train과 val의 YuNet 결측률은 각각 3.0200%·3.3569%, drowsy와 not-drowsy
 
 [자동 audit 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/quality_missing_report.txt), [JSON 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/quality_missing_summary.json), [영상별 품질표](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/per_video_quality.csv), [36개 수동 검토 후보](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_review_candidates.csv)에 상세 수치와 근거가 있다. STEP 3-B의 27건에서는 사용자가 yaw/profile 연관성을 시각 관찰했지만, 이번 전체 자동 audit는 원본 이미지를 보지 않았다. YuNet 미검출 frame에는 해당 frame의 pose가 없으므로 full 데이터셋의 pose 원인을 단정하지 않는다. 이웃 frame yaw는 별도 보조 힌트일 뿐이다. [STEP 4 상세 기록](docs/experiment2_step4_quality_missing_audit.md)에 정의·분포·한계를 정리했다.
 
-#### STEP 4-B / 4-C — Pending
+#### STEP 4-B — Manual Visual Review Complete
 
-STEP 4-B 수동 시각 검토는 **WAITING**, STEP 4-C 결측 처리 정책 선택은 **NOT STARTED**다. 이번에는 후보 manifest만 준비했고 이미지·수동 판정은 만들지 않았다. YuNet·Dlib68·SQUARE_M10 frozen 정책, test sealed 상태, 결측 무대체 원칙을 유지한다.
+STEP 4-A의 36개 후보를 재선정하지 않고 [시각 검토 팩](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/)을 생성했다. 선택된 원본 영상 36개에서 필요한 frame 140개만 시각화 목적으로 읽었으며, 개별 검토 이미지 36장과 contact sheet 9장을 만들었다. [검토 인덱스](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_review_index.csv)가 이미지와 후보를 연결한다. 사용자가 ChatGPT 보조로 contact sheet를 검토해 확정한 review_id별 결과를 [수동 판정 CSV](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review.csv) 36행에 기록했다. Codex가 이미지를 다시 판독하거나 category를 변경하지 않았다.
+
+수동 판정 결과는 `EXPECTED_DETECTOR_MISS` 13개, `LIKELY_FALSE_NEGATIVE` 12개, `MIXED_MISSING_PATTERN` 5개, `NORMAL_REFERENCE` 6개다. `PASS` 19개, `CHECK_NEEDED` 17개, `INVESTIGATE` 및 pipeline/storage issue 의심 0개다. `n_246`은 100/100 결측·`FULL_CLIP_MISSING`·`EXPECTED_DETECTOR_MISS`로 기록됐다. 선택된 긴 run에서는 pose/head orientation 난이도뿐 아니라 얼굴이 충분히 보이는 연속 미검출도, 고립 miss에서는 blur로 설명되는 사례와 앞뒤 frame과 비슷한 false-negative 후보가 모두 보고됐다. 따라서 yaw/profile만을 전체 결측의 원인으로 단정하지 않는다. 이 36개는 목적 선정 후보이며 전체 1,763개 영상의 무작위 표본이 아니다.
+
+[수동 결과 요약](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_summary.json), [해석 보고서](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_report.txt), [출처·전후 해시](outputs/preprocessing_v2/canonical_preprocessing/quality_missing_audit/step4b_visual_review/step4b_manual_review_provenance.json)에 세부 내용을 남겼다. STEP 4-B는 **COMPLETE**다. 자동 메타데이터와 저장된 YuNet bbox·Context JPEG는 변경하지 않았고 YuNet·Dlib68 재추론, crop 재생성, 결측 대체도 하지 않았다. Missing policy는 **NOT SELECTED**, STEP 4-C는 **NOT STARTED**, test split은 **SEALED**다.

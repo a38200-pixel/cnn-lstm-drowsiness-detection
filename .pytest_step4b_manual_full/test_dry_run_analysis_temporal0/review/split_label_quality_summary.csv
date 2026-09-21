@@ -1,0 +1,10 @@
+﻿group_type,group_name,videos,canonical_frames,yunet_success,yunet_missing,yunet_missing_rate,behavior_valid,behavior_valid_rate,context_selected,context_available,context_missing,context_missing_rate,zero_yunet_missing_videos,zero_context_missing_videos
+overall,all,2,200,195,5,0.025,195,0.975,64,63,1,0.015625,0,1
+split,train,1,100,96,4,0.04,96,0.96,32,31,1,0.03125,0,0
+split,val,1,100,99,1,0.01,99,0.99,32,32,0,0.0,0,1
+label,drowsy,1,100,96,4,0.04,96,0.96,32,31,1,0.03125,0,0
+label,not_drowsy,1,100,99,1,0.01,99,0.99,32,32,0,0.0,0,1
+split_label,train:drowsy,1,100,96,4,0.04,96,0.96,32,31,1,0.03125,0,0
+split_label,train:not_drowsy,0,0,0,0,0.0,0,0.0,0,0,0,0.0,0,0
+split_label,val:drowsy,0,0,0,0,0.0,0,0.0,0,0,0,0.0,0,0
+split_label,val:not_drowsy,1,100,99,1,0.01,99,0.99,32,32,0,0.0,0,1

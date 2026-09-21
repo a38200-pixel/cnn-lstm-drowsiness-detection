@@ -1,0 +1,31 @@
+STEP 3-B Missing Context Crop Review
+
+목적: 선택된 Context slot의 crop 결측만 분리해 detector miss·false negative·저장/파이프라인 문제를 시각 점검한다.
+출처: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\.pytest_step4b_full\test_generate_reports_images_a0\canonical_pilot
+대상: split in {train,val} AND context_selected=True AND context_crop_available=False
+결측: 1/1 (100.00%)
+split: {'train': 1}
+label: {'not_drowsy': 1}
+video: [{'video_id': 'n_1', 'count': 1}]
+YuNet: {'False': 1} / Dlib68: {'False': 1} / Pose: {'False': 1}
+decode: {'OK': 1} / context: {'CONTEXT_NO_FACE': 1}
+자동 원인 후보: {'DETECTOR_MISS': 1}
+canonical index: 13..13; context slot: 4..4
+이미지: 1개, sheet: 1장, 원본 frame decode 누락: 0개
+
+대표 패턴 및 구현 문제 의심 여부:
+모든 결측 row는 정상 decode 후 YuNet 미검출과 일치합니다. 저장/경로 실패의 자동 증거는 없습니다. 실제 얼굴이 보이는 false negative인지는 수동 확인이 필요합니다.
+`DETECTOR_MISS`는 저장된 stage 상태에 따른 기계적 분류일 뿐 정상 miss와 false negative를 구분하지 않습니다. 근처 frame의 yaw/edge 힌트도 현재 frame의 사람 판정이 아닙니다.
+
+다음 액션: 모든 원본 frame을 보고 얼굴·profile·edge·가림·조명·흐림을 분류하고, 검출 성공인데 crop이 없는 사례가 있으면 우선 구현/경로 문제로 조사합니다. STEP 2 정책은 바꾸지 않고 full preprocessing은 시작하지 않습니다.
+
+DECISION:
+MISSING_CONTEXT_REVIEW_COMPLETE
+
+PRELIMINARY INTERPRETATION:
+- 모든 결측 row는 정상 decode 후 YuNet 미검출과 일치합니다. 저장/경로 실패의 자동 증거는 없습니다. 실제 얼굴이 보이는 false negative인지는 수동 확인이 필요합니다.
+
+STEP 3-B STATUS:
+AUTOMATIC CHECK COMPLETE
+MISSING-ONLY VISUAL REVIEW GENERATED
+MANUAL INTERPRETATION REQUIRED

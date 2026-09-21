@@ -1,0 +1,81 @@
+STEP 4-A Full Train/Val Automatic Quality & Missing Audit
+
+[Scope]
+입력: C:\Users\AISW_203_113\Documents\GitHub\cnn-lstm-drowsiness-detection\.pytest_step4b_full\test_dry_run_analysis_temporal0\canonical/metadata/canonical_frames.csv, canonical_videos.csv, run_metadata.json
+저장된 train/val metadata만 사용했다. 원본 영상·test split은 읽거나 처리하지 않았다.
+Policy hash: 29f74d12e4a522352868297c1661224c5d444f2829f1cae6866c8b2d1968e721
+
+[Dataset Integrity]
+영상 2, canonical frame 200, 영상당 100행·Context 32 slot, test row 0. STEP 3-C 요약과 재계산값 일치.
+이 audit는 기존 전체 JPEG strict decode를 반복하지 않는다. STEP 3-C의 무결성 결과를 근거로 metadata만 재검사했다.
+
+[Overall Missing]
+YuNet 성공 195, 미검출 5 / 200 (2.5000%).
+Context 선택 64, 가용 63, 결측 1 (1.5625%).
+Dlib 성공 195 / YuNet 성공 195; 검출 후 Dlib 실패 0.
+EAR·MAR·Pose 유효 195·195·195; Behavior 유효 195 (97.5000%).
+Padding 필요 0, multiple-face frame 0.
+
+[Train vs Val]
+Train 1개: YuNet 결측 4/100 (4.0000%), Context 결측 1/32 (3.1250%).
+Val 1개: YuNet 결측 1/100 (1.0000%), Context 결측 0/32 (0.0000%).
+Val - train 결측률: YuNet -0.030000, Context -0.031250. 기술 통계이며 난이도 우열 판단이 아니다.
+
+[Drowsy vs Not-Drowsy]
+Drowsy 1개: YuNet 결측 4.0000%, Context 결측 3.1250%.
+Not-drowsy 1개: YuNet 결측 1.0000%, Context 결측 0.0000%.
+Label gap은 관찰값일 뿐 pose·조명·운전자 구성의 영향을 분리하지 못하므로 인과 해석하지 않는다.
+
+[Split × Label]
+train:drowsy: 1개, YuNet 결측 4, Context 결측 1, Behavior 유효률 96.0000%.
+train:not_drowsy: 0개, YuNet 결측 0, Context 결측 0, Behavior 유효률 0.0000%.
+val:drowsy: 0개, YuNet 결측 0, Context 결측 0, Behavior 유효률 0.0000%.
+val:not_drowsy: 1개, YuNet 결측 1, Context 결측 0, Behavior 유효률 99.0000%.
+
+[Per-Video Missing Distribution]
+YuNet 결측/video: {'count': 2, 'min': 1.0, 'mean': 2.5, 'std': 1.5, 'p01': 1.03, 'p05': 1.15, 'median': 2.5, 'p75': 3.25, 'p90': 3.7, 'p95': 3.8499999999999996, 'p99': 3.9699999999999998, 'max': 4.0}
+결측 0 video 0; Context 결측 0 video 1.
+극단값 diagnostic: YuNet 성공 0 video 0, 성공 50 미만 0; Context 가용 0 video 0, 가용 16 미만 0. 자동 제외 기준이 아니다.
+최다 결측 video: d_1 (train/drowsy), 4 frame.
+
+[Consecutive Missing Runs]
+총 run 4, 단일 frame 3, 다중 frame 1, 최장 2 frame. 길이별 count/fraction은 missing_run_length_histogram.csv.
+연속 길이는 관찰값이며 위험·허용 임계값으로 사용하지 않는다.
+
+[Context Missing Distribution]
+Context 결측/video: {'count': 2, 'min': 0.0, 'mean': 0.5, 'std': 0.5, 'p01': 0.01, 'p05': 0.05, 'median': 0.5, 'p75': 0.75, 'p90': 0.9, 'p95': 0.95, 'p99': 0.99, 'max': 1.0}
+Context run은 32개 선택 slot 순서에서 연속 결측을 뜻한다. 원래 100개 canonical frame의 연속성과 구별한다.
+누적 가용성(결측 허용 N)은 policy 선택이 아닌 영상 손실 진단이다: N=0: 1개, N=1: 2개, N=2: 2개, N=4: 2개, N=8: 2개, N=16: 2개, N=32: 2개
+
+[Temporal Slot Distribution]
+구간: first 10=k0..9, middle 80=k10..89, last 10=k90..99. 각 slot의 실제 수치는 temporal_missing_by_*.csv에 기록했다.
+first_10: 3/20 (15.0000%); middle_80: 1/160 (0.6250%); last_10: 1/20 (5.0000%)
+
+[Missing Concentration]
+상위 1%(1개) 영상: 전체 결측의 80.0000%; 상위 5%(1개) 영상: 전체 결측의 80.0000%; 상위 10%(1개) 영상: 전체 결측의 80.0000%
+
+[Behavior Feature Availability]
+Behavior 유효률 97.5000%; 영상별 분포 {'count': 2, 'min': 0.96, 'mean': 0.975, 'std': 0.015000000000000013, 'p01': 0.9602999999999999, 'p05': 0.9615, 'median': 0.975, 'p75': 0.9824999999999999, 'p90': 0.987, 'p95': 0.9884999999999999, 'p99': 0.9897, 'max': 0.99}
+
+[Numeric Quality]
+Flag-수치 모순 및 bbox 이상 0건. 유효 EAR/MAR/Pose 및 bbox의 설명 분포는 summary JSON·bbox_quality_summary.json에 기록했다. 행동 threshold는 정하지 않았다.
+
+[Pilot Observation vs Full Audit]
+Pilot: STEP 3-B 사용자 시각 검토에서 27건의 yaw/profile 연관성을 관찰했다.
+Full: 본 자동 audit는 결측 빈도·run·집중도만 측정했다. YuNet 미검출 frame의 해당 frame yaw는 없다. 이웃 유효 frame yaw는 별도 보조 힌트일 뿐 결측 frame pose가 아니다.
+
+[STEP 4-B Candidate Selection]
+중복 제거한 2개 영상 후보: {'highest_missing_count': 2}.
+STEP 4-B용 이미지는 만들지 않았고 수동 시각 검토도 시작하지 않았다.
+
+[Limitations]
+Video-level split은 unseen-driver subject split을 보장하지 않는다. Label gap의 인과 원인, 결측 frame의 pose, 적절한 missing 허용 개수는 이번 단계에서 결정할 수 없다.
+
+[Decision]
+STEP 4-A AUTOMATIC QUALITY & MISSING AUDIT COMPLETE
+MISSING POLICY: NOT SELECTED
+MANUAL VISUAL REVIEW: NOT STARTED
+STEP 4-B: WAITING
+STEP 4-C: NOT STARTED
+TEST SPLIT: SEALED
+RAW VIDEO REPROCESSING: NOT PERFORMED
