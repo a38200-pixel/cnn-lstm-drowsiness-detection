@@ -22,4 +22,5 @@ htmlcov/
 logs/
 runs/
 wandb/
+outputs/visualizations/
 outputs/preprocessing_v2/canonical_preprocessing/

@@ -64,8 +64,12 @@ STEP 5-D2R에서 두 backbone 모두 `n_311`의 마지막 6개 unique source가 
 - Window: 동일한 10초 clip
 - Sampling: 10 FPS, 약 100 timestamp
 - Landmark: Dlib68
-- Features: EAR, MAR, Pitch/Yaw/Roll
-- Use: explicit eye/yawn/head events
+- Features: `ear`, `mar`, `pitch_raw`, `pitch_centered_candidate`, `yaw`, `roll`의 `[100,6]`
+- Future use: threshold가 동결된 뒤 explicit eye/yawn/head event 또는 temporal model 입력 검토
+
+Behavior raw continuous feature는 smoothing이나 interpolation 없이 저장된 값과 NaN/mask를 그대로 보존한다. Train/validation 대표 표본 visual sanity check에서 missing 구간과 validity mask가 일치했으며, 일부 valid head-pose frame의 `pitch_raw`에서 representation discontinuity 또는 wrap-like pattern 가능성이 있는 큰 수치 전환과 간헐적인 `roll` spike가 관찰됐다. 이는 확정된 오류나 물리 방향 해석이 아니다.
+
+초기 baseline은 여섯 feature를 모두 변경 없이 유지한다. Pose clipping, angle unwrap, smoothing, feature exclusion 또는 centered feature 선택은 visual inspection만으로 적용하지 않으며, 필요하면 이후 validation 기반 controlled ablation으로 검증한다. Head-pose physical sign/directional semantics는 아직 unresolved 상태다.
 
 ### Stride 구분
 - Training dataset: 원본 10초 clip 당 1 sample. 같은 clip에서 overlap window를 여러 개 만들지 않음.

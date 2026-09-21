@@ -228,6 +228,7 @@ STEP 5-D feature extraction 및 감사에 기록된 환경:
 | CUDA runtime | 13.0 |
 | cuDNN | 91900 |
 | GPU | NVIDIA GeForce RTX 3080 |
+| matplotlib | 3.11.2 |
 
 프로젝트 전용 `.venv` 사용을 권장한다. 자세한 기록은 [environment.md](docs/environment.md)와 [environment snapshot](docs/environment_snapshot.txt)을 참고한다.
 
@@ -259,6 +260,30 @@ $env:PYTHONPATH = "src"
 ```
 
 `audit_context_cnn_features.py`는 기존 final audit 출력이 있으면 덮어쓰지 않고 중단한다.
+
+### Behavior Sequence Visual Inspection
+
+STEP 5-B의 저장된 `[100,6]` 값과 mask를 threshold·event 해석 없이 로컬에서 검수한다. 출력은 `outputs/visualizations/behavior_sequences/`에 저장되며 Git에서 제외된다. Test split은 계속 sealed 상태다.
+
+```powershell
+# Overview를 화면에 표시
+.\.venv\Scripts\python.exe scripts\visualize_behavior_sequence.py --video-id <ID> --mode overview --show
+
+# Headless 저장
+.\.venv\Scripts\python.exe scripts\visualize_behavior_sequence.py --video-id <ID> --mode overview --save --no-show
+
+# Mask 전용 화면
+.\.venv\Scripts\python.exe scripts\visualize_behavior_sequence.py --video-id <ID> --mode masks --show
+
+# Train/validation 대표 검수 후보만 출력
+.\.venv\Scripts\python.exe scripts\visualize_behavior_sequence.py --suggest-samples
+```
+
+Train/validation 대표 표본 `d_10`, `d_246`, `d_690`을 post-STEP-5 visual sanity check로 확인했다. 저장된 missing slot과 validity mask가 일치했고, NaN 구간은 보간 없이 끊겨 표시됐으며, EAR/MAR는 missing 구간 밖에서 구조적인 sequence 이상 없이 연속적으로 관찰됐다.
+
+일부 valid head-pose frame에서는 `pitch_raw`의 큰 전환과 간헐적인 `roll` spike가 관찰됐다. 이는 sequence construction 실패가 아닌 feature-quality 주의 사항이며, wrap 또는 표현 불연속의 가능성만 기록한다. 표본에서 `pitch_centered_candidate`가 상대적으로 더 완만해 보였지만 품질 우위를 주장하지 않는다. Behavior baseline은 여섯 feature를 모두 유지한 `[100,6]` 그대로이며, head-pose 방향 의미와 rule threshold는 아직 확정하지 않았다. 검수에는 train/validation만 사용했고 test는 sealed 상태를 유지했다.
+
+검수 시 EAR/MAR/pose 연속값의 비정상 급변, NaN과 mask의 위치, 연속 missing run, 100-slot timeline을 확인한다. 이 화면은 sanity check일 뿐 전체 품질의 통계적 증명이 아니며 PERCLOS, threshold, yawn, head-down 또는 nod 의미를 계산하지 않는다.
 
 ## 13. Experiment Rules / Leakage Protection
 

@@ -29,6 +29,12 @@ STEP 5-D3 최종 무결성 감사가 통과한 뒤 Context 학습 입력은 back
 
 D1/D2의 `n_311` 차이는 D1 partial batch 6장과 D2 full batch 16장에 따른 검증된 benign floating-point/batch numerical difference다. 두 저장 vector가 각각 당시 batch 재현 결과와 exact match하므로 mapping·input 오류나 stochastic training 변동으로 해석하지 않는다. 기존 15/16 exact 기록과 tolerance는 그대로 보존하며 16/16 PASS로 변경하지 않는다.
 
+## Behavior baseline input
+
+초기 Behavior baseline 입력은 저장된 100-slot float32 sequence `[100,6]`이며 feature 순서는 `ear`, `mar`, `pitch_raw`, `pitch_centered_candidate`, `yaw`, `roll`이다. NaN과 validity mask를 포함한 artifact semantics를 그대로 사용하고, 대표 표본 visual inspection만을 근거로 clipping, smoothing, interpolation, angle unwrap 또는 feature exclusion을 추가하지 않는다.
+
+일부 valid frame의 큰 raw pitch 전환과 간헐적인 roll spike는 feature-quality 주의 사항으로 기록하되 오류나 outlier로 확정하지 않는다. Head-pose physical sign/directional semantics, rule threshold와 Behavior classifier architecture는 아직 동결되지 않았다. All-six, EAR+MAR, EAR+MAR+centered head pose, `pitch_raw` 포함/제외, pose preprocessing/unwrap on/off는 향후 validation 기반 controlled ablation 후보일 뿐 현재 protocol로 확정하지 않는다. Visual sanity check 표본은 train/validation에서만 선택하며 test split은 sealed 상태를 유지한다.
+
 ## Common input
 - 10-second original clip
 - 32 uniformly sampled Full Face RGB frames

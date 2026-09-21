@@ -63,6 +63,24 @@ Valid-count 분포는 `95:17, 96:21, 97:21, 98:34, 99:45, 100:1382`, longest YuN
 
 Head Pose physical sign convention remains unresolved. Pitch continuous values are preserved without semantic head-down/head-up interpretation. `pitch_raw`와 `pitch_centered_candidate`는 진단용 연속값으로 함께 보존한다.
 
+### Behavior Sequence Visual Sanity Check
+
+STEP 5 종료 후 저장된 Behavior sequence를 변경하지 않는 대표 표본 visual sanity check를 수행했다. 범위는 train/validation의 `d_10`, `d_246`, `d_690`이며 세 표본의 metadata label은 모두 clip-level `drowsy`다. 이 검수는 `[100,6]` layout, missing/mask 표현과 시간축 연결 상태를 사람이 확인한 것으로, 1,520개 전체 sequence의 통계적 품질 증명이나 label의 인과 해석, 모델 성능·threshold·rule 타당성 검증이 아니다. Test split에는 접근하지 않았다.
+
+| Video | Split | Valid | Missing | Observation |
+|---|---|---:|---:|---|
+| `d_10` | train | 100 | 0 | complete-valid reference; EAR/MAR 및 mask가 전 구간 유효하고, 약 6초 부근에서 `pitch_raw`의 큰 전환이 관찰됨 |
+| `d_246` | val | 95 | 5 | 선두 5개 missing이 NaN gap 및 mask와 일치하고, 이후 신호는 이어짐; valid pose에서 큰 pitch 전환과 `roll` spike가 관찰됨 |
+| `d_690` | train | 95 | 5 | 약 5초 부근의 연속 5-slot missing과 mask가 일치해 B2 허용 최대 missing run 5의 실제 표현을 확인함 |
+
+세 표본에서 100-slot timeline과 `[100,6]` feature layout은 정상적으로 시각화됐다. Missing 구간은 EAR/MAR/head-pose plot에서 선으로 연결되지 않았고 `behavior_valid_mask`를 포함한 관련 mask의 invalid 구간과 일치해, fill 또는 interpolation이 적용되지 않은 저장 semantics를 확인했다. EAR/MAR는 missing 구간 밖에서 구조적인 sequence 이상 없이 시간축을 따라 이어졌다.
+
+일부 valid frame에는 `pitch_raw`의 큰 수치 전환과 간헐적인 `roll` spike가 있었다. `pitch_raw` 변화는 ±180도 부근의 representation discontinuity 또는 wrap-like pattern 가능성을 보여 주지만, visual pattern만으로 angle-wrap bug, outlier 또는 물리적 머리 방향을 확정하지 않는다. `pitch_centered_candidate`는 이 표본들에서 상대적으로 작은 범위와 더 완만한 흐름을 보인 구간이 있었으나 품질 우위는 주장하지 않는다. Physical sign/directional semantics는 계속 unresolved 상태다.
+
+이 관찰로 feature policy를 변경하지 않는다. 초기 Behavior baseline은 `ear`, `mar`, `pitch_raw`, `pitch_centered_candidate`, `yaw`, `roll`의 `[100,6]`을 원형 그대로 사용하며, baseline 전에 clipping, smoothing, interpolation, angle unwrap 또는 feature exclusion을 적용하지 않는다. 이후 validation 근거가 생길 때에만 all-six, EAR+MAR, EAR+MAR+centered head pose, `pitch_raw` 포함/제외, pose preprocessing/unwrap on/off를 controlled ablation 후보로 검토한다. 이 후보들은 아직 실험 계획으로 동결되지 않았다.
+
+본 검수는 STEP 5 artifact를 수정하거나 STEP 5를 다시 연 작업이 아니다. **STEP 5는 FULLY CLOSED** 상태를 유지하며 다음 단계는 STEP 6 Context frozen feature Dataset/DataLoader 및 LSTM baseline이다.
+
 ## 11. STEP 5-C Cross-Branch Sequence Integrity Audit
 
 Canonical train/validation 1,763개, frozen eligibility, Context 1,677개 bundle, Behavior 1,520개 bundle을 실제 artifact에서 전수 교차 검증했다. 실제 집합은 BOTH 1,520, CONTEXT_ONLY 157, BEHAVIOR_ONLY 0, NEITHER 86이며 frozen eligibility와 실제 bundle mismatch는 0이다. Split/label mismatch도 0이다.
