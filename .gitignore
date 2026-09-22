@@ -27,4 +27,5 @@ mlartifacts/
 mlruns/
 outputs/visualizations/
 outputs/training_v2/
+outputs/audits_v2/
 outputs/preprocessing_v2/canonical_preprocessing/
