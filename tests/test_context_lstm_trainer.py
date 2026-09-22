@@ -57,6 +57,7 @@ def test_training_config_matches_step6c_policy(
     assert training_config.val_batch_size == 32
     assert training_config.max_epochs == 60
     assert training_config.seeds == (42, 123, 2026)
+    assert training_config.label_smoothing == 0.0
     assert training_config.learning_rate == 0.0005
     assert training_config.weight_decay == 0.0001
     assert training_config.gradient_clip_max_norm == 1.0
@@ -154,6 +155,47 @@ def test_input_layer_norm_override_requires_tag_and_keeps_baseline_policy() -> N
         trainer.resolve_input_layer_norm(False, True, None)
 
 
+def test_label_smoothing_override_requires_tag_and_keeps_baseline_policy() -> None:
+    assert trainer.resolve_label_smoothing(0.0, 0.05, "labelsmooth005") == 0.05
+    assert trainer.resolve_label_smoothing(0.0, None, None) == 0.0
+    assert trainer.resolve_train_batch_size(16, None, "labelsmooth005") == 16
+    assert trainer.resolve_classifier_dropout(0.0, None, "labelsmooth005") == 0.0
+    assert trainer.resolve_weight_decay(0.0001, None, "labelsmooth005") == 0.0001
+    assert trainer.resolve_learning_rate(0.0005, None, "labelsmooth005") == 0.0005
+    assert trainer.resolve_input_layer_norm(False, None, "labelsmooth005") is False
+    assert trainer.resolve_run_names("resnet18", 42, "labelsmooth005") == (
+        "seed_42_labelsmooth005", "resnet18_seed42_labelsmooth005")
+    assert trainer.resolve_run_names("vgg16", 42, "labelsmooth005") == (
+        "seed_42_labelsmooth005", "vgg16_seed42_labelsmooth005")
+    with pytest.raises(trainer.TrainingPipelineError, match="run-tag"):
+        trainer.resolve_label_smoothing(0.0, 0.05, None)
+
+
+@pytest.mark.parametrize("label_smoothing", [-0.01, 1.0])
+def test_invalid_label_smoothing_is_rejected(label_smoothing: float) -> None:
+    with pytest.raises(trainer.TrainingPipelineError, match="label smoothing"):
+        trainer.resolve_label_smoothing(0.0, label_smoothing, "invalid")
+
+
+def test_train_and_validation_criteria_use_different_smoothing(
+        config_mapping: dict) -> None:
+    resolved_config = {
+        **config_mapping,
+        "training": {
+            **config_mapping["training"],
+            "loss": {
+                **config_mapping["training"]["loss"],
+                "label_smoothing": 0.05,
+            },
+        },
+    }
+    training_config = trainer.training_config_from_mapping(resolved_config)
+    train_criterion, val_criterion = trainer.build_loss_criteria(training_config)
+    assert train_criterion.label_smoothing == 0.05
+    assert val_criterion.label_smoothing == 0.0
+    assert trainer.VALIDATION_LABEL_SMOOTHING == 0.0
+
+
 @pytest.mark.parametrize("run_tag", ["", "../batch8", "batch 8", "batch/8"])
 def test_unsafe_run_tag_is_rejected(run_tag: str) -> None:
     with pytest.raises(trainer.TrainingPipelineError, match="run tag"):
@@ -217,6 +259,20 @@ def test_cli_accepts_input_layer_norm_tuning_options() -> None:
     assert args.weight_decay is None
     assert args.learning_rate is None
     assert args.run_tag == "layernorm"
+
+
+def test_cli_accepts_label_smoothing_tuning_options() -> None:
+    args = build_parser().parse_args([
+        "--backbone", "vgg16", "--seed", "42", "--device", "cuda",
+        "--mlflow", "--label-smoothing", "0.05", "--run-tag", "labelsmooth005",
+    ])
+    assert args.label_smoothing == 0.05
+    assert args.train_batch_size is None
+    assert args.classifier_dropout is None
+    assert args.weight_decay is None
+    assert args.learning_rate is None
+    assert args.input_layer_norm is None
+    assert args.run_tag == "labelsmooth005"
 
 
 def test_classification_metrics() -> None:

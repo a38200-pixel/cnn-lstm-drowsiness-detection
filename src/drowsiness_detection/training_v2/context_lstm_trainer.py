@@ -39,6 +39,8 @@ HISTORY_COLUMNS = (
     "learning_rate",
 )
 
+VALIDATION_LABEL_SMOOTHING = 0.0
+
 
 class TrainingPipelineError(RuntimeError):
     """학습 정책 또는 numeric integrity 위반."""
@@ -131,6 +133,23 @@ def resolve_input_layer_norm(
     return override
 
 
+def resolve_label_smoothing(
+    configured_label_smoothing: float,
+    override: float | None,
+    run_tag: str | None,
+) -> float:
+    """Run별 training label smoothing을 검증하고 baseline 덮어쓰기를 차단한다."""
+
+    if override is None:
+        return configured_label_smoothing
+    if not 0.0 <= override < 1.0:
+        raise TrainingPipelineError("label smoothing은 0 이상 1 미만이어야 합니다")
+    if override != configured_label_smoothing and run_tag is None:
+        raise TrainingPipelineError(
+            "baseline과 다른 label smoothing에는 --run-tag가 필요합니다")
+    return override
+
+
 def resolve_run_names(backbone: str, seed: int, run_tag: str | None) -> tuple[str, str]:
     """안전한 local output directory와 MLflow run 이름을 만든다."""
 
@@ -154,6 +173,7 @@ class ContextTrainingConfig:
         num_workers: int,
         max_epochs: int,
         seeds: Sequence[int],
+        label_smoothing: float,
         learning_rate: float,
         weight_decay: float,
         gradient_clip_max_norm: float,
@@ -172,6 +192,7 @@ class ContextTrainingConfig:
         self.num_workers = num_workers
         self.max_epochs = max_epochs
         self.seeds = tuple(seeds)
+        self.label_smoothing = label_smoothing
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
         self.gradient_clip_max_norm = gradient_clip_max_norm
@@ -200,6 +221,8 @@ class ContextTrainingConfig:
             raise TrainingPipelineError(f"양수여야 하는 training config가 있습니다: {positive}")
         if self.num_workers < 0 or self.weight_decay < 0:
             raise TrainingPipelineError("num_workers와 weight_decay는 0 이상이어야 합니다")
+        if not 0.0 <= self.label_smoothing < 1.0:
+            raise TrainingPipelineError("label smoothing은 0 이상 1 미만이어야 합니다")
         if self.scheduler_patience < 0 or self.early_stopping_min_delta < 0:
             raise TrainingPipelineError("patience/min_delta가 잘못됐습니다")
         if not 0 < self.scheduler_factor < 1:
@@ -225,8 +248,7 @@ def training_config_from_mapping(config: Mapping[str, Any]) -> ContextTrainingCo
             raise TrainingPipelineError("feature normalization은 none이어야 합니다")
         if data["imputed_mask_concatenated"] is not False:
             raise TrainingPipelineError("imputed mask를 feature에 concat할 수 없습니다")
-        if loss != {"name": "cross_entropy", "class_weight": None,
-                    "label_smoothing": 0.0}:
+        if loss.get("name") != "cross_entropy" or loss.get("class_weight") is not None:
             raise TrainingPipelineError("CrossEntropyLoss 정책이 다릅니다")
         if optimizer["name"] != "adamw":
             raise TrainingPipelineError("optimizer는 AdamW여야 합니다")
@@ -246,6 +268,7 @@ def training_config_from_mapping(config: Mapping[str, Any]) -> ContextTrainingCo
             num_workers=int(data["num_workers"]),
             max_epochs=int(training["max_epochs"]),
             seeds=[int(seed) for seed in training["seeds"]],
+            label_smoothing=float(loss["label_smoothing"]),
             learning_rate=float(optimizer["learning_rate"]),
             weight_decay=float(optimizer["weight_decay"]),
             gradient_clip_max_norm=float(clipping["max_norm"]),
@@ -482,6 +505,22 @@ class OptionalMLflowLogger:
             self.module.end_run(status=status)
 
 
+def build_loss_criteria(
+    training_config: ContextTrainingConfig,
+) -> tuple[nn.CrossEntropyLoss, nn.CrossEntropyLoss]:
+    """Training smoothing과 비교 가능한 unsmoothed validation loss를 분리한다."""
+
+    train_criterion = nn.CrossEntropyLoss(
+        weight=None,
+        label_smoothing=training_config.label_smoothing,
+    )
+    val_criterion = nn.CrossEntropyLoss(
+        weight=None,
+        label_smoothing=VALIDATION_LABEL_SMOOTHING,
+    )
+    return train_criterion, val_criterion
+
+
 def fit_context_lstm(
     model: nn.Module,
     train_loader: DataLoader,
@@ -504,7 +543,7 @@ def fit_context_lstm(
     (output_dir / "config_snapshot.yaml").write_text(
         yaml.safe_dump(snapshot, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
-    criterion = nn.CrossEntropyLoss(weight=None, label_smoothing=0.0)
+    train_criterion, val_criterion = build_loss_criteria(training_config)
     optimizer = AdamW(
         model.parameters(), lr=training_config.learning_rate,
         weight_decay=training_config.weight_decay)
@@ -526,9 +565,9 @@ def fit_context_lstm(
     for epoch in range(1, max_epochs + 1):
         learning_rate = float(optimizer.param_groups[0]["lr"])
         train_result = train_one_epoch(
-            model, train_loader, criterion, optimizer, device,
+            model, train_loader, train_criterion, optimizer, device,
             training_config.gradient_clip_max_norm)
-        validation = evaluate(model, val_loader, criterion, device)
+        validation = evaluate(model, val_loader, val_criterion, device)
         gradient_clip_steps += int(train_result["gradient_clip_steps"])
         row = {
             "epoch": epoch,
@@ -631,6 +670,7 @@ def train_context_lstm(
     weight_decay_override: float | None = None,
     learning_rate_override: float | None = None,
     input_layer_norm_override: bool | None = None,
+    label_smoothing_override: float | None = None,
     run_tag: str | None = None,
 ) -> dict[str, Any]:
     baseline_training_config = training_config_from_mapping(config)
@@ -655,6 +695,11 @@ def train_context_lstm(
         input_layer_norm_override,
         run_tag,
     )
+    resolved_label_smoothing = resolve_label_smoothing(
+        baseline_training_config.label_smoothing,
+        label_smoothing_override,
+        run_tag,
+    )
     output_name, mlflow_run_name = resolve_run_names(backbone, seed, run_tag)
     resolved_config = copy.deepcopy(config)
     resolved_config["model_baseline_future"]["classifier_dropout"] = (
@@ -663,6 +708,8 @@ def train_context_lstm(
     resolved_config["training"]["optimizer"]["learning_rate"] = resolved_learning_rate
     resolved_config["model_baseline_future"]["input_layer_norm"] = (
         resolved_input_layer_norm)
+    resolved_config["training"]["loss"]["label_smoothing"] = (
+        resolved_label_smoothing)
     training_config = training_config_from_mapping(resolved_config)
     if device_name == "auto":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -705,6 +752,8 @@ def train_context_lstm(
         "weight_decay": resolved_weight_decay,
         "learning_rate": resolved_learning_rate,
         "input_layer_norm": resolved_input_layer_norm,
+        "label_smoothing": resolved_label_smoothing,
+        "validation_label_smoothing": VALIDATION_LABEL_SMOOTHING,
         "run_tag": run_tag,
     }
     model_config = resolved_config["model_baseline_future"]
