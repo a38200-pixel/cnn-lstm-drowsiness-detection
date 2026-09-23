@@ -63,12 +63,15 @@ LIMITATION_EN = (
     "ResNet18-LSTM and VGG16-LSTM. The sample was selected based on model errors "
     "and is therefore not representative of the full validation split. "
     "Observed label inconsistencies must not be interpreted as the dataset-wide "
-    "label error rate."
+    "label error rate. frame32_review was not required for all 42 samples; "
+    "the primary evidence for E6 is manual review of the original videos."
 )
 LIMITATION_KO = (
     "이 감사는 ResNet18-LSTM과 VGG16-LSTM이 모두 오분류한 validation 표본 42개로 "
     "제한된다. 모델 오류를 기준으로 선택된 표본이므로 전체 validation split을 대표하지 "
-    "않으며, 관찰된 label 불일치 비율을 dataset 전체 label 오류율로 해석해서는 안 된다."
+    "않으며, 관찰된 label 불일치 비율을 dataset 전체 label 오류율로 해석해서는 안 된다. "
+    "frame32_review는 42개 전체의 필수 항목이 아니며, E6의 주된 근거는 원본 영상에 대한 "
+    "수동 검토이다."
 )
 
 
@@ -310,9 +313,10 @@ def validate_and_summarize_manual_review(
             if str(review.get(field, "")) != str(candidate.get(field, "")):
                 raise ContextSharedErrorLabelReviewError(
                     f"manual review identity field 변경 금지: {video_id}/{field}")
-        if review.get("frame32_review") not in FRAME32_VALUES:
+        frame32_review = str(review.get("frame32_review", ""))
+        if frame32_review and frame32_review not in FRAME32_VALUES:
             raise ContextSharedErrorLabelReviewError(
-                f"frame32_review 미완료/허용값 위반: {video_id}")
+                f"frame32_review 허용값 위반: {video_id}")
         if review.get("original_video_review") not in ORIGINAL_VIDEO_VALUES:
             raise ContextSharedErrorLabelReviewError(
                 f"original_video_review 미완료/허용값 위반: {video_id}")
@@ -343,6 +347,8 @@ def validate_and_summarize_manual_review(
     mismatches = sorted(
         row["video_id"] for row in review_rows
         if row["audit_status"] == "manual_label_mismatch_candidate")
+    frame32_reviewed_count = sum(
+        bool(str(row.get("frame32_review", "")).strip()) for row in review_rows)
     return {
         "step": "6-E6",
         "status": "MANUAL_REVIEW_SUMMARIZED",
@@ -353,6 +359,11 @@ def validate_and_summarize_manual_review(
         },
         "overall": counts_and_rates(review_rows),
         "by_dataset_label": by_label,
+        "frame32_review_coverage": {
+            "reviewed_count": frame32_reviewed_count,
+            "total_count": EXPECTED_CANDIDATE_COUNT,
+            "required": False,
+        },
         "manual_label_mismatch_candidate_video_ids": mismatches,
         "limitations": {"en": LIMITATION_EN, "ko": LIMITATION_KO},
         "protections": {

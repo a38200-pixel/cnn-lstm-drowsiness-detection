@@ -41,7 +41,6 @@ def _completed_rows() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
         if row["video_id"] in KNOWN_MISMATCH_CANDIDATES:
             continue
         row.update({
-            "frame32_review": "visually_consistent",
             "original_video_review": "drowsy_like" if row["dataset_label"] == "drowsy"
             else "not_drowsy_like",
             "label_consistency": "consistent",
@@ -83,9 +82,12 @@ def test_completed_manual_review_summary_and_limitation() -> None:
     assert summary["scope"]["validation_sample_count"] == 42
     assert summary["scope"]["representative_of_full_validation"] is False
     assert summary["overall"]["conflicting"]["count"] == 4
+    assert summary["frame32_review_coverage"] == {
+        "reviewed_count": 4, "total_count": 42, "required": False}
     assert summary["manual_label_mismatch_candidate_video_ids"] == sorted(
         KNOWN_MISMATCH_CANDIDATES)
     assert "not representative" in summary["limitations"]["en"]
+    assert "frame32_review was not required" in summary["limitations"]["en"]
     assert "대표하지" in summary["limitations"]["ko"]
 
 
@@ -99,3 +101,12 @@ def test_incomplete_or_inconsistent_manual_review_is_blocked() -> None:
     inconsistent[10]["audit_status"] = "reviewed_ambiguous"
     with pytest.raises(ContextSharedErrorLabelReviewError, match="불일치"):
         validate_and_summarize_manual_review(candidates, inconsistent)
+
+
+def test_optional_frame32_value_is_validated_only_when_present() -> None:
+    candidates, reviews = _completed_rows()
+    validate_and_summarize_manual_review(candidates, reviews)
+    invalid = deepcopy(reviews)
+    invalid[10]["frame32_review"] = "unsupported"
+    with pytest.raises(ContextSharedErrorLabelReviewError, match="frame32_review 허용값"):
+        validate_and_summarize_manual_review(candidates, invalid)
